@@ -23,7 +23,8 @@
     "home": "Home",
     "schedule": "My Schedule",
     "lessonPlans": "Lesson Plans",
-    "admin": "Admin"
+    "admin": "Admin",
+    "initiatives": "Initiatives"
   },
   "schedule": {
     "title": "My Weekly Schedule",

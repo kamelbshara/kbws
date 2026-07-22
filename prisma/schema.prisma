@@ -42,6 +42,21 @@ enum AuditAction {
   DELETE
 }
 
+enum InitiativeStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+}
+
+enum InitiativeCategory {
+  EDUCATIONAL
+  COMMUNITY
+  NATIONAL
+  INNOVATION
+  HEALTH_SAFETY
+  OTHER
+}
+
 model School {
   id            String         @id @default(cuid())
   name          String
@@ -54,6 +69,7 @@ model School {
   academicYears AcademicYear[]
   classSections ClassSection[]
   timetables    Timetable[]
+  initiatives   Initiative[]
 }
 
 model AcademicYear {
@@ -132,6 +148,8 @@ model User {
   aiGenerationLogs   AIGenerationLog[]
   auditLogs          AuditLog[]
   printedVersions    LessonPlanVersion[]
+  ownedInitiatives   Initiative[]
+  initiativeEvidence InitiativeEvidence[]
 }
 
 model TeacherAssignment {
@@ -243,18 +261,74 @@ model LessonPlanVersion {
 }
 
 model AIGenerationLog {
-  id           String     @id @default(cuid())
-  lessonPlanId String
-  lessonPlan   LessonPlan @relation(fields: [lessonPlanId], references: [id])
+  id           String      @id @default(cuid())
+  lessonPlanId String?
+  lessonPlan   LessonPlan? @relation(fields: [lessonPlanId], references: [id])
+  initiativeId String?
+  initiative   Initiative? @relation(fields: [initiativeId], references: [id])
   userId       String
-  user         User       @relation(fields: [userId], references: [id])
+  user         User        @relation(fields: [userId], references: [id])
   section      String?
   model        String
   promptInput  Json
   responseJson Json?
   status       String
   errorMessage String?
+  createdAt    DateTime    @default(now())
+}
+
+model Initiative {
+  id           String              @id @default(cuid())
+  ownerId      String
+  owner        User                @relation(fields: [ownerId], references: [id])
+  schoolId     String
+  school       School              @relation(fields: [schoolId], references: [id])
+  title        String
+  category     InitiativeCategory
+  initialIdea  String
+  goal         String?
+  targetGroup  String?
+  baseline     String?
+  status       InitiativeStatus    @default(DRAFT)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  phases           InitiativePhase[]
+  indicators       InitiativeIndicator[]
+  evidence         InitiativeEvidence[]
+  aiGenerationLogs AIGenerationLog[]
+}
+
+model InitiativePhase {
+  id           String     @id @default(cuid())
+  initiativeId String
+  initiative   Initiative @relation(fields: [initiativeId], references: [id])
+  orderIndex   Int        @default(0)
+  name         String
+  description  String
+  timeline     String?
+  responsible  String?
+}
+
+model InitiativeIndicator {
+  id                String     @id @default(cuid())
+  initiativeId      String
+  initiative        Initiative @relation(fields: [initiativeId], references: [id])
+  name              String
+  measurementMethod String
+  targetValue       String?
+  actualValue       String?
+}
+
+model InitiativeEvidence {
+  id           String     @id @default(cuid())
+  initiativeId String
+  initiative   Initiative @relation(fields: [initiativeId], references: [id])
+  description  String
+  link         String?
   createdAt    DateTime   @default(now())
+  createdById  String
+  createdBy    User       @relation(fields: [createdById], references: [id])
 }
 
 model AuditLog {
