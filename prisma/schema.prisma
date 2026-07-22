@@ -1,0 +1,270 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  SYSTEM_ADMIN
+  PRINCIPAL
+  VICE_PRINCIPAL
+  TEAM_LEADER
+  TEACHER
+  INITIATIVE_OWNER
+}
+
+enum Track {
+  GENERAL
+  ADVANCED
+}
+
+enum DayOfWeek {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
+enum LessonPlanStatus {
+  DRAFT
+  PRINTED
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+model School {
+  id            String         @id @default(cuid())
+  name          String
+  nameAr        String
+  address       String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  users         User[]
+  academicYears AcademicYear[]
+  classSections ClassSection[]
+  timetables    Timetable[]
+}
+
+model AcademicYear {
+  id                 String               @id @default(cuid())
+  schoolId           String
+  school             School               @relation(fields: [schoolId], references: [id])
+  name               String
+  startDate          DateTime
+  endDate            DateTime
+  isActive           Boolean              @default(false)
+  createdAt          DateTime             @default(now())
+
+  classSections      ClassSection[]
+  timetables         Timetable[]
+  teacherAssignments TeacherAssignment[]
+
+  @@unique([schoolId, name])
+}
+
+model Grade {
+  id                 String              @id @default(cuid())
+  level              Int                 @unique
+  name               String
+  nameAr             String
+
+  classSections      ClassSection[]
+  curriculumContents CurriculumContent[]
+}
+
+model ClassSection {
+  id             String       @id @default(cuid())
+  schoolId       String
+  school         School       @relation(fields: [schoolId], references: [id])
+  academicYearId String
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+  gradeId        String
+  grade          Grade        @relation(fields: [gradeId], references: [id])
+  track          Track?
+  name           String
+  createdAt      DateTime     @default(now())
+
+  teacherAssignments TeacherAssignment[]
+  timetables         Timetable[]
+  lessonPlans        LessonPlan[]
+
+  @@unique([academicYearId, gradeId, name])
+}
+
+model Subject {
+  id     String @id @default(cuid())
+  name   String
+  nameAr String
+  code   String @unique
+
+  teacherAssignments TeacherAssignment[]
+  timetables         Timetable[]
+  curriculumContents CurriculumContent[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  nameAr       String?
+  role         Role
+  schoolId     String?
+  school       School?  @relation(fields: [schoolId], references: [id])
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  teacherAssignments TeacherAssignment[]
+  timetableSlots     Timetable[]         @relation("TimetableTeacher")
+  lessonPlans        LessonPlan[]
+  aiGenerationLogs   AIGenerationLog[]
+  auditLogs          AuditLog[]
+  printedVersions    LessonPlanVersion[]
+}
+
+model TeacherAssignment {
+  id             String       @id @default(cuid())
+  teacherId      String
+  teacher        User         @relation(fields: [teacherId], references: [id])
+  classSectionId String
+  classSection   ClassSection @relation(fields: [classSectionId], references: [id])
+  subjectId      String
+  subject        Subject      @relation(fields: [subjectId], references: [id])
+  academicYearId String
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+
+  @@unique([teacherId, classSectionId, subjectId, academicYearId])
+}
+
+model Timetable {
+  id             String       @id @default(cuid())
+  schoolId       String
+  school         School       @relation(fields: [schoolId], references: [id])
+  academicYearId String
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+  classSectionId String
+  classSection   ClassSection @relation(fields: [classSectionId], references: [id])
+  subjectId      String
+  subject        Subject      @relation(fields: [subjectId], references: [id])
+  teacherId      String
+  teacher        User         @relation("TimetableTeacher", fields: [teacherId], references: [id])
+  dayOfWeek      DayOfWeek
+  periodNumber   Int
+  startTime      String?
+  endTime        String?
+
+  lessonPlans    LessonPlan[]
+
+  @@unique([classSectionId, dayOfWeek, periodNumber, academicYearId])
+  @@unique([teacherId, dayOfWeek, periodNumber, academicYearId])
+}
+
+model CurriculumContent {
+  id          String   @id @default(cuid())
+  subjectId   String
+  subject     Subject  @relation(fields: [subjectId], references: [id])
+  gradeId     String
+  grade       Grade    @relation(fields: [gradeId], references: [id])
+  track       Track?
+  unit        String
+  unitTitle   String
+  lessonTitle String
+  orderIndex  Int      @default(0)
+
+  learningOutcomes LearningOutcome[]
+  lessonPlans      LessonPlan[]
+
+  @@index([subjectId, gradeId, track])
+}
+
+model LearningOutcome {
+  id                  String            @id @default(cuid())
+  curriculumContentId String
+  curriculumContent   CurriculumContent @relation(fields: [curriculumContentId], references: [id])
+  textAr              String
+  textEn              String
+  skill               String
+
+  lessonPlans LessonPlan[]
+}
+
+model LessonPlan {
+  id                    String            @id @default(cuid())
+  teacherId             String
+  teacher               User              @relation(fields: [teacherId], references: [id])
+  timetableId           String?
+  timetable             Timetable?        @relation(fields: [timetableId], references: [id])
+  classSectionId        String
+  classSection          ClassSection      @relation(fields: [classSectionId], references: [id])
+  curriculumContentId   String
+  curriculumContent     CurriculumContent @relation(fields: [curriculumContentId], references: [id])
+  learningOutcomeId     String
+  learningOutcome       LearningOutcome   @relation(fields: [learningOutcomeId], references: [id])
+  outcomeOverrideText   String?
+  outcomeOverrideReason String?
+  lessonDate            DateTime
+  durationMinutes       Int               @default(45)
+  teacherPrompt         String
+  strategies            String[]
+  tools                 String[]
+  contentJson           Json?
+  status                LessonPlanStatus  @default(DRAFT)
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  versions         LessonPlanVersion[]
+  aiGenerationLogs AIGenerationLog[]
+}
+
+model LessonPlanVersion {
+  id            String     @id @default(cuid())
+  lessonPlanId  String
+  lessonPlan    LessonPlan @relation(fields: [lessonPlanId], references: [id])
+  versionNumber Int
+  contentJson   Json
+  pdfPath       String?
+  printedAt     DateTime   @default(now())
+  printedById   String
+  printedBy     User       @relation(fields: [printedById], references: [id])
+
+  @@unique([lessonPlanId, versionNumber])
+}
+
+model AIGenerationLog {
+  id           String     @id @default(cuid())
+  lessonPlanId String
+  lessonPlan   LessonPlan @relation(fields: [lessonPlanId], references: [id])
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  section      String?
+  model        String
+  promptInput  Json
+  responseJson Json?
+  status       String
+  errorMessage String?
+  createdAt    DateTime   @default(now())
+}
+
+model AuditLog {
+  id         String      @id @default(cuid())
+  userId     String?
+  user       User?       @relation(fields: [userId], references: [id])
+  action     AuditAction
+  module     String
+  entityId   String
+  beforeJson Json?
+  afterJson  Json?
+  createdAt  DateTime    @default(now())
+}
