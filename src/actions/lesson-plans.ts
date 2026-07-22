@@ -82,3 +82,27 @@ export async function createLessonPlanAction(_prevState: ActionState, formData: 
 
   redirect(`/lesson-plans/${lessonPlan.id}`);
 }
+
+export async function saveLessonPlanContentAction(lessonPlanId: string, content: unknown) {
+  const session = await auth();
+  requireRole(session, TEACHER_ROLES);
+
+  const existing = await prisma.lessonPlan.findUnique({ where: { id: lessonPlanId } });
+  if (!existing || existing.teacherId !== session!.user.id) {
+    throw new ForbiddenError("This lesson plan does not belong to you.");
+  }
+
+  await prisma.lessonPlan.update({
+    where: { id: lessonPlanId },
+    data: { contentJson: content as object },
+  });
+
+  await logAudit({
+    userId: session!.user.id,
+    action: "UPDATE",
+    module: "LessonPlanning",
+    entityId: lessonPlanId,
+    before: { contentJson: existing.contentJson },
+    after: { contentJson: content },
+  });
+}
