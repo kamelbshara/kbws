@@ -2,10 +2,9 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AppHeader } from "@/components/layout/AppHeader";
-import { MainNav } from "@/components/layout/MainNav";
 import { getRoleGroup } from "@/lib/permissions";
 import { getActiveSchoolId } from "@/lib/activeSchool";
+import { AppShell } from "@/components/layout/AppShell";
 
 function formatTimestamp(date: Date) {
   return date.toISOString().replace("T", " ").slice(0, 16);
@@ -143,9 +142,7 @@ export default async function EvaluatorPage() {
     .slice(0, 60);
 
   return (
-    <div>
-      <AppHeader userName={user.name} role={user.role} />
-      <MainNav role={user.role} />
+      <AppShell userName={user.name} role={user.role}>
       <main className="flex flex-col gap-10 p-6">
         <section>
           <h1 className="text-xl font-semibold">{t("title")}</h1>
@@ -301,6 +298,6 @@ export default async function EvaluatorPage() {
           </div>
         </section>
       </main>
-    </div>
+    </AppShell>
   );
 }

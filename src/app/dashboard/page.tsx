@@ -2,13 +2,12 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AppHeader } from "@/components/layout/AppHeader";
-import { AdminNav } from "@/components/layout/AdminNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart } from "@/components/dashboard/BarChart";
 import { getRoleGroup } from "@/lib/permissions";
 import { getActiveSchoolId } from "@/lib/activeSchool";
 import { CATEGORICAL, STATUS } from "@/lib/chartColors";
+import { AppShell } from "@/components/layout/AppShell";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -82,9 +81,7 @@ export default async function DashboardPage() {
   const teacherNameById = new Map(teachers.map((u) => [u.id, u.name]));
 
   return (
-    <div>
-      <AppHeader userName={user.name} role={user.role} />
-      <AdminNav role={user.role} />
+      <AppShell userName={user.name} role={user.role} isManagement>
       <main className="p-6">
         <h1 className="text-xl font-semibold">{t("title")}</h1>
 
@@ -223,6 +220,6 @@ export default async function DashboardPage() {
           </Card>
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }

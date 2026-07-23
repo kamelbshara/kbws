@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AppHeader } from "@/components/layout/AppHeader";
+import { AppShell } from "@/components/layout/AppShell";
 import { LessonPlanEditor } from "@/components/lesson-plan/LessonPlanEditor";
 import { LessonPlanContentSchema } from "@/lib/ai/lessonPlanSchema";
 import { Button } from "@/components/ui/button";
@@ -32,8 +32,7 @@ export default async function LessonPlanPage({ params }: { params: Promise<{ id:
   const initialContent = contentParse?.success ? contentParse.data : null;
 
   return (
-    <div>
-      <AppHeader userName={user.name} role={user.role} />
+      <AppShell userName={user.name} role={user.role}>
       <main className="mx-auto max-w-3xl p-6">
         <h1 className="text-xl font-semibold">{lessonPlan.curriculumContent.lessonTitle}</h1>
         <p className="mt-1 text-sm text-slate-500">
@@ -87,6 +86,6 @@ export default async function LessonPlanPage({ params }: { params: Promise<{ id:
           )}
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }

@@ -1,10 +1,9 @@
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AppHeader } from "@/components/layout/AppHeader";
-import { MainNav } from "@/components/layout/MainNav";
 import { AssessmentEditor } from "@/components/assessment/AssessmentEditor";
 import type { AssessmentGeneration } from "@/lib/ai/questionSchema";
+import { AppShell } from "@/components/layout/AppShell";
 
 export default async function AssessmentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -39,9 +38,7 @@ export default async function AssessmentDetailPage({ params }: { params: Promise
       : null;
 
   return (
-    <div>
-      <AppHeader userName={user.name} role={user.role} />
-      <MainNav role={user.role} />
+      <AppShell userName={user.name} role={user.role}>
       <main className="mx-auto max-w-3xl p-6">
         <h1 className="text-xl font-semibold">{assessment.title}</h1>
         {assessment.lessonPlan && (
@@ -55,6 +52,6 @@ export default async function AssessmentDetailPage({ params }: { params: Promise
           <AssessmentEditor assessmentId={assessment.id} initialContent={initialContent} />
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }

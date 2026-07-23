@@ -2,13 +2,12 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AppHeader } from "@/components/layout/AppHeader";
-import { MainNav } from "@/components/layout/MainNav";
 import { InitiativeEditor } from "@/components/initiative/InitiativeEditor";
 import { EvidenceSection } from "@/components/initiative/EvidenceSection";
 import { getRoleGroup } from "@/lib/permissions";
 import { getActiveSchoolId } from "@/lib/activeSchool";
 import type { InitiativeSave } from "@/lib/ai/initiativeSchema";
+import { AppShell } from "@/components/layout/AppShell";
 
 export default async function InitiativeDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -49,9 +48,7 @@ export default async function InitiativeDetailPage({ params }: { params: Promise
     : null;
 
   return (
-    <div>
-      <AppHeader userName={user.name} role={user.role} />
-      <MainNav role={user.role} />
+      <AppShell userName={user.name} role={user.role}>
       <main className="mx-auto max-w-3xl p-6">
         <h1 className="text-xl font-semibold">{initiative.title}</h1>
         <p className="mt-1 text-sm text-slate-500">
@@ -85,6 +82,6 @@ export default async function InitiativeDetailPage({ params }: { params: Promise
           />
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }

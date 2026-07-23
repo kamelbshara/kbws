@@ -4,7 +4,7 @@ import { diffWords } from "diff";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AppHeader } from "@/components/layout/AppHeader";
+import { AppShell } from "@/components/layout/AppShell";
 import { LessonPlanContentSchema } from "@/lib/ai/lessonPlanSchema";
 import { flattenLessonPlanContent, LESSON_PLAN_FIELD_KEYS } from "@/lib/lessonPlanDiff";
 import type { LessonPlanContent } from "@/lib/ai/lessonPlanSchema";
@@ -62,8 +62,7 @@ export default async function LessonPlanVersionComparePage({
   const fieldsB = flattenLessonPlanContent(sideB.content);
 
   return (
-    <div>
-      <AppHeader userName={user.name} role={user.role} />
+      <AppShell userName={user.name} role={user.role}>
       <main className="mx-auto max-w-4xl p-6">
         <Link href={`/lesson-plans/${lessonPlan.id}/versions`} className="text-sm text-slate-500 hover:underline">
           {t("backToVersionHistory")}
@@ -112,6 +111,6 @@ export default async function LessonPlanVersionComparePage({
           })}
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }

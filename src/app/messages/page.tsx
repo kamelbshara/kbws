@@ -2,14 +2,12 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AppHeader } from "@/components/layout/AppHeader";
-import { MainNav } from "@/components/layout/MainNav";
-import { AdminNav } from "@/components/layout/AdminNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getRoleGroup } from "@/lib/permissions";
 import { getActiveSchoolId } from "@/lib/activeSchool";
 import { ComposeMessageForm } from "@/components/messages/ComposeMessageForm";
 import { MessageList } from "@/components/messages/MessageList";
+import { AppShell } from "@/components/layout/AppShell";
 
 export default async function MessagesPage({
   searchParams,
@@ -42,9 +40,7 @@ export default async function MessagesPage({
   ]);
 
   return (
-    <div>
-      <AppHeader userName={user.name} role={user.role} />
-      {isManagement ? <AdminNav role={user.role} /> : <MainNav role={user.role} />}
+      <AppShell userName={user.name} role={user.role} isManagement={isManagement}>
       <main className="mx-auto grid max-w-4xl grid-cols-1 gap-6 p-6 lg:grid-cols-[2fr_1fr]">
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
@@ -82,6 +78,6 @@ export default async function MessagesPage({
           </CardContent>
         </Card>
       </main>
-    </div>
+    </AppShell>
   );
 }

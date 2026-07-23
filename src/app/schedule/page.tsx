@@ -1,9 +1,8 @@
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AppHeader } from "@/components/layout/AppHeader";
-import { MainNav } from "@/components/layout/MainNav";
 import { WeeklyScheduleGrid } from "@/components/schedule/WeeklyScheduleGrid";
+import { AppShell } from "@/components/layout/AppShell";
 
 export default async function SchedulePage() {
   const session = await auth();
@@ -24,9 +23,7 @@ export default async function SchedulePage() {
     : [];
 
   return (
-    <div>
-      <AppHeader userName={user.name} role={user.role} />
-      <MainNav role={user.role} />
+      <AppShell userName={user.name} role={user.role}>
       <main className="p-6">
         <h1 className="text-xl font-semibold">{t("title")}</h1>
         <div className="mt-4">
@@ -37,6 +34,6 @@ export default async function SchedulePage() {
           )}
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }

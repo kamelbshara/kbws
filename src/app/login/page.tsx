@@ -17,27 +17,29 @@ export default async function LoginPage() {
         priority
         className="pointer-events-none object-cover opacity-90"
       />
-      <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-6 p-4">
-        <Image
-          src="/logo.png"
-          alt=""
-          width={120}
-          height={120}
-          priority
-          className="h-[120px] w-[120px] drop-shadow-md"
-        />
-        <Card className="w-full max-w-sm border-brand-gold/40 bg-white/95 backdrop-blur-sm shadow-lg">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-brand-navy">{t("title")}</CardTitle>
-              <LocaleSwitcher />
-            </div>
-            <CardDescription>{t("subtitle")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <LoginForm />
-          </CardContent>
-        </Card>
+      <div className="relative z-10 flex flex-1 items-center justify-center p-4 md:justify-start md:ps-16 lg:ps-28">
+        <div className="flex flex-col items-center gap-6">
+          <Image
+            src="/logo.png"
+            alt=""
+            width={120}
+            height={120}
+            priority
+            className="h-[120px] w-[120px] drop-shadow-md"
+          />
+          <Card className="w-full max-w-sm border-brand-gold/40 bg-white/95 backdrop-blur-sm shadow-lg">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-brand-navy">{t("title")}</CardTitle>
+                <LocaleSwitcher />
+              </div>
+              <CardDescription>{t("subtitle")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <LoginForm />
+            </CardContent>
+          </Card>
+        </div>
       </div>
       <div className="relative z-10">
         <PublicFooter />

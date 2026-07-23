@@ -12,7 +12,8 @@
     "create": "Create",
     "print": "Print",
     "loading": "Loading...",
-    "language": "Language"
+    "language": "Language",
+    "collapseExpand": "Collapse / expand sidebar"
   },
   "login": {
     "title": "Khaled Bin Al Waleed Smart Platform",
@@ -743,11 +744,13 @@
   "contactPage": {
     "title": "Contact Us",
     "addressTitle": "Address",
-    "address": "Khaled Bin Al Waleed School, Al Ain, Abu Dhabi Emirate, United Arab Emirates",
+    "address": "Khaled Bin Al Waleed School, Al Sarooj - Al Shbhat, Al Ain, Abu Dhabi Emirate, United Arab Emirates",
+    "mapLink": "View on map",
     "emailTitle": "Email",
     "phoneTitle": "Phone",
+    "phone": "037688870",
     "notConfigured": "Please contact the school administration directly.",
     "hoursTitle": "Working Hours",
-    "hours": "Sunday – Thursday, 7:30 AM – 2:30 PM"
+    "hours": "Monday – Thursday, 7:30 AM – 3:30 PM"
   }
 }

@@ -2,11 +2,10 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AppHeader } from "@/components/layout/AppHeader";
-import { MainNav } from "@/components/layout/MainNav";
 import { getRoleGroup } from "@/lib/permissions";
 import { getActiveSchoolId } from "@/lib/activeSchool";
 import type { QuestionDifficulty, QuestionType } from "@/generated/prisma/enums";
+import { AppShell } from "@/components/layout/AppShell";
 
 const DIFFICULTIES: QuestionDifficulty[] = ["EASY", "MEDIUM", "ADVANCED", "CHALLENGE"];
 const TYPES: QuestionType[] = ["MULTIPLE_CHOICE", "OPEN"];
@@ -50,9 +49,7 @@ export default async function QuestionBankPage({
   ]);
 
   return (
-    <div>
-      <AppHeader userName={user.name} role={user.role} />
-      <MainNav role={user.role} />
+      <AppShell userName={user.name} role={user.role}>
       <main className="mx-auto max-w-5xl p-6">
         <h1 className="text-xl font-semibold">{t("title")}</h1>
         <p className="mt-1 text-sm text-slate-500">{t("subtitle")}</p>
@@ -180,6 +177,6 @@ export default async function QuestionBankPage({
           {items.length === 0 && <p className="py-6 text-center text-sm text-slate-400">{t("empty")}</p>}
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }

@@ -2,14 +2,12 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AppHeader } from "@/components/layout/AppHeader";
-import { MainNav } from "@/components/layout/MainNav";
-import { AdminNav } from "@/components/layout/AdminNav";
 import { getRoleGroup } from "@/lib/permissions";
 import { getActiveSchoolId } from "@/lib/activeSchool";
 import { KNOWLEDGE_MODULES } from "@/lib/knowledgeMemory";
 import { CreateKnowledgeMemoryForm } from "@/components/knowledge/CreateKnowledgeMemoryForm";
 import { KnowledgeMemoryList } from "@/components/knowledge/KnowledgeMemoryList";
+import { AppShell } from "@/components/layout/AppShell";
 
 export default async function KnowledgeMemoryPage() {
   const session = await auth();
@@ -37,9 +35,7 @@ export default async function KnowledgeMemoryPage() {
   ]);
 
   return (
-    <div>
-      <AppHeader userName={user.name} role={user.role} />
-      {isManagement ? <AdminNav role={user.role} /> : <MainNav role={user.role} />}
+      <AppShell userName={user.name} role={user.role} isManagement={isManagement}>
       <main className="mx-auto grid max-w-5xl grid-cols-1 gap-6 p-6 lg:grid-cols-[2fr_1fr]">
         <div className="flex flex-col gap-3">
           <h1 className="text-xl font-semibold">{t("title")}</h1>
@@ -69,6 +65,6 @@ export default async function KnowledgeMemoryPage() {
           />
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }

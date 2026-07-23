@@ -2,11 +2,10 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AppHeader } from "@/components/layout/AppHeader";
-import { MainNav } from "@/components/layout/MainNav";
 import { Button } from "@/components/ui/button";
 import { getRoleGroup } from "@/lib/permissions";
 import { getActiveSchoolId } from "@/lib/activeSchool";
+import { AppShell } from "@/components/layout/AppShell";
 
 export default async function InitiativesListPage() {
   const session = await auth();
@@ -25,9 +24,7 @@ export default async function InitiativesListPage() {
         });
 
   return (
-    <div>
-      <AppHeader userName={user.name} role={user.role} />
-      <MainNav role={user.role} />
+      <AppShell userName={user.name} role={user.role}>
       <main className="p-6">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold">{isManagement ? t("allInitiatives") : t("myInitiatives")}</h1>
@@ -70,6 +67,6 @@ export default async function InitiativesListPage() {
           </table>
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }

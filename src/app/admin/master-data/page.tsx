@@ -2,12 +2,11 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AppHeader } from "@/components/layout/AppHeader";
-import { AdminNav } from "@/components/layout/AdminNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ADMIN_ROLES } from "@/lib/permissions";
 import { CreateSubjectForm } from "@/components/admin/CreateSubjectForm";
 import { CreateGradeForm } from "@/components/admin/CreateGradeForm";
+import { AppShell } from "@/components/layout/AppShell";
 
 export default async function MasterDataPage() {
   const session = await auth();
@@ -26,9 +25,7 @@ export default async function MasterDataPage() {
   ]);
 
   return (
-    <div>
-      <AppHeader userName={user.name} role={user.role} />
-      <AdminNav role={user.role} />
+      <AppShell userName={user.name} role={user.role} isManagement>
       <main className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-2">
         <div className="flex flex-col gap-4">
           <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
@@ -96,6 +93,6 @@ export default async function MasterDataPage() {
           </Card>
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }

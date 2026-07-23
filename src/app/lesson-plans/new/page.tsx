@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AppHeader } from "@/components/layout/AppHeader";
+import { AppShell } from "@/components/layout/AppShell";
 import { LessonPlanForm } from "@/components/lesson-plan/LessonPlanForm";
 
 export default async function NewLessonPlanPage({
@@ -42,8 +42,7 @@ export default async function NewLessonPlanPage({
   });
 
   return (
-    <div>
-      <AppHeader userName={user.name} role={user.role} />
+      <AppShell userName={user.name} role={user.role}>
       <main className="mx-auto max-w-2xl p-6">
         <h1 className="text-xl font-semibold">{t("newTitle")}</h1>
         <p className="mt-1 text-sm text-slate-500">
@@ -66,6 +65,6 @@ export default async function NewLessonPlanPage({
           )}
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }

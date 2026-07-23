@@ -2,13 +2,12 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AppHeader } from "@/components/layout/AppHeader";
-import { MainNav } from "@/components/layout/MainNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OperationalPlanEditor } from "@/components/team/OperationalPlanEditor";
 import { getRoleGroup } from "@/lib/permissions";
 import { getActiveSchoolId } from "@/lib/activeSchool";
 import type { OperationalPlanGeneration } from "@/lib/ai/operationalPlanSchema";
+import { AppShell } from "@/components/layout/AppShell";
 
 export default async function SchoolOperationalPlanPage() {
   const session = await auth();
@@ -58,9 +57,7 @@ export default async function SchoolOperationalPlanPage() {
       : null;
 
   return (
-    <div>
-      <AppHeader userName={user.name} role={user.role} />
-      <MainNav role={user.role} />
+      <AppShell userName={user.name} role={user.role}>
       <main className="mx-auto max-w-4xl p-6">
         <h1 className="text-xl font-semibold">{plan.title}</h1>
         <p className="mt-1 text-sm text-slate-500">{t("schoolPlanSubtitle")}</p>
@@ -75,6 +72,6 @@ export default async function SchoolOperationalPlanPage() {
           </Card>
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }

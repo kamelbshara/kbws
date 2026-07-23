@@ -2,8 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AppHeader } from "@/components/layout/AppHeader";
-import { MainNav } from "@/components/layout/MainNav";
+import { AppShell } from "@/components/layout/AppShell";
 
 export default async function AssessmentsListPage() {
   const session = await auth();
@@ -20,9 +19,7 @@ export default async function AssessmentsListPage() {
   });
 
   return (
-    <div>
-      <AppHeader userName={user.name} role={user.role} />
-      <MainNav role={user.role} />
+      <AppShell userName={user.name} role={user.role}>
       <main className="p-6">
         <h1 className="text-xl font-semibold">{t("myAssessments")}</h1>
 
@@ -62,6 +59,6 @@ export default async function AssessmentsListPage() {
           </table>
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }

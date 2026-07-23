@@ -1,10 +1,9 @@
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AppHeader } from "@/components/layout/AppHeader";
-import { AdminNav } from "@/components/layout/AdminNav";
 import { getActiveSchoolId } from "@/lib/activeSchool";
 import type { AuditAction } from "@/generated/prisma/enums";
+import { AppShell } from "@/components/layout/AppShell";
 
 const PAGE_SIZE = 25;
 const AUDIT_ACTIONS: AuditAction[] = ["CREATE", "UPDATE", "DELETE"];
@@ -72,9 +71,7 @@ export default async function AuditLogPage({
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div>
-      <AppHeader userName={user.name} role={user.role} />
-      <AdminNav role={user.role} />
+      <AppShell userName={user.name} role={user.role} isManagement>
       <main className="flex flex-col gap-8 p-6">
         <section>
           <h1 className="text-xl font-semibold">{t("title")}</h1>
@@ -277,6 +274,6 @@ export default async function AuditLogPage({
           </div>
         </section>
       </main>
-    </div>
+    </AppShell>
   );
 }

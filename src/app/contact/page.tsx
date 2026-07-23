@@ -2,10 +2,12 @@ import { getTranslations } from "next-intl/server";
 import { PublicHeader } from "@/components/layout/PublicHeader";
 import { PublicFooter } from "@/components/layout/PublicFooter";
 
+const MAP_URL = "https://share.google/vmKS0IlzDklTeqXVw";
+
 export default async function ContactPage() {
   const t = await getTranslations("contactPage");
   const email = process.env.CONTACT_EMAIL;
-  const phone = process.env.CONTACT_PHONE;
+  const phone = t("phone");
 
   return (
     <div className="flex min-h-screen flex-col bg-brand-cream">
@@ -16,6 +18,14 @@ export default async function ContactPage() {
           <div>
             <h2 className="text-sm font-semibold text-brand-navy">{t("addressTitle")}</h2>
             <p className="mt-1 text-slate-700">{t("address")}</p>
+            <a
+              href={MAP_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-1 inline-block text-sm text-slate-600 underline"
+            >
+              {t("mapLink")}
+            </a>
           </div>
           <div>
             <h2 className="text-sm font-semibold text-brand-navy">{t("emailTitle")}</h2>
@@ -29,13 +39,9 @@ export default async function ContactPage() {
           </div>
           <div>
             <h2 className="text-sm font-semibold text-brand-navy">{t("phoneTitle")}</h2>
-            {phone ? (
-              <a href={`tel:${phone}`} className="mt-1 block text-slate-700 underline" dir="ltr">
-                {phone}
-              </a>
-            ) : (
-              <p className="mt-1 text-slate-500">{t("notConfigured")}</p>
-            )}
+            <a href={`tel:+971${phone.slice(1)}`} className="mt-1 block text-slate-700 underline" dir="ltr">
+              {phone}
+            </a>
           </div>
           <div>
             <h2 className="text-sm font-semibold text-brand-navy">{t("hoursTitle")}</h2>

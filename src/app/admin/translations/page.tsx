@@ -1,12 +1,11 @@
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AppHeader } from "@/components/layout/AppHeader";
-import { AdminNav } from "@/components/layout/AdminNav";
 import { TranslationRow } from "@/components/admin/TranslationRow";
 import { flattenMessages, type MessageTree } from "@/lib/messageTree";
 import enMessages from "../../../../messages/en.json";
 import arMessages from "../../../../messages/ar.json";
+import { AppShell } from "@/components/layout/AppShell";
 
 export default async function AdminTranslationsPage() {
   const session = await auth();
@@ -21,9 +20,7 @@ export default async function AdminTranslationsPage() {
   const paths = Object.keys(enFlat).sort();
 
   return (
-    <div>
-      <AppHeader userName={user.name} role={user.role} />
-      <AdminNav role={user.role} />
+      <AppShell userName={user.name} role={user.role} isManagement>
       <main className="p-6">
         <h1 className="text-xl font-semibold">{t("title")}</h1>
         <p className="mt-1 text-sm text-slate-500">{t("subtitle")}</p>
@@ -58,6 +55,6 @@ export default async function AdminTranslationsPage() {
           </table>
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }

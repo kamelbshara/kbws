@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AppHeader } from "@/components/layout/AppHeader";
+import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 
 export default async function LessonPlanVersionsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -25,8 +25,7 @@ export default async function LessonPlanVersionsPage({ params }: { params: Promi
   }
 
   return (
-    <div>
-      <AppHeader userName={user.name} role={user.role} />
+      <AppShell userName={user.name} role={user.role}>
       <main className="mx-auto max-w-2xl p-6">
         <Link href={`/lesson-plans/${lessonPlan.id}`} className="text-sm text-slate-500 hover:underline">
           {t("backToLessonPlan")}
@@ -85,6 +84,6 @@ export default async function LessonPlanVersionsPage({ params }: { params: Promi
           </div>
         )}
       </main>
-    </div>
+    </AppShell>
   );
 }

@@ -1,10 +1,9 @@
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AppHeader } from "@/components/layout/AppHeader";
-import { AdminNav } from "@/components/layout/AdminNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getActiveSchoolId } from "@/lib/activeSchool";
+import { AppShell } from "@/components/layout/AppShell";
 
 export default async function AdminHomePage() {
   const session = await auth();
@@ -21,9 +20,7 @@ export default async function AdminHomePage() {
   ]);
 
   return (
-    <div>
-      <AppHeader userName={user.name} role={user.role} />
-      <AdminNav role={user.role} />
+      <AppShell userName={user.name} role={user.role} isManagement>
       <main className="p-6">
         <h1 className="text-xl font-semibold">
           {school?.name} <span className="text-slate-400">·</span> {academicYear?.name}
@@ -49,6 +46,6 @@ export default async function AdminHomePage() {
           </Card>
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }

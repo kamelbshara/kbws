@@ -1,11 +1,10 @@
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AppHeader } from "@/components/layout/AppHeader";
-import { AdminNav } from "@/components/layout/AdminNav";
 import { CreateAcademicYearForm } from "@/components/admin/CreateAcademicYearForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getActiveSchoolId } from "@/lib/activeSchool";
+import { AppShell } from "@/components/layout/AppShell";
 
 export default async function AdminAcademicYearsPage() {
   const session = await auth();
@@ -18,9 +17,7 @@ export default async function AdminAcademicYearsPage() {
     : [];
 
   return (
-    <div>
-      <AppHeader userName={user.name} role={user.role} />
-      <AdminNav role={user.role} />
+      <AppShell userName={user.name} role={user.role} isManagement>
       <main className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-[2fr_1fr]">
         <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
           <table className="w-full text-sm">
@@ -68,6 +65,6 @@ export default async function AdminAcademicYearsPage() {
           </CardContent>
         </Card>
       </main>
-    </div>
+    </AppShell>
   );
 }

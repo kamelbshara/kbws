@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AppHeader } from "@/components/layout/AppHeader";
+import { AppShell } from "@/components/layout/AppShell";
 import { LessonPlanContentSchema } from "@/lib/ai/lessonPlanSchema";
 import { flattenLessonPlanContent } from "@/lib/lessonPlanDiff";
 
@@ -38,8 +38,7 @@ export default async function LessonPlanVersionPage({
   const fields = contentParse.success ? flattenLessonPlanContent(contentParse.data) : [];
 
   return (
-    <div>
-      <AppHeader userName={user.name} role={user.role} />
+      <AppShell userName={user.name} role={user.role}>
       <main className="mx-auto max-w-3xl p-6">
         <Link href={`/lesson-plans/${lessonPlan.id}/versions`} className="text-sm text-slate-500 hover:underline">
           {t("backToVersionHistory")}
@@ -64,6 +63,6 @@ export default async function LessonPlanVersionPage({
           {fields.length === 0 && <p className="text-sm text-red-600">{t("contentUnreadable")}</p>}
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }
