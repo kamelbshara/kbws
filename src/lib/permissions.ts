@@ -46,6 +46,7 @@ export const PERMISSION_GROUP_NAMES = [
   "TEACHER_ROLES",
   "INITIATIVE_CREATOR_ROLES",
   "TEAM_CREATOR_ROLES",
+  "EVALUATOR_ROLES",
 ] as const;
 export type PermissionGroupName = (typeof PERMISSION_GROUP_NAMES)[number];
 
@@ -56,6 +57,10 @@ export const DEFAULT_PERMISSION_GROUPS: Record<PermissionGroupName, Role[]> = {
   TEACHER_ROLES: ["TEACHER"],
   INITIATIVE_CREATOR_ROLES: ["TEACHER", "INITIATIVE_OWNER", "TEAM_LEADER"],
   TEAM_CREATOR_ROLES: ["TEACHER", "TEAM_LEADER", "PRINCIPAL", "VICE_PRINCIPAL"],
+  // Read-only oversight role: sees AI usage, evidence, reports, and the school
+  // timeline, but the group is deliberately separate from MANAGEMENT_ROLES
+  // since evaluators must never get the create/edit rights that group implies.
+  EVALUATOR_ROLES: ["SYSTEM_ADMIN", "PRINCIPAL", "EVALUATOR"],
 };
 
 const CACHE_TTL_MS = 30_000;
@@ -106,4 +111,5 @@ export const ROUTE_ROLE_GROUP_MAP: Array<{ prefix: string; group: PermissionGrou
   { prefix: "/schedule", group: "TEACHER_ROLES" },
   { prefix: "/lesson-plans", group: "TEACHER_ROLES" },
   { prefix: "/assessments", group: "TEACHER_ROLES" },
+  { prefix: "/evaluator", group: "EVALUATOR_ROLES" },
 ];

@@ -5,6 +5,19 @@ import type { Role } from "@/generated/prisma/enums";
 export async function MainNav({ role }: { role: Role }) {
   const t = await getTranslations("nav");
 
+  if (role === "EVALUATOR") {
+    return (
+      <nav className="flex gap-4 border-b border-slate-200 bg-white px-6 py-2 text-sm">
+        <Link href="/evaluator" className="text-slate-600 hover:text-slate-900">
+          {t("evaluatorDashboard")}
+        </Link>
+        <Link href="/messages" className="text-slate-600 hover:text-slate-900">
+          {t("messages")}
+        </Link>
+      </nav>
+    );
+  }
+
   const links = [
     role === "TEACHER" && { href: "/schedule", label: t("schedule") },
     role === "TEACHER" && { href: "/assessments", label: t("assessments") },

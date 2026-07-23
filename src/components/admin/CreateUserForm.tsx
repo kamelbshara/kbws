@@ -8,7 +8,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const ROLE_VALUES = ["SYSTEM_ADMIN", "PRINCIPAL", "VICE_PRINCIPAL", "TEAM_LEADER", "TEACHER", "INITIATIVE_OWNER"] as const;
+const ROLE_VALUES = [
+  "SYSTEM_ADMIN",
+  "PRINCIPAL",
+  "VICE_PRINCIPAL",
+  "TEAM_LEADER",
+  "TEACHER",
+  "INITIATIVE_OWNER",
+  "EVALUATOR",
+] as const;
 
 export function CreateUserForm() {
   const t = useTranslations("usersPage");

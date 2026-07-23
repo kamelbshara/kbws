@@ -20,6 +20,9 @@ export default async function HomePage() {
   if (role === "INITIATIVE_OWNER") {
     redirect("/initiatives");
   }
+  if (role === "EVALUATOR") {
+    redirect("/evaluator");
+  }
 
   const managementRoles = await getRoleGroup("MANAGEMENT_ROLES");
   if (managementRoles.includes(role)) {

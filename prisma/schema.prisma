@@ -14,6 +14,7 @@ enum Role {
   TEAM_LEADER
   TEACHER
   INITIATIVE_OWNER
+  EVALUATOR
 }
 
 enum Track {

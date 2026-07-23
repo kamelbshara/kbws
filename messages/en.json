@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "AI School Intelligence Platform",
+    "appName": "Khaled Bin Al Waleed Smart Platform",
     "signIn": "Sign in",
     "signOut": "Sign out",
     "email": "Email",
@@ -15,9 +15,10 @@
     "language": "Language"
   },
   "login": {
-    "title": "AI School Intelligence Platform",
+    "title": "Khaled Bin Al Waleed Smart Platform",
     "subtitle": "Sign in to your account",
-    "invalidCredentials": "Invalid email or password."
+    "invalidCredentials": "Invalid email or password.",
+    "forgotPasswordLink": "Forgot password?"
   },
   "nav": {
     "home": "Home",
@@ -34,7 +35,8 @@
     "questionBank": "Question Bank",
     "knowledgeMemory": "Knowledge Memory",
     "messages": "Messages",
-    "impactReport": "Impact Report"
+    "impactReport": "Impact Report",
+    "evaluatorDashboard": "Evaluator Dashboard"
   },
   "schedule": {
     "title": "My Weekly Schedule",
@@ -360,6 +362,32 @@
     "target": "Target",
     "empty": "No initiatives with performance indicators yet."
   },
+  "evaluatorPage": {
+    "title": "Evaluator Dashboard",
+    "subtitle": "Read-only oversight of AI usage, evidence, reports, and the school's activity timeline.",
+    "timelineTitle": "Annual Timeline",
+    "timelineSubtitle": "A chronological view of notable activity across the school.",
+    "evidenceTitle": "Evidence",
+    "evidenceSubtitle": "Evidence attached to initiatives across the school.",
+    "evidenceEmpty": "No evidence has been added yet.",
+    "attachedFile": "Attached file",
+    "reportsTitle": "Reports",
+    "timeline": {
+      "empty": "No activity recorded yet.",
+      "types": {
+        "lessonPlanPrinted": "Lesson plan printed",
+        "initiativeCreated": "Initiative created",
+        "initiativeCompleted": "Initiative completed (final output)",
+        "meetingHeld": "Team meeting held",
+        "assessmentCreated": "Assessment created",
+        "insightGenerated": "Insight generated"
+      },
+      "scopes": {
+        "TEACHER": "Teacher-level insight",
+        "SCHOOL": "School-level insight"
+      }
+    }
+  },
   "messages": {
     "title": "Messages",
     "inbox": "Inbox",
@@ -527,7 +555,8 @@
       "VICE_PRINCIPAL": "Vice Principal",
       "TEAM_LEADER": "Team Leader",
       "TEACHER": "Teacher",
-      "INITIATIVE_OWNER": "Initiative Owner"
+      "INITIATIVE_OWNER": "Initiative Owner",
+      "EVALUATOR": "Evaluator"
     }
   },
   "classesPage": {
@@ -661,5 +690,64 @@
     "title": "Notifications",
     "markAllRead": "Mark all read",
     "empty": "No notifications yet."
+  },
+  "publicSite": {
+    "schoolNameEn": "Khaled Bin Al Waleed School",
+    "schoolNameAr": "مدرسة خالد بن الوليد",
+    "tagline": "Smart Learning for the Future",
+    "footer": {
+      "vision": "Our Vision",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Use",
+      "contact": "Contact Us",
+      "governmentNote": "A government school operating within the vision of the UAE Ministry of Education.",
+      "rightsReserved": "All rights reserved."
+    }
+  },
+  "visionPage": {
+    "title": "Our Vision",
+    "visionTitle": "Vision",
+    "visionText": "To be a leading platform in smart education, empowering the staff of Khaled Bin Al Waleed School to harness artificial intelligence in advancing teaching and learning — in step with the United Arab Emirates' vision for innovative, sustainable education that prepares every student for a confident digital future.",
+    "missionTitle": "Mission",
+    "missionText": "To provide reliable, intelligent tools that support lesson planning, measure real impact, and track institutional performance with accuracy and transparency — while embedding a culture of continuous improvement across every member of our school community.",
+    "valuesTitle": "Our Values",
+    "values": {
+      "innovation": { "title": "Innovation", "text": "Adopting emerging technology thoughtfully, always in service of better learning outcomes." },
+      "quality": { "title": "Quality", "text": "Holding every plan, assessment, and report to a high, consistent standard." },
+      "transparency": { "title": "Transparency", "text": "Making decisions and performance data visible to those who need them." },
+      "excellence": { "title": "Excellence", "text": "Pursuing continuous improvement in both teaching practice and institutional operations." }
+    }
+  },
+  "privacyPage": {
+    "title": "Privacy Policy",
+    "updated": "Last updated: 2026",
+    "intro": { "title": "Introduction", "body": "This policy explains how Khaled Bin Al Waleed School's smart platform collects, uses, and protects the information of its staff and administrators in the course of delivering the platform's educational and administrative tools." },
+    "dataCollected": { "title": "Information We Collect", "body": "Account information (name, email, role), records created while using the platform (lesson plans, assessments, initiatives, reports), files uploaded as evidence, and technical usage logs including AI-generation requests." },
+    "dataUse": { "title": "How We Use It", "body": "To operate the platform's features, generate AI-assisted educational content, produce institutional reports, and maintain an audit trail of actions for accountability." },
+    "dataSharing": { "title": "Data Sharing", "body": "Data is not sold or shared with third parties, except where necessary to operate the platform itself — such as secure cloud hosting and the AI provider used to generate content. No data is shared for advertising or unrelated commercial purposes." },
+    "dataSecurity": { "title": "Data Security", "body": "Access is restricted by role-based permissions, passwords are stored using industry-standard hashing, and all administrative actions are recorded in an audit log." },
+    "userRights": { "title": "Your Rights", "body": "Staff may request access to, correction of, or removal of their personal data by contacting the school administration through the Contact page." },
+    "contactNote": "For any privacy-related inquiry, please reach out via the Contact page."
+  },
+  "termsPage": {
+    "title": "Terms of Use",
+    "updated": "Last updated: 2026",
+    "acceptance": { "title": "Acceptance of Terms", "body": "By accessing this platform you agree to abide by these terms of use." },
+    "authorizedUse": { "title": "Authorized Use", "body": "This platform is provided exclusively for the staff and administration of Khaled Bin Al Waleed School, for legitimate educational and administrative purposes." },
+    "accountResponsibility": { "title": "Account Responsibility", "body": "Each user is responsible for keeping their login credentials confidential and for all activity carried out under their account." },
+    "prohibitedUse": { "title": "Prohibited Use", "body": "Unauthorized access, misuse of AI-generation features, or sharing of student or staff data outside authorized channels is strictly prohibited." },
+    "intellectualProperty": { "title": "Intellectual Property", "body": "Content created or generated through the platform in the course of official duties belongs to Khaled Bin Al Waleed School." },
+    "changes": { "title": "Changes to These Terms", "body": "These terms may be updated from time to time; continued use of the platform constitutes acceptance of the updated terms." },
+    "governingLaw": { "title": "Governing Law", "body": "These terms are governed by the applicable laws of the United Arab Emirates." }
+  },
+  "contactPage": {
+    "title": "Contact Us",
+    "addressTitle": "Address",
+    "address": "Khaled Bin Al Waleed School, Al Ain, Abu Dhabi Emirate, United Arab Emirates",
+    "emailTitle": "Email",
+    "phoneTitle": "Phone",
+    "notConfigured": "Please contact the school administration directly.",
+    "hoursTitle": "Working Hours",
+    "hours": "Sunday – Thursday, 7:30 AM – 2:30 PM"
   }
 }

@@ -281,6 +281,7 @@ async function main() {
     { name: "TEACHER_ROLES", roles: ["TEACHER"] },
     { name: "INITIATIVE_CREATOR_ROLES", roles: ["TEACHER", "INITIATIVE_OWNER", "TEAM_LEADER"] },
     { name: "TEAM_CREATOR_ROLES", roles: ["TEACHER", "TEAM_LEADER", "PRINCIPAL", "VICE_PRINCIPAL"] },
+    { name: "EVALUATOR_ROLES", roles: ["SYSTEM_ADMIN", "PRINCIPAL", "EVALUATOR"] },
   ];
   for (const group of defaultPermissionGroups) {
     await prisma.permissionGroup.upsert({

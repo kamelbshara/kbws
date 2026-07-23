@@ -1,25 +1,47 @@
+import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import { PublicFooter } from "@/components/layout/PublicFooter";
 
 export default async function LoginPage() {
   const t = await getTranslations("login");
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>{t("title")}</CardTitle>
-            <LocaleSwitcher />
-          </div>
-          <CardDescription>{t("subtitle")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <LoginForm />
-        </CardContent>
-      </Card>
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-brand-cream">
+      <Image
+        src="/cover.png"
+        alt=""
+        fill
+        priority
+        className="pointer-events-none object-cover opacity-90"
+      />
+      <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-6 p-4">
+        <Image
+          src="/logo.png"
+          alt=""
+          width={120}
+          height={120}
+          priority
+          className="h-[120px] w-[120px] drop-shadow-md"
+        />
+        <Card className="w-full max-w-sm border-brand-gold/40 bg-white/95 backdrop-blur-sm shadow-lg">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-brand-navy">{t("title")}</CardTitle>
+              <LocaleSwitcher />
+            </div>
+            <CardDescription>{t("subtitle")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <LoginForm />
+          </CardContent>
+        </Card>
+      </div>
+      <div className="relative z-10">
+        <PublicFooter />
+      </div>
     </div>
   );
 }

@@ -22,13 +22,13 @@ export function LoginForm() {
         <div className="flex items-center justify-between">
           <Label htmlFor="password">{t("common.password")}</Label>
           <Link href="/forgot-password" className="text-xs text-slate-500 hover:underline">
-            Forgot password?
+            {t("login.forgotPasswordLink")}
           </Link>
         </div>
         <Input id="password" name="password" type="password" required autoComplete="current-password" />
       </div>
       {state?.error && <p className="text-sm text-red-600">{t("login.invalidCredentials")}</p>}
-      <Button type="submit" disabled={pending} className="mt-2">
+      <Button type="submit" disabled={pending} className="mt-2 bg-brand-navy hover:bg-brand-navy-dark">
         {pending ? t("common.loading") : t("common.signIn")}
       </Button>
     </form>

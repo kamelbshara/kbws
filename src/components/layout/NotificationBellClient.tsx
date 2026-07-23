@@ -49,7 +49,7 @@ export function NotificationBellClient({
     <details className="relative">
       <summary className="flex cursor-pointer list-none items-center gap-1 [&::-webkit-details-marker]:hidden">
         <span className="relative inline-flex">
-          <Bell className="h-4 w-4 text-slate-600" />
+          <Bell className="h-4 w-4 text-brand-cream" />
           {unreadCount > 0 && (
             <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-medium text-white">
               {unreadCount > 9 ? "9+" : unreadCount}

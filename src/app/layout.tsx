@@ -16,8 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI School Intelligence Platform",
-  description: "Bilingual school intelligence platform",
+  title: "Khaled Bin Al Waleed Smart Platform | منصة خالد بن الوليد الذكية",
+  description: "Khaled Bin Al Waleed School AI Platform — Al Ain, United Arab Emirates",
+  icons: { icon: "/logo.png" },
 };
 
 export default async function RootLayout({
