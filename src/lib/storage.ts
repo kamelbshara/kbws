@@ -5,18 +5,27 @@ import { randomUUID } from "crypto";
 
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10MB
 
-const ALLOWED_MIME_TYPES = new Set([
-  "image/png",
-  "image/jpeg",
-  "image/webp",
-  "image/gif",
-  "application/pdf",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-]);
+/**
+ * The stored extension is derived from this map (keyed by the validated MIME
+ * type), never from the client-supplied file.name. file.name and file.type
+ * are two independent, equally attacker-controlled fields on a multipart
+ * upload -- deriving the on-disk extension from file.name while validating
+ * file.type would let an attacker satisfy the MIME allowlist (e.g.
+ * "image/png") while naming the file "evil.html", persisting a
+ * script-executable file that renders same-origin.
+ */
+const ALLOWED_MIME_TYPES: Record<string, string> = {
+  "image/png": ".png",
+  "image/jpeg": ".jpg",
+  "image/webp": ".webp",
+  "image/gif": ".gif",
+  "application/pdf": ".pdf",
+  "application/msword": ".doc",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
+};
 
 export function isAllowedUploadType(mimeType: string): boolean {
-  return ALLOWED_MIME_TYPES.has(mimeType);
+  return Object.hasOwn(ALLOWED_MIME_TYPES, mimeType);
 }
 
 export type StoredFile = { url: string; fileName: string; fileSize: number; mimeType: string };
@@ -30,7 +39,10 @@ export type StoredFile = { url: string; fileName: string; fileSize: number; mime
  * be set before this feature works in production.
  */
 export async function saveUploadedFile(file: File, subdir: string): Promise<StoredFile> {
-  const ext = path.extname(file.name).slice(0, 20);
+  const ext = ALLOWED_MIME_TYPES[file.type];
+  if (!ext) {
+    throw new Error(`Unsupported file type: ${file.type}`);
+  }
   const key = `${subdir}/${randomUUID()}${ext}`;
 
   if (process.env.BLOB_READ_WRITE_TOKEN) {
