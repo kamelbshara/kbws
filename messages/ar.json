@@ -24,7 +24,9 @@
     "schedule": "جدولي الدراسي",
     "lessonPlans": "الخطط الدراسية",
     "admin": "الإدارة",
-    "initiatives": "المبادرات"
+    "initiatives": "المبادرات",
+    "teams": "الفرق",
+    "schoolPlan": "خطة المدرسة"
   },
   "schedule": {
     "title": "جدولي الأسبوعي",

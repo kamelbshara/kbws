@@ -57,6 +57,25 @@ enum InitiativeCategory {
   OTHER
 }
 
+enum TeamType {
+  ACADEMIC
+  QUALITY
+  INITIATIVE
+  ADMINISTRATIVE
+  SUPPORT
+}
+
+enum ActionItemStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
+}
+
+enum OperationalPlanLevel {
+  TEAM
+  SCHOOL
+}
+
 model School {
   id            String         @id @default(cuid())
   name          String
@@ -65,11 +84,13 @@ model School {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
-  users         User[]
-  academicYears AcademicYear[]
-  classSections ClassSection[]
-  timetables    Timetable[]
-  initiatives   Initiative[]
+  users            User[]
+  academicYears    AcademicYear[]
+  classSections    ClassSection[]
+  timetables       Timetable[]
+  initiatives      Initiative[]
+  teams            Team[]
+  operationalPlans OperationalPlan[]
 }
 
 model AcademicYear {
@@ -150,6 +171,10 @@ model User {
   printedVersions    LessonPlanVersion[]
   ownedInitiatives   Initiative[]
   initiativeEvidence InitiativeEvidence[]
+  ledTeams           Team[]               @relation("TeamLeader")
+  teamMemberships    TeamMember[]
+  meetingsCreated    Meeting[]
+  actionItems        ActionItem[]
 }
 
 model TeacherAssignment {
@@ -261,20 +286,107 @@ model LessonPlanVersion {
 }
 
 model AIGenerationLog {
-  id           String      @id @default(cuid())
-  lessonPlanId String?
-  lessonPlan   LessonPlan? @relation(fields: [lessonPlanId], references: [id])
-  initiativeId String?
-  initiative   Initiative? @relation(fields: [initiativeId], references: [id])
-  userId       String
-  user         User        @relation(fields: [userId], references: [id])
-  section      String?
-  model        String
-  promptInput  Json
-  responseJson Json?
-  status       String
-  errorMessage String?
-  createdAt    DateTime    @default(now())
+  id                String           @id @default(cuid())
+  lessonPlanId      String?
+  lessonPlan        LessonPlan?      @relation(fields: [lessonPlanId], references: [id])
+  initiativeId      String?
+  initiative        Initiative?      @relation(fields: [initiativeId], references: [id])
+  operationalPlanId String?
+  operationalPlan   OperationalPlan? @relation(fields: [operationalPlanId], references: [id])
+  userId            String
+  user              User             @relation(fields: [userId], references: [id])
+  section           String?
+  model             String
+  promptInput       Json
+  responseJson      Json?
+  status            String
+  errorMessage      String?
+  createdAt         DateTime         @default(now())
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  schoolId  String
+  school    School   @relation(fields: [schoolId], references: [id])
+  name      String
+  type      TeamType
+  goal      String?
+  leaderId  String
+  leader    User     @relation("TeamLeader", fields: [leaderId], references: [id])
+  createdAt DateTime @default(now())
+
+  members         TeamMember[]
+  meetings        Meeting[]
+  operationalPlan OperationalPlan?
+}
+
+model TeamMember {
+  id       String   @id @default(cuid())
+  teamId   String
+  team     Team     @relation(fields: [teamId], references: [id])
+  userId   String
+  user     User     @relation(fields: [userId], references: [id])
+  joinedAt DateTime @default(now())
+
+  @@unique([teamId, userId])
+}
+
+model Meeting {
+  id          String   @id @default(cuid())
+  teamId      String
+  team        Team     @relation(fields: [teamId], references: [id])
+  title       String
+  date        DateTime
+  agenda      String?
+  minutes     String?
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+
+  actionItems ActionItem[]
+}
+
+model ActionItem {
+  id        String            @id @default(cuid())
+  meetingId String
+  meeting   Meeting           @relation(fields: [meetingId], references: [id])
+  task      String
+  ownerId   String
+  owner     User              @relation(fields: [ownerId], references: [id])
+  dueDate   DateTime?
+  status    ActionItemStatus  @default(OPEN)
+  createdAt DateTime          @default(now())
+}
+
+model OperationalPlan {
+  id        String               @id @default(cuid())
+  teamId    String?              @unique
+  team      Team?                @relation(fields: [teamId], references: [id])
+  schoolId  String?
+  school    School?              @relation(fields: [schoolId], references: [id])
+  level     OperationalPlanLevel
+  title     String
+  initialIdea String
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  items            OperationalPlanItem[]
+  aiGenerationLogs AIGenerationLog[]
+}
+
+model OperationalPlanItem {
+  id                String          @id @default(cuid())
+  operationalPlanId String
+  operationalPlan   OperationalPlan @relation(fields: [operationalPlanId], references: [id])
+  orderIndex        Int             @default(0)
+  domain            String
+  objective         String
+  actions           String
+  responsible       String?
+  timeline          String?
+  indicator         String?
+  evidence          String?
+  risk              String?
 }
 
 model Initiative {

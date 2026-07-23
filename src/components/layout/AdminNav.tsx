@@ -3,12 +3,16 @@ import { getTranslations } from "next-intl/server";
 
 export async function AdminNav() {
   const t = await getTranslations("admin");
+  const nav = await getTranslations("nav");
 
   const links = [
     { href: "/admin", label: "Overview" },
     { href: "/admin/users", label: t("users") },
     { href: "/admin/classes", label: t("classes") },
     { href: "/admin/timetable", label: t("timetable") },
+    { href: "/initiatives", label: nav("initiatives") },
+    { href: "/teams", label: nav("teams") },
+    { href: "/operational-plan", label: nav("schoolPlan") },
   ];
 
   return (

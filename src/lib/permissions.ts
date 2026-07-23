@@ -34,6 +34,7 @@ export const ADMIN_ROLES: Role[] = ["SYSTEM_ADMIN"];
 export const MANAGEMENT_ROLES: Role[] = ["SYSTEM_ADMIN", "PRINCIPAL", "VICE_PRINCIPAL"];
 export const TEACHER_ROLES: Role[] = ["TEACHER"];
 export const INITIATIVE_CREATOR_ROLES: Role[] = ["TEACHER", "INITIATIVE_OWNER", "TEAM_LEADER"];
+export const TEAM_CREATOR_ROLES: Role[] = ["TEACHER", "TEAM_LEADER", "PRINCIPAL", "VICE_PRINCIPAL"];
 
 export const ROUTE_ROLE_MAP: Array<{ prefix: string; roles: Role[] }> = [
   { prefix: "/admin", roles: MANAGEMENT_ROLES },

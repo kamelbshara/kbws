@@ -8,6 +8,11 @@ export async function MainNav({ role }: { role: Role }) {
   const links = [
     role === "TEACHER" && { href: "/schedule", label: t("schedule") },
     { href: "/initiatives", label: t("initiatives") },
+    { href: "/teams", label: t("teams") },
+    (role === "PRINCIPAL" || role === "VICE_PRINCIPAL" || role === "SYSTEM_ADMIN") && {
+      href: "/operational-plan",
+      label: t("schoolPlan"),
+    },
   ].filter(Boolean) as { href: string; label: string }[];
 
   return (

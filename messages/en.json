@@ -24,7 +24,9 @@
     "schedule": "My Schedule",
     "lessonPlans": "Lesson Plans",
     "admin": "Admin",
-    "initiatives": "Initiatives"
+    "initiatives": "Initiatives",
+    "teams": "Teams",
+    "schoolPlan": "School Plan"
   },
   "schedule": {
     "title": "My Weekly Schedule",
