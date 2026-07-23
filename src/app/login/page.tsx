@@ -31,7 +31,7 @@ export default async function LoginPage() {
           />
           <Card className="w-full max-w-sm border-brand-gold/40 bg-white/95 backdrop-blur-sm shadow-lg">
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-2">
                 <CardTitle className="text-brand-navy">{t("title")}</CardTitle>
                 <LocaleSwitcher />
               </div>
