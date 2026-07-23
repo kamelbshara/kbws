@@ -9,14 +9,18 @@ export default async function LoginPage() {
   const t = await getTranslations("login");
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-brand-cream">
-      <Image
-        src="/cover.png"
-        alt=""
-        fill
-        priority
-        className="pointer-events-none object-cover opacity-90"
-      />
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-brand-navy">
+      <div className="absolute inset-0">
+        <Image
+          src="/cover.png"
+          alt=""
+          fill
+          priority
+          className="pointer-events-none object-cover"
+        />
+        <div className="absolute inset-0 bg-brand-navy/85 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-navy-dark/70 via-transparent to-brand-navy-dark/60" />
+      </div>
       <div className="relative z-10 flex flex-1 items-center justify-center p-4 md:justify-start md:ps-16 lg:ps-28">
         <div className="flex flex-col items-center gap-6">
           <Image
