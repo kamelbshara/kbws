@@ -42,6 +42,11 @@ enum AuditAction {
   DELETE
 }
 
+enum InsightScope {
+  TEACHER
+  SCHOOL
+}
+
 enum InitiativeStatus {
   DRAFT
   ACTIVE
@@ -103,6 +108,7 @@ model School {
   initiatives      Initiative[]
   teams            Team[]
   operationalPlans OperationalPlan[]
+  insights         Insight[]
 }
 
 model AcademicYear {
@@ -191,6 +197,7 @@ model User {
   actionItems        ActionItem[]
   createdQuestions   QuestionBankItem[]
   assessments        Assessment[]
+  requestedInsights  Insight[]
 }
 
 model TeacherAssignment {
@@ -312,6 +319,8 @@ model AIGenerationLog {
   operationalPlan   OperationalPlan? @relation(fields: [operationalPlanId], references: [id])
   assessmentId      String?
   assessment        Assessment?      @relation(fields: [assessmentId], references: [id])
+  insightId         String?
+  insight           Insight?         @relation(fields: [insightId], references: [id])
   userId            String
   user              User             @relation(fields: [userId], references: [id])
   section           String?
@@ -472,6 +481,24 @@ model AuditLog {
   beforeJson Json?
   afterJson  Json?
   createdAt  DateTime    @default(now())
+}
+
+model Insight {
+  id              String       @id @default(cuid())
+  scope           InsightScope
+  schoolId        String
+  school          School       @relation(fields: [schoolId], references: [id])
+  requestedById   String
+  requestedBy     User         @relation(fields: [requestedById], references: [id])
+  summary         String
+  strengths       Json
+  concerns        Json
+  recommendations Json
+  createdAt       DateTime     @default(now())
+
+  aiGenerationLogs AIGenerationLog[]
+
+  @@index([scope, schoolId, requestedById])
 }
 
 model QuestionBankItem {

@@ -47,6 +47,7 @@ export default async function AuditLogPage({
         initiative: true,
         operationalPlan: true,
         assessment: true,
+        insight: true,
       },
       orderBy: { createdAt: "desc" },
       take: 25,
@@ -221,7 +222,9 @@ export default async function AuditLogPage({
                         ? `Operational Plan · ${log.operationalPlan.title}`
                         : log.assessment
                           ? `Assessment · ${log.assessment.title}`
-                          : "—";
+                          : log.insight
+                            ? `Insight · ${log.insight.scope}`
+                            : "—";
                   return (
                     <tr key={log.id} className="border-b border-slate-100 last:border-0">
                       <td className="whitespace-nowrap px-4 py-2 text-slate-600" dir="ltr">
