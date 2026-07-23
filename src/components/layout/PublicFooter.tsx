@@ -23,10 +23,10 @@ export async function PublicFooter() {
             {t("footer.contact")}
           </Link>
         </nav>
-        <p className="max-w-xl text-xs text-brand-cream/70">{t("footer.governmentNote")}</p>
         <p className="text-xs text-brand-cream/50">
-          {t("schoolNameEn")} — {t("schoolNameAr")} · {t("footer.rightsReserved")}
+          {t("schoolNameEn")} — {t("schoolNameAr")}
         </p>
+        <p className="text-xs text-brand-cream/50">{t("footer.rightsReserved")}</p>
       </div>
     </footer>
   );
