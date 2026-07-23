@@ -1,0 +1,59 @@
+{
+  "common": {
+    "appName": "AI School Intelligence Platform",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "email": "Email",
+    "password": "Password",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "create": "Create",
+    "print": "Print",
+    "loading": "Loading...",
+    "language": "Language"
+  },
+  "login": {
+    "title": "AI School Intelligence Platform",
+    "subtitle": "Sign in to your account",
+    "invalidCredentials": "Invalid email or password."
+  },
+  "nav": {
+    "home": "Home",
+    "schedule": "My Schedule",
+    "lessonPlans": "Lesson Plans",
+    "admin": "Admin",
+    "initiatives": "Initiatives",
+    "teams": "Teams",
+    "schoolPlan": "School Plan",
+    "assessments": "Assessments"
+  },
+  "schedule": {
+    "title": "My Weekly Schedule",
+    "empty": "No scheduled periods.",
+    "createLessonPlan": "Create Lesson Plan"
+  },
+  "lessonPlan": {
+    "newTitle": "New Lesson Plan",
+    "selectOutcome": "Select Learning Outcome",
+    "promptLabel": "Describe what you want to focus on in this lesson",
+    "strategies": "Teaching Strategies",
+    "tools": "Teaching Tools",
+    "generate": "Generate Plan with AI",
+    "objectives": "Objectives",
+    "lessonFlow": "Lesson Flow",
+    "activities": "Activities",
+    "assessment": "Assessment",
+    "differentiation": "Differentiation",
+    "reflection": "Reflection",
+    "regenerate": "Regenerate"
+  },
+  "admin": {
+    "schools": "Schools",
+    "academicYears": "Academic Years",
+    "users": "Users",
+    "classes": "Class Sections",
+    "timetable": "Timetable"
+  }
+}

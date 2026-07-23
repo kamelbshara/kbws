@@ -1,0 +1,59 @@
+{
+  "common": {
+    "appName": "منصة الذكاء المؤسسي المدرسي",
+    "signIn": "تسجيل الدخول",
+    "signOut": "تسجيل الخروج",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "create": "إنشاء",
+    "print": "طباعة",
+    "loading": "جارٍ التحميل...",
+    "language": "اللغة"
+  },
+  "login": {
+    "title": "منصة الذكاء المؤسسي المدرسي",
+    "subtitle": "سجّل الدخول إلى حسابك",
+    "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة."
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "schedule": "جدولي الدراسي",
+    "lessonPlans": "الخطط الدراسية",
+    "admin": "الإدارة",
+    "initiatives": "المبادرات",
+    "teams": "الفرق",
+    "schoolPlan": "خطة المدرسة",
+    "assessments": "التقييمات"
+  },
+  "schedule": {
+    "title": "جدولي الأسبوعي",
+    "empty": "لا توجد حصص مجدولة.",
+    "createLessonPlan": "إنشاء خطة درس"
+  },
+  "lessonPlan": {
+    "newTitle": "خطة درس جديدة",
+    "selectOutcome": "اختر مخرج التعلم",
+    "promptLabel": "صف ما تريد التركيز عليه في هذه الحصة",
+    "strategies": "استراتيجيات التدريس",
+    "tools": "الأدوات التعليمية",
+    "generate": "توليد الخطة بالذكاء الاصطناعي",
+    "objectives": "أهداف الدرس",
+    "lessonFlow": "مسار الحصة",
+    "activities": "الأنشطة",
+    "assessment": "التقييم",
+    "differentiation": "التمايز",
+    "reflection": "التأمل",
+    "regenerate": "إعادة التوليد"
+  },
+  "admin": {
+    "schools": "المدارس",
+    "academicYears": "الأعوام الدراسية",
+    "users": "المستخدمون",
+    "classes": "الشعب",
+    "timetable": "الجدول الدراسي"
+  }
+}

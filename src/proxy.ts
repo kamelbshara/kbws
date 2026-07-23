@@ -1,0 +1,34 @@
+import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import { ROUTE_ROLE_MAP } from "@/lib/permissions";
+
+const PUBLIC_PATHS = ["/login"];
+
+export default auth((req) => {
+  const { pathname } = req.nextUrl;
+  const session = req.auth;
+
+  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
+    if (session?.user && pathname.startsWith("/login")) {
+      return NextResponse.redirect(new URL("/", req.nextUrl));
+    }
+    return NextResponse.next();
+  }
+
+  if (!session?.user) {
+    const loginUrl = new URL("/login", req.nextUrl);
+    loginUrl.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  const match = ROUTE_ROLE_MAP.find((r) => pathname.startsWith(r.prefix));
+  if (match && !match.roles.includes(session.user.role)) {
+    return NextResponse.redirect(new URL("/", req.nextUrl));
+  }
+
+  return NextResponse.next();
+});
+
+export const config = {
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$).*)"],
+};
