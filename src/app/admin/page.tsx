@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -9,6 +10,7 @@ export default async function AdminHomePage() {
   const session = await auth();
   const user = session!.user;
   const schoolId = await getActiveSchoolId(session!);
+  const t = await getTranslations("adminOverview");
 
   const [school, academicYear, userCount, classSectionCount, timetableCount] = await Promise.all([
     schoolId ? prisma.school.findUnique({ where: { id: schoolId } }) : Promise.resolve(null),
@@ -29,19 +31,19 @@ export default async function AdminHomePage() {
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm text-slate-500">Users</CardTitle>
+              <CardTitle className="text-sm text-slate-500">{t("users")}</CardTitle>
             </CardHeader>
             <CardContent className="text-2xl font-semibold">{userCount}</CardContent>
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm text-slate-500">Class Sections</CardTitle>
+              <CardTitle className="text-sm text-slate-500">{t("classSections")}</CardTitle>
             </CardHeader>
             <CardContent className="text-2xl font-semibold">{classSectionCount}</CardContent>
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm text-slate-500">Timetable Slots</CardTitle>
+              <CardTitle className="text-sm text-slate-500">{t("timetableSlots")}</CardTitle>
             </CardHeader>
             <CardContent className="text-2xl font-semibold">{timetableCount}</CardContent>
           </Card>

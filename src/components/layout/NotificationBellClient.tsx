@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Bell } from "lucide-react";
 import { markNotificationReadAction, markAllNotificationsReadAction } from "@/actions/notifications";
 
@@ -21,6 +22,7 @@ export function NotificationBellClient({
   unreadCount: number;
   notifications: NotificationItem[];
 }) {
+  const t = useTranslations("notificationsWidget");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -58,7 +60,7 @@ export function NotificationBellClient({
 
       <div className="absolute right-0 z-20 mt-2 w-80 rounded-md border border-slate-200 bg-white shadow-lg">
         <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2">
-          <span className="text-sm font-medium">Notifications</span>
+          <span className="text-sm font-medium">{t("title")}</span>
           {unreadCount > 0 && (
             <button
               type="button"
@@ -66,13 +68,13 @@ export function NotificationBellClient({
               disabled={isPending}
               className="text-xs text-slate-500 hover:text-slate-900"
             >
-              Mark all read
+              {t("markAllRead")}
             </button>
           )}
         </div>
         <div className="max-h-96 overflow-y-auto">
           {notifications.length === 0 && (
-            <p className="px-3 py-4 text-center text-sm text-slate-400">No notifications yet.</p>
+            <p className="px-3 py-4 text-center text-sm text-slate-400">{t("empty")}</p>
           )}
           {notifications.map((n) => (
             <button

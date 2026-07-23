@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -10,6 +11,7 @@ export default async function AdminTimetablePage() {
   const session = await auth();
   const user = session!.user;
   const schoolId = await getActiveSchoolId(session!);
+  const t = await getTranslations("timetablePage");
 
   const [slots, teachers, classSections, subjects] = await Promise.all([
     schoolId
@@ -37,17 +39,17 @@ export default async function AdminTimetablePage() {
           <table className="w-full text-sm">
             <thead className="border-b border-slate-200 text-left text-slate-500">
               <tr>
-                <th className="px-4 py-2 font-medium">Day</th>
-                <th className="px-4 py-2 font-medium">Period</th>
-                <th className="px-4 py-2 font-medium">Teacher</th>
-                <th className="px-4 py-2 font-medium">Class</th>
-                <th className="px-4 py-2 font-medium">Subject</th>
+                <th className="px-4 py-2 font-medium">{t("day")}</th>
+                <th className="px-4 py-2 font-medium">{t("period")}</th>
+                <th className="px-4 py-2 font-medium">{t("teacher")}</th>
+                <th className="px-4 py-2 font-medium">{t("class")}</th>
+                <th className="px-4 py-2 font-medium">{t("subject")}</th>
               </tr>
             </thead>
             <tbody>
               {slots.map((s) => (
                 <tr key={s.id} className="border-b border-slate-100 last:border-0">
-                  <td className="px-4 py-2">{s.dayOfWeek}</td>
+                  <td className="px-4 py-2">{t(`days.${s.dayOfWeek}`)}</td>
                   <td className="px-4 py-2">{s.periodNumber}</td>
                   <td className="px-4 py-2">{s.teacher.name}</td>
                   <td className="px-4 py-2">{s.classSection.name}</td>
@@ -59,7 +61,7 @@ export default async function AdminTimetablePage() {
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>Create Timetable Slot</CardTitle>
+            <CardTitle>{t("createTitle")}</CardTitle>
           </CardHeader>
           <CardContent>
             <CreateTimetableSlotForm

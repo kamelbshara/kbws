@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -20,6 +21,7 @@ export default async function AuditLogPage({
   const session = await auth();
   const user = session!.user;
   const params = await searchParams;
+  const t = await getTranslations("auditLogPage");
 
   const page = Math.max(1, Number(params.page) || 1);
   const moduleFilter = params.module && params.module !== "ALL" ? params.module : undefined;
@@ -74,12 +76,12 @@ export default async function AuditLogPage({
       <AdminNav role={user.role} />
       <main className="flex flex-col gap-8 p-6">
         <section>
-          <h1 className="text-xl font-semibold">Audit Log</h1>
+          <h1 className="text-xl font-semibold">{t("title")}</h1>
 
           <form method="get" className="mt-4 flex flex-wrap items-end gap-3">
             <div className="flex flex-col gap-1">
               <label htmlFor="module" className="text-xs text-slate-500">
-                Module
+                {t("module")}
               </label>
               <select
                 id="module"
@@ -87,7 +89,7 @@ export default async function AuditLogPage({
                 defaultValue={moduleFilter ?? "ALL"}
                 className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm"
               >
-                <option value="ALL">All modules</option>
+                <option value="ALL">{t("allModules")}</option>
                 {modules.map((m) => (
                   <option key={m.module} value={m.module}>
                     {m.module}
@@ -97,7 +99,7 @@ export default async function AuditLogPage({
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor="action" className="text-xs text-slate-500">
-                Action
+                {t("action")}
               </label>
               <select
                 id="action"
@@ -105,7 +107,7 @@ export default async function AuditLogPage({
                 defaultValue={actionFilter ?? "ALL"}
                 className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm"
               >
-                <option value="ALL">All actions</option>
+                <option value="ALL">{t("allActions")}</option>
                 {AUDIT_ACTIONS.map((a) => (
                   <option key={a} value={a}>
                     {a}
@@ -117,7 +119,7 @@ export default async function AuditLogPage({
               type="submit"
               className="h-10 rounded-md bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800"
             >
-              Filter
+              {t("filter")}
             </button>
           </form>
 
@@ -125,12 +127,12 @@ export default async function AuditLogPage({
             <table className="w-full text-sm">
               <thead className="border-b border-slate-200 text-left text-slate-500">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Time (UTC)</th>
-                  <th className="px-4 py-2 font-medium">User</th>
-                  <th className="px-4 py-2 font-medium">Action</th>
-                  <th className="px-4 py-2 font-medium">Module</th>
-                  <th className="px-4 py-2 font-medium">Entity ID</th>
-                  <th className="px-4 py-2 font-medium">Changes</th>
+                  <th className="px-4 py-2 font-medium">{t("time")}</th>
+                  <th className="px-4 py-2 font-medium">{t("user")}</th>
+                  <th className="px-4 py-2 font-medium">{t("action")}</th>
+                  <th className="px-4 py-2 font-medium">{t("module")}</th>
+                  <th className="px-4 py-2 font-medium">{t("entityId")}</th>
+                  <th className="px-4 py-2 font-medium">{t("changes")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -146,11 +148,11 @@ export default async function AuditLogPage({
                     <td className="px-4 py-2">
                       {(e.beforeJson || e.afterJson) && (
                         <details>
-                          <summary className="cursor-pointer text-slate-500 hover:text-slate-900">View</summary>
+                          <summary className="cursor-pointer text-slate-500 hover:text-slate-900">{t("view")}</summary>
                           <div className="mt-2 flex flex-col gap-2">
                             {e.beforeJson ? (
                               <div>
-                                <p className="text-xs text-slate-500">Before</p>
+                                <p className="text-xs text-slate-500">{t("before")}</p>
                                 <pre className="max-w-md overflow-x-auto rounded bg-slate-50 p-2 text-xs">
                                   {JSON.stringify(e.beforeJson, null, 2)}
                                 </pre>
@@ -158,7 +160,7 @@ export default async function AuditLogPage({
                             ) : null}
                             {e.afterJson ? (
                               <div>
-                                <p className="text-xs text-slate-500">After</p>
+                                <p className="text-xs text-slate-500">{t("after")}</p>
                                 <pre className="max-w-md overflow-x-auto rounded bg-slate-50 p-2 text-xs">
                                   {JSON.stringify(e.afterJson, null, 2)}
                                 </pre>
@@ -173,7 +175,7 @@ export default async function AuditLogPage({
                 {entries.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-4 py-6 text-center text-slate-400">
-                      No audit entries match this filter.
+                      {t("noEntries")}
                     </td>
                   </tr>
                 )}
@@ -183,16 +185,14 @@ export default async function AuditLogPage({
 
           {totalPages > 1 && (
             <div className="mt-3 flex items-center gap-3 text-sm text-slate-600">
-              <span>
-                Page {page} of {totalPages} ({total} entries)
-              </span>
+              <span>{t("pageLabel", { page, totalPages, total })}</span>
               <div className="flex gap-2">
                 {page > 1 && (
                   <a
                     className="rounded-md border border-slate-300 px-3 py-1 hover:bg-slate-50"
                     href={`?module=${moduleFilter ?? "ALL"}&action=${actionFilter ?? "ALL"}&page=${page - 1}`}
                   >
-                    Previous
+                    {t("previous")}
                   </a>
                 )}
                 {page < totalPages && (
@@ -200,7 +200,7 @@ export default async function AuditLogPage({
                     className="rounded-md border border-slate-300 px-3 py-1 hover:bg-slate-50"
                     href={`?module=${moduleFilter ?? "ALL"}&action=${actionFilter ?? "ALL"}&page=${page + 1}`}
                   >
-                    Next
+                    {t("next")}
                   </a>
                 )}
               </div>
@@ -209,33 +209,33 @@ export default async function AuditLogPage({
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold">AI Generation Log</h2>
-          <p className="mt-1 text-sm text-slate-500">Most recent 25 AI generation attempts across all modules.</p>
+          <h2 className="text-lg font-semibold">{t("aiLogTitle")}</h2>
+          <p className="mt-1 text-sm text-slate-500">{t("aiLogSubtitle")}</p>
 
           <div className="mt-4 overflow-x-auto rounded-lg border border-slate-200 bg-white">
             <table className="w-full text-sm">
               <thead className="border-b border-slate-200 text-left text-slate-500">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Time (UTC)</th>
-                  <th className="px-4 py-2 font-medium">User</th>
-                  <th className="px-4 py-2 font-medium">Source</th>
-                  <th className="px-4 py-2 font-medium">Model</th>
-                  <th className="px-4 py-2 font-medium">Status</th>
-                  <th className="px-4 py-2 font-medium">Error</th>
+                  <th className="px-4 py-2 font-medium">{t("time")}</th>
+                  <th className="px-4 py-2 font-medium">{t("user")}</th>
+                  <th className="px-4 py-2 font-medium">{t("source")}</th>
+                  <th className="px-4 py-2 font-medium">{t("model")}</th>
+                  <th className="px-4 py-2 font-medium">{t("status")}</th>
+                  <th className="px-4 py-2 font-medium">{t("error")}</th>
                 </tr>
               </thead>
               <tbody>
                 {aiLogs.map((log) => {
                   const source = log.lessonPlan
-                    ? `Lesson Plan · ${log.lessonPlan.curriculumContent.lessonTitle}`
+                    ? `${t("sourceTypes.lessonPlan")} · ${log.lessonPlan.curriculumContent.lessonTitle}`
                     : log.initiative
-                      ? `Initiative · ${log.initiative.title}`
+                      ? `${t("sourceTypes.initiative")} · ${log.initiative.title}`
                       : log.operationalPlan
-                        ? `Operational Plan · ${log.operationalPlan.title}`
+                        ? `${t("sourceTypes.operationalPlan")} · ${log.operationalPlan.title}`
                         : log.assessment
-                          ? `Assessment · ${log.assessment.title}`
+                          ? `${t("sourceTypes.assessment")} · ${log.assessment.title}`
                           : log.insight
-                            ? `Insight · ${log.insight.scope}`
+                            ? `${t("sourceTypes.insight")} · ${log.insight.scope}`
                             : "—";
                   return (
                     <tr key={log.id} className="border-b border-slate-100 last:border-0">
@@ -257,7 +257,7 @@ export default async function AuditLogPage({
                 {aiLogs.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-4 py-6 text-center text-slate-400">
-                      No AI generation attempts yet.
+                      {t("noAiLogs")}
                     </td>
                   </tr>
                 )}

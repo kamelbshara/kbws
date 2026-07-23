@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -11,6 +12,7 @@ import { getActiveSchoolId } from "@/lib/activeSchool";
 export default async function AdminSchoolsPage() {
   const session = await auth();
   const user = session!.user;
+  const t = await getTranslations("schoolsPage");
 
   // Deliberately checked against the static ADMIN_ROLES constant, same
   // rationale as /admin/permissions: registering a new tenant is a
@@ -36,10 +38,10 @@ export default async function AdminSchoolsPage() {
           <table className="w-full text-sm">
             <thead className="border-b border-slate-200 text-left text-slate-500">
               <tr>
-                <th className="px-4 py-2 font-medium">Name</th>
-                <th className="px-4 py-2 font-medium">Users</th>
-                <th className="px-4 py-2 font-medium">Class Sections</th>
-                <th className="px-4 py-2 font-medium">Initiatives</th>
+                <th className="px-4 py-2 font-medium">{t("name")}</th>
+                <th className="px-4 py-2 font-medium">{t("users")}</th>
+                <th className="px-4 py-2 font-medium">{t("classSections")}</th>
+                <th className="px-4 py-2 font-medium">{t("initiatives")}</th>
               </tr>
             </thead>
             <tbody>
@@ -47,7 +49,7 @@ export default async function AdminSchoolsPage() {
                 <tr key={s.id} className="border-b border-slate-100 last:border-0">
                   <td className="px-4 py-2 font-medium">
                     {s.name}
-                    {s.id === activeSchoolId && <span className="ml-2 text-xs text-slate-400">(active)</span>}
+                    {s.id === activeSchoolId && <span className="ml-2 text-xs text-slate-400">{t("active")}</span>}
                   </td>
                   <td className="px-4 py-2 text-slate-600">{s._count.users}</td>
                   <td className="px-4 py-2 text-slate-600">{s._count.classSections}</td>
@@ -59,7 +61,7 @@ export default async function AdminSchoolsPage() {
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>Create School</CardTitle>
+            <CardTitle>{t("createTitle")}</CardTitle>
           </CardHeader>
           <CardContent>
             <CreateSchoolForm />

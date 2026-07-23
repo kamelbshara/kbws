@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -12,6 +13,7 @@ export default async function AdminUsersPage() {
   const session = await auth();
   const user = session!.user;
   const schoolId = await getActiveSchoolId(session!);
+  const t = await getTranslations("usersPage");
 
   const users = schoolId ? await prisma.user.findMany({ where: { schoolId }, orderBy: { createdAt: "asc" } }) : [];
 
@@ -24,10 +26,10 @@ export default async function AdminUsersPage() {
           <table className="w-full text-sm">
             <thead className="border-b border-slate-200 text-left text-slate-500">
               <tr>
-                <th className="px-4 py-2 font-medium">Name</th>
-                <th className="px-4 py-2 font-medium">Email</th>
-                <th className="px-4 py-2 font-medium">Role</th>
-                <th className="px-4 py-2 font-medium">Status</th>
+                <th className="px-4 py-2 font-medium">{t("name")}</th>
+                <th className="px-4 py-2 font-medium">{t("email")}</th>
+                <th className="px-4 py-2 font-medium">{t("role")}</th>
+                <th className="px-4 py-2 font-medium">{t("status")}</th>
                 <th className="px-4 py-2 font-medium"></th>
               </tr>
             </thead>
@@ -36,16 +38,16 @@ export default async function AdminUsersPage() {
                 <tr key={u.id} className="border-b border-slate-100 last:border-0">
                   <td className="px-4 py-2">{u.name}</td>
                   <td className="px-4 py-2 text-slate-600">{u.email}</td>
-                  <td className="px-4 py-2">{u.role}</td>
+                  <td className="px-4 py-2">{t(`roles.${u.role}`)}</td>
                   <td className="px-4 py-2">
                     <span className={u.isActive ? "text-green-700" : "text-slate-400"}>
-                      {u.isActive ? "Active" : "Suspended"}
+                      {u.isActive ? t("active") : t("suspended")}
                     </span>
                   </td>
                   <td className="px-4 py-2 text-right">
                     <form action={toggleUserActiveAction.bind(null, u.id)}>
                       <Button type="submit" variant="outline" size="sm">
-                        {u.isActive ? "Suspend" : "Reactivate"}
+                        {u.isActive ? t("suspend") : t("reactivate")}
                       </Button>
                     </form>
                   </td>
@@ -56,7 +58,7 @@ export default async function AdminUsersPage() {
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>Create User</CardTitle>
+            <CardTitle>{t("createTitle")}</CardTitle>
           </CardHeader>
           <CardContent>
             <CreateUserForm />

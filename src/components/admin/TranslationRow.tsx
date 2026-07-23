@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { updateTranslationAction, resetTranslationAction } from "@/actions/translations";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ function LocaleCell({
   currentValue: string;
   isOverridden: boolean;
 }) {
+  const t = useTranslations("translationsPage");
   const [value, setValue] = useState(currentValue);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -55,11 +57,11 @@ function LocaleCell({
           className="text-sm"
         />
         <Button type="button" size="sm" variant="outline" onClick={save} disabled={isPending}>
-          Save
+          {t("save")}
         </Button>
         {overridden && (
           <Button type="button" size="sm" variant="ghost" onClick={reset} disabled={isPending}>
-            Reset
+            {t("reset")}
           </Button>
         )}
       </div>

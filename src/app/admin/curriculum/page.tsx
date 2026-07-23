@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -10,6 +11,7 @@ export default async function AdminCurriculumPage() {
   const session = await auth();
   const user = session!.user;
   const schoolId = await getActiveSchoolId(session!);
+  const t = await getTranslations("curriculumPage");
 
   const content = schoolId
     ? await prisma.curriculumContent.findMany({
@@ -28,11 +30,11 @@ export default async function AdminCurriculumPage() {
           <table className="w-full text-sm">
             <thead className="border-b border-slate-200 text-left text-slate-500">
               <tr>
-                <th className="px-4 py-2 font-medium">Subject</th>
-                <th className="px-4 py-2 font-medium">Grade</th>
-                <th className="px-4 py-2 font-medium">Unit</th>
-                <th className="px-4 py-2 font-medium">Lesson</th>
-                <th className="px-4 py-2 font-medium">Outcomes</th>
+                <th className="px-4 py-2 font-medium">{t("subject")}</th>
+                <th className="px-4 py-2 font-medium">{t("grade")}</th>
+                <th className="px-4 py-2 font-medium">{t("unit")}</th>
+                <th className="px-4 py-2 font-medium">{t("lesson")}</th>
+                <th className="px-4 py-2 font-medium">{t("outcomes")}</th>
               </tr>
             </thead>
             <tbody>
@@ -48,7 +50,7 @@ export default async function AdminCurriculumPage() {
               {content.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-4 py-6 text-center text-slate-400">
-                    No curriculum content yet. Import a CSV to get started.
+                    {t("empty")}
                   </td>
                 </tr>
               )}
@@ -57,7 +59,7 @@ export default async function AdminCurriculumPage() {
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>Import Curriculum</CardTitle>
+            <CardTitle>{t("importTitle")}</CardTitle>
           </CardHeader>
           <CardContent>
             <CurriculumImportForm />

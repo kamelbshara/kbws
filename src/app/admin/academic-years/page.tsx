@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -10,6 +11,7 @@ export default async function AdminAcademicYearsPage() {
   const session = await auth();
   const user = session!.user;
   const schoolId = await getActiveSchoolId(session!);
+  const t = await getTranslations("academicYearsPage");
 
   const years = schoolId
     ? await prisma.academicYear.findMany({ where: { schoolId }, orderBy: { startDate: "desc" } })
@@ -24,10 +26,10 @@ export default async function AdminAcademicYearsPage() {
           <table className="w-full text-sm">
             <thead className="border-b border-slate-200 text-left text-slate-500">
               <tr>
-                <th className="px-4 py-2 font-medium">Name</th>
-                <th className="px-4 py-2 font-medium">Start</th>
-                <th className="px-4 py-2 font-medium">End</th>
-                <th className="px-4 py-2 font-medium">Status</th>
+                <th className="px-4 py-2 font-medium">{t("name")}</th>
+                <th className="px-4 py-2 font-medium">{t("start")}</th>
+                <th className="px-4 py-2 font-medium">{t("end")}</th>
+                <th className="px-4 py-2 font-medium">{t("status")}</th>
               </tr>
             </thead>
             <tbody>
@@ -42,7 +44,7 @@ export default async function AdminAcademicYearsPage() {
                   </td>
                   <td className="px-4 py-2">
                     <span className={y.isActive ? "text-green-700" : "text-slate-400"}>
-                      {y.isActive ? "Active" : "Inactive"}
+                      {y.isActive ? t("active") : t("inactive")}
                     </span>
                   </td>
                 </tr>
@@ -50,7 +52,7 @@ export default async function AdminAcademicYearsPage() {
               {years.length === 0 && (
                 <tr>
                   <td colSpan={4} className="px-4 py-6 text-center text-slate-400">
-                    No academic years yet.
+                    {t("empty")}
                   </td>
                 </tr>
               )}
@@ -59,7 +61,7 @@ export default async function AdminAcademicYearsPage() {
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>Create Academic Year</CardTitle>
+            <CardTitle>{t("createTitle")}</CardTitle>
           </CardHeader>
           <CardContent>
             <CreateAcademicYearForm />
