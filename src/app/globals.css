@@ -9,6 +9,8 @@
   --color-brand-gold: #c9a24b;
   --color-brand-gold-light: #e2c882;
   --color-brand-cream: #f8f4ea;
+  /* Pale cyan-tinted surface for large content areas that want more life than cream. */
+  --color-brand-mist: #ebf4f6;
   /* AI-circuit accent, sampled from the glowing chip artwork in the logo. */
   --color-brand-cyan: #3fd7e8;
   --color-brand-cyan-light: #9beef7;
@@ -24,6 +26,7 @@
   --color-brand-gold: var(--color-brand-gold);
   --color-brand-gold-light: var(--color-brand-gold-light);
   --color-brand-cream: var(--color-brand-cream);
+  --color-brand-mist: var(--color-brand-mist);
   --color-brand-cyan: var(--color-brand-cyan);
   --color-brand-cyan-light: var(--color-brand-cyan-light);
 }
