@@ -30,7 +30,11 @@
     "assessments": "التقييمات",
     "insights": "الرؤى",
     "overview": "نظرة عامة",
-    "dashboard": "لوحة المعلومات"
+    "dashboard": "لوحة المعلومات",
+    "questionBank": "بنك الأسئلة",
+    "knowledgeMemory": "الذاكرة المؤسسية",
+    "messages": "الرسائل",
+    "impactReport": "تقرير الأثر"
   },
   "schedule": {
     "title": "جدولي الأسبوعي",
@@ -161,7 +165,9 @@
     "performanceIndicators": "مؤشرات الأداء",
     "indicatorName": "المؤشر",
     "measurementMethod": "طريقة القياس",
+    "baselineValue": "القيمة الأساسية (خط الأساس)",
     "targetValue": "القيمة المستهدفة",
+    "actualValue": "القيمة الحالية",
     "save": "حفظ",
     "saving": "جارٍ الحفظ...",
     "saved": "تم الحفظ.",
@@ -169,11 +175,14 @@
     "markActive": "تفعيل",
     "markCompleted": "إتمام",
     "completedReadOnly": "تم إتمام هذه المبادرة وأصبحت للقراءة فقط.",
+    "preparingPdf": "جارٍ تجهيز ملف PDF...",
+    "printFailed": "فشل توليد ملف PDF.",
     "evidence": "الأدلة",
     "noEvidenceYet": "لم تُضَف أي أدلة بعد.",
     "descriptionLabel": "الوصف",
     "descriptionPlaceholder": "مثال: صور من معرض القراءة",
     "linkLabel": "الرابط (اختياري)",
+    "fileLabel": "إرفاق ملف (اختياري)",
     "addEvidence": "إضافة دليل",
     "adding": "جارٍ الإضافة...",
     "formNameLabel": "اسم المبادرة",
@@ -265,7 +274,9 @@
     "save": "حفظ",
     "saving": "جارٍ الحفظ...",
     "saved": "تم الحفظ.",
-    "reload": "إعادة التحميل"
+    "reload": "إعادة التحميل",
+    "preparingPdf": "جارٍ تجهيز ملف PDF...",
+    "printFailed": "فشل توليد ملف PDF."
   },
   "assessments": {
     "myAssessments": "تقييماتي",
@@ -296,6 +307,7 @@
     "open": "مفتوح",
     "questionTextLabel": "نص السؤال",
     "choicePlaceholder": "الخيار {n}",
+    "choices": "الخيارات",
     "correctAnswerLabel": "الإجابة الصحيحة",
     "explanationLabel": "الشرح",
     "save": "حفظ",
@@ -325,6 +337,99 @@
     "concerns": "نقاط الاهتمام",
     "recommendations": "التوصيات"
   },
+  "masterDataPage": {
+    "subjectName": "اسم المادة (بالإنجليزية)",
+    "subjectNameAr": "اسم المادة (بالعربية)",
+    "subjectCode": "رمز المادة",
+    "subjectCodePlaceholder": "مثال: MATH",
+    "createSubjectTitle": "إنشاء مادة",
+    "subjectCreated": "تم إنشاء المادة.",
+    "gradeLevel": "المستوى الدراسي",
+    "gradeName": "اسم الصف (بالإنجليزية)",
+    "gradeNameAr": "اسم الصف (بالعربية)",
+    "createGradeTitle": "إنشاء صف",
+    "gradeCreated": "تم إنشاء الصف.",
+    "creating": "جارٍ الإنشاء..."
+  },
+  "impactReport": {
+    "title": "تقرير الأثر",
+    "subtitle": "القيم الأساسية والحالية والمستهدفة عبر مؤشرات الأداء لكل مبادرة.",
+    "indicator": "المؤشر",
+    "baseline": "القيمة الأساسية",
+    "current": "الحالي",
+    "target": "المستهدف",
+    "empty": "لا توجد مبادرات تحتوي على مؤشرات أداء بعد."
+  },
+  "messages": {
+    "title": "الرسائل",
+    "inbox": "الوارد",
+    "sent": "المرسلة",
+    "composeTitle": "رسالة جديدة",
+    "recipient": "إلى",
+    "subject": "الموضوع",
+    "body": "الرسالة",
+    "send": "إرسال",
+    "sending": "جارٍ الإرسال...",
+    "empty": "لا توجد رسائل بعد.",
+    "noRecipients": "لا يوجد مستخدمون آخرون في مدرستك لمراسلتهم بعد.",
+    "to": "إلى:",
+    "from": "من:"
+  },
+  "knowledgeMemory": {
+    "title": "الذاكرة المؤسسية",
+    "subtitle": "أفضل الممارسات التي سجلتها مدرستك — يأخذها الذكاء الاصطناعي بعين الاعتبار في التوليدات المستقبلية لنفس الوحدة والمادة والصف.",
+    "addNoteTitle": "إضافة ممارسة فضلى",
+    "moduleLabel": "تنطبق على",
+    "subjectOptional": "المادة (اختياري)",
+    "gradeOptional": "الصف (اختياري)",
+    "anySubject": "أي مادة",
+    "anyGrade": "أي صف",
+    "noteTitleLabel": "العنوان",
+    "noteTitlePlaceholder": "مثال: إحماء فعّال لحصص الجبر",
+    "noteContentLabel": "ما الذي نجح",
+    "noteContentPlaceholder": "صف الممارسة حتى يتمكن الذكاء الاصطناعي (وبقية الطاقم) من إعادة استخدامها...",
+    "adding": "جارٍ الإضافة...",
+    "addNote": "إضافة ملاحظة",
+    "noteAdded": "تمت إضافة الملاحظة.",
+    "remove": "حذف",
+    "empty": "لم تُسجَّل أي ملاحظات بعد.",
+    "modules": {
+      "LESSON_PLAN": "خطط الدروس",
+      "INITIATIVE": "المبادرات",
+      "OPERATIONAL_PLAN": "الخطط التشغيلية",
+      "ASSESSMENT": "التقييمات",
+      "INSIGHT": "الرؤى"
+    }
+  },
+  "aiQuality": {
+    "score": "الجودة: {score}/100",
+    "wasHelpful": "هل كان هذا مفيداً؟",
+    "issues": {
+      "TOO_SHORT": "{field} يبدو قصيراً جداً — راجعه قبل الحفظ.",
+      "TOO_FEW_ITEMS": "{field} قد يحتاج إلى عناصر أكثر.",
+      "PLACEHOLDER_TEXT": "{field} يبدو نصاً مؤقتاً — راجعه قبل الحفظ.",
+      "DUPLICATE_TEXT": "{field} يبدو مطابقاً لحقل آخر — راجعه قبل الحفظ."
+    }
+  },
+  "questionBank": {
+    "title": "بنك الأسئلة",
+    "subtitle": "ابحث وأعد استخدام أسئلة سبق أن ولّدتها مدرستك.",
+    "subject": "المادة",
+    "grade": "الصف",
+    "allSubjects": "جميع المواد",
+    "allGrades": "جميع الصفوف",
+    "allDifficulties": "جميع مستويات الصعوبة",
+    "allTypes": "جميع الأنواع",
+    "search": "بحث",
+    "searching": "جارٍ البحث...",
+    "searchPlaceholder": "ابحث في نص السؤال...",
+    "filter": "تصفية",
+    "close": "إغلاق",
+    "add": "إضافة",
+    "browseButton": "تصفح بنك الأسئلة",
+    "createdBy": "أضافه",
+    "empty": "لم يتم العثور على أسئلة."
+  },
   "dashboard": {
     "title": "لوحة المعلومات",
     "lessonPlans": "الخطط الدراسية",
@@ -342,7 +447,15 @@
     "open": "مفتوحة",
     "inProgress": "قيد التنفيذ",
     "done": "منجزة",
-    "printed": "مطبوعة"
+    "printed": "مطبوعة",
+    "lessonPlanTrend": "خطط الدروس المُنشأة — آخر 8 أسابيع",
+    "questionDifficulty": "توزيع صعوبة بنك الأسئلة",
+    "topTeachers": "المعلمون الأكثر نشاطاً (خطط الدروس)",
+    "noData": "لا توجد بيانات كافية بعد.",
+    "easy": "سهل",
+    "medium": "متوسط",
+    "advanced": "متقدم",
+    "challenge": "تحدٍّ"
   },
   "admin": {
     "schools": "المدارس",
@@ -353,7 +466,8 @@
     "timetable": "الجدول الدراسي",
     "auditLog": "سجل التدقيق",
     "permissions": "الصلاحيات",
-    "translations": "الترجمات"
+    "translations": "الترجمات",
+    "masterData": "البيانات الأساسية"
   },
   "adminOverview": {
     "users": "المستخدمون",
@@ -492,6 +606,8 @@
     "source": "المصدر",
     "model": "النموذج",
     "status": "الحالة",
+    "quality": "الجودة",
+    "feedback": "التقييم",
     "error": "الخطأ",
     "noAiLogs": "لا توجد محاولات توليد بالذكاء الاصطناعي بعد.",
     "sourceTypes": {

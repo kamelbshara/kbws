@@ -7,6 +7,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { OPENAI_MODEL } from "@/lib/ai/client";
 import { generateAssessmentQuestions } from "@/lib/ai/generateQuestions";
+import { evaluateAssessment } from "@/lib/ai/evaluate";
+import { getRelevantKnowledge } from "@/lib/knowledgeMemory";
 
 const bodySchema = z.object({
   questionCount: z.coerce.number().int().min(3).max(20).default(10),
@@ -51,6 +53,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const locale = (await getLocale()) as "ar" | "en";
   const lp = assessment.lessonPlan;
+  const knowledgeNotes = await getRelevantKnowledge(lp.classSection.schoolId, "ASSESSMENT", {
+    subjectId: lp.curriculumContent.subjectId,
+    gradeId: lp.classSection.gradeId,
+  });
   const promptInput = {
     subjectName: lp.curriculumContent.subject.name,
     gradeName: lp.classSection.grade.name,
@@ -59,12 +65,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     questionCount: parsedBody.data.questionCount,
     mcqRatio: parsedBody.data.mcqRatio,
     locale,
+    knowledgeNotes,
   };
 
   try {
     const result = await generateAssessmentQuestions(promptInput);
+    const evaluation = evaluateAssessment(result.content);
 
-    await prisma.aIGenerationLog.create({
+    const log = await prisma.aIGenerationLog.create({
       data: {
         assessmentId: assessment.id,
         userId: session.user.id,
@@ -72,10 +80,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         promptInput,
         responseJson: result.content,
         status: "SUCCESS",
+        qualityScore: evaluation.score,
+        qualityIssues: evaluation.issues,
       },
     });
 
-    return NextResponse.json({ content: result.content });
+    return NextResponse.json({ content: result.content, generationLogId: log.id, quality: evaluation });
   } catch (error) {
     await prisma.aIGenerationLog.create({
       data: {

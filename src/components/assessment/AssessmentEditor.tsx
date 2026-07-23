@@ -9,7 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { QuestionBankPicker } from "@/components/assessment/QuestionBankPicker";
+import { AIQualityFeedback } from "@/components/ai/AIQualityFeedback";
 import type { AssessmentGeneration, QuestionItem } from "@/lib/ai/questionSchema";
+import type { QualityIssue } from "@/lib/ai/evaluate";
 
 const DIFFICULTIES: QuestionItem["difficulty"][] = ["EASY", "MEDIUM", "ADVANCED", "CHALLENGE"];
 
@@ -27,6 +30,8 @@ export function AssessmentEditor({
   const [error, setError] = useState<string | null>(null);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [isSaving, startSaving] = useTransition();
+  const [generationLogId, setGenerationLogId] = useState<string | null>(null);
+  const [quality, setQuality] = useState<{ score: number; issues: QualityIssue[] } | null>(null);
 
   async function generate() {
     setGenerating(true);
@@ -39,6 +44,8 @@ export function AssessmentEditor({
         return;
       }
       setContent(data.content);
+      setGenerationLogId(data.generationLogId ?? null);
+      setQuality(data.quality ?? null);
     } catch {
       setError(t("networkError"));
     } finally {
@@ -66,6 +73,10 @@ export function AssessmentEditor({
     setContent({ ...content, questions: content.questions.filter((_, i) => i !== index) });
   }
 
+  function addFromBank(question: QuestionItem) {
+    setContent(content ? { ...content, questions: [...content.questions, question] } : { questions: [question] });
+  }
+
   function save() {
     if (!content) return;
     startSaving(async () => {
@@ -83,12 +94,15 @@ export function AssessmentEditor({
 
   if (!content) {
     return (
-      <div className="rounded-md border border-dashed border-slate-300 p-6 text-center">
-        <p className="text-sm text-slate-600">{t("noQuestionsYet")}</p>
-        <Button className="mt-4" onClick={generate} disabled={generating}>
-          {generating ? t("generating") : t("generateQuestions")}
-        </Button>
-        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      <div className="flex flex-col gap-4">
+        <div className="rounded-md border border-dashed border-slate-300 p-6 text-center">
+          <p className="text-sm text-slate-600">{t("noQuestionsYet")}</p>
+          <Button className="mt-4" onClick={generate} disabled={generating}>
+            {generating ? t("generating") : t("generateQuestions")}
+          </Button>
+          {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+        </div>
+        <QuestionBankPicker onAdd={addFromBank} />
       </div>
     );
   }
@@ -198,6 +212,10 @@ export function AssessmentEditor({
           </div>
         </div>
       ))}
+
+      <QuestionBankPicker onAdd={addFromBank} />
+
+      <AIQualityFeedback generationLogId={generationLogId} quality={quality} fieldNamespace="assessments" />
 
       <div className="flex flex-wrap items-center gap-3 border-t border-slate-200 pt-4">
         <Button onClick={save} disabled={isSaving}>

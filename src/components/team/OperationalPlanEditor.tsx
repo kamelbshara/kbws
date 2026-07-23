@@ -6,7 +6,9 @@ import { useTranslations } from "next-intl";
 import { saveOperationalPlanAction } from "@/actions/teams";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AIQualityFeedback } from "@/components/ai/AIQualityFeedback";
 import type { OperationalPlanGeneration } from "@/lib/ai/operationalPlanSchema";
+import type { QualityIssue } from "@/lib/ai/evaluate";
 
 const COLUMNS = ["domain", "objective", "actions", "responsible", "timeline", "indicator", "risk"] as const;
 
@@ -20,6 +22,7 @@ export function OperationalPlanEditor({
   updatedAt: string;
 }) {
   const t = useTranslations("operationalPlan");
+  const common = useTranslations("common");
   const router = useRouter();
   const [content, setContent] = useState<OperationalPlanGeneration | null>(initialContent);
   const [loadedAt, setLoadedAt] = useState(updatedAt);
@@ -28,6 +31,25 @@ export function OperationalPlanEditor({
   const [conflict, setConflict] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [isSaving, startSaving] = useTransition();
+  const [isPrinting, setIsPrinting] = useState(false);
+  const [generationLogId, setGenerationLogId] = useState<string | null>(null);
+  const [quality, setQuality] = useState<{ score: number; issues: QualityIssue[] } | null>(null);
+
+  async function print() {
+    setIsPrinting(true);
+    try {
+      const res = await fetch(`/api/operational-plans/${planId}/pdf`, { method: "POST" });
+      if (!res.ok) {
+        setError(t("printFailed"));
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    } finally {
+      setIsPrinting(false);
+    }
+  }
 
   async function generate() {
     setGenerating(true);
@@ -40,6 +62,8 @@ export function OperationalPlanEditor({
         return;
       }
       setContent(data.content);
+      setGenerationLogId(data.generationLogId ?? null);
+      setQuality(data.quality ?? null);
     } catch {
       setError("Network error while generating. Please try again.");
     } finally {
@@ -129,6 +153,8 @@ export function OperationalPlanEditor({
         </table>
       </div>
 
+      <AIQualityFeedback generationLogId={generationLogId} quality={quality} fieldNamespace="operationalPlan" />
+
       <div className="flex items-center gap-3">
         {!conflict && (
           <Button onClick={save} disabled={isSaving} className="w-fit">
@@ -140,6 +166,9 @@ export function OperationalPlanEditor({
             {t("reload")}
           </Button>
         )}
+        <Button onClick={print} variant="outline" disabled={isPrinting} className="w-fit">
+          {isPrinting ? t("preparingPdf") : common("print")}
+        </Button>
         {saveMessage && <span className="text-sm text-green-700">{saveMessage}</span>}
       </div>
     </div>

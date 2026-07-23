@@ -17,6 +17,11 @@ Seeded accounts (see `prisma/seed.ts` for passwords):
 - Principal: `principal@school.edu`
 - Teachers: `teacher1@school.edu`, `teacher2@school.edu`
 
-## Scope
+## Deploying
 
-See `/root/.claude/plans/i-understand-since-you-streamed-melody.md` in this session, or the project's implementation plan, for what is in/out of scope for this MVP slice.
+See [`DEPLOYMENT.md`](./DEPLOYMENT.md) for the full Vercel deployment runbook,
+including provisioning Postgres/Blob storage, required environment variables,
+and the scripts for creating a platform super-admin account
+(`prisma/createSuperAdmin.ts`) and a self-contained demo school with sample
+data across every module (`prisma/seedDemoSchool.ts` /
+`prisma/cleanupDemoSchool.ts`).

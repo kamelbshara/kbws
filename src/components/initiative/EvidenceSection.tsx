@@ -2,12 +2,21 @@
 
 import { useActionState } from "react";
 import { useTranslations } from "next-intl";
+import { Paperclip } from "lucide-react";
 import { addInitiativeEvidenceAction, type ActionState } from "@/actions/initiatives";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-type Evidence = { id: string; description: string; link: string | null; createdAt: string; createdBy: { name: string } };
+type Evidence = {
+  id: string;
+  description: string;
+  link: string | null;
+  fileUrl: string | null;
+  fileName: string | null;
+  createdAt: string;
+  createdBy: { name: string };
+};
 
 export function EvidenceSection({ initiativeId, evidence }: { initiativeId: string; evidence: Evidence[] }) {
   const t = useTranslations("initiatives");
@@ -25,6 +34,17 @@ export function EvidenceSection({ initiativeId, evidence }: { initiativeId: stri
                 {e.link}
               </a>
             )}
+            {e.fileUrl && (
+              <a
+                href={e.fileUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
+              >
+                <Paperclip className="h-3 w-3" />
+                {e.fileName}
+              </a>
+            )}
             <div className="text-xs text-slate-400">
               {e.createdBy.name} · {e.createdAt}
             </div>
@@ -32,7 +52,7 @@ export function EvidenceSection({ initiativeId, evidence }: { initiativeId: stri
         ))}
         {evidence.length === 0 && <li className="text-sm text-slate-400">{t("noEvidenceYet")}</li>}
       </ul>
-      <form action={action} className="flex flex-col gap-2 sm:flex-row sm:items-end">
+      <form action={action} className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end">
         <input type="hidden" name="initiativeId" value={initiativeId} />
         <div className="flex flex-1 flex-col gap-1">
           <Label htmlFor="description" className="text-xs text-slate-500">
@@ -45,6 +65,18 @@ export function EvidenceSection({ initiativeId, evidence }: { initiativeId: stri
             {t("linkLabel")}
           </Label>
           <Input id="link" name="link" type="url" placeholder="https://..." />
+        </div>
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="file" className="text-xs text-slate-500">
+            {t("fileLabel")}
+          </Label>
+          <input
+            id="file"
+            name="file"
+            type="file"
+            accept="image/*,.pdf,.doc,.docx"
+            className="w-48 rounded-md border border-slate-300 bg-white p-1.5 text-xs"
+          />
         </div>
         <Button type="submit" disabled={pending} variant="outline">
           {pending ? t("adding") : t("addEvidence")}

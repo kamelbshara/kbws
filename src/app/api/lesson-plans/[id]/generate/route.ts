@@ -7,6 +7,8 @@ import { prisma } from "@/lib/prisma";
 import { OPENAI_MODEL } from "@/lib/ai/client";
 import { generateLessonPlan } from "@/lib/ai/generateLessonPlan";
 import { LESSON_PLAN_SECTIONS } from "@/lib/ai/lessonPlanSchema";
+import { evaluateLessonPlan } from "@/lib/ai/evaluate";
+import { getRelevantKnowledge } from "@/lib/knowledgeMemory";
 import { getLocale } from "next-intl/server";
 
 const bodySchema = z.object({
@@ -44,6 +46,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const locale = (await getLocale()) as "ar" | "en";
 
+  const knowledgeNotes = await getRelevantKnowledge(lessonPlan.classSection.schoolId, "LESSON_PLAN", {
+    subjectId: lessonPlan.curriculumContent.subjectId,
+    gradeId: lessonPlan.classSection.gradeId,
+  });
+
   const promptInput = {
     subjectName: lessonPlan.curriculumContent.subject.name,
     gradeName: lessonPlan.classSection.grade.name,
@@ -59,12 +66,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     tools: lessonPlan.tools,
     locale,
     focusSection: parsedBody.data.section,
+    knowledgeNotes,
   };
 
   try {
     const result = await generateLessonPlan(promptInput);
+    const evaluation = evaluateLessonPlan(result.content);
 
-    await prisma.aIGenerationLog.create({
+    const log = await prisma.aIGenerationLog.create({
       data: {
         lessonPlanId: lessonPlan.id,
         userId: session.user.id,
@@ -73,10 +82,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         promptInput,
         responseJson: result.content,
         status: "SUCCESS",
+        qualityScore: evaluation.score,
+        qualityIssues: evaluation.issues,
       },
     });
 
-    return NextResponse.json({ content: result.content });
+    return NextResponse.json({ content: result.content, generationLogId: log.id, quality: evaluation });
   } catch (error) {
     await prisma.aIGenerationLog.create({
       data: {

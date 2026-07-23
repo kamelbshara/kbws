@@ -30,7 +30,11 @@
     "assessments": "Assessments",
     "insights": "Insights",
     "overview": "Overview",
-    "dashboard": "Dashboard"
+    "dashboard": "Dashboard",
+    "questionBank": "Question Bank",
+    "knowledgeMemory": "Knowledge Memory",
+    "messages": "Messages",
+    "impactReport": "Impact Report"
   },
   "schedule": {
     "title": "My Weekly Schedule",
@@ -161,7 +165,9 @@
     "performanceIndicators": "Performance Indicators",
     "indicatorName": "Indicator",
     "measurementMethod": "Measurement method",
+    "baselineValue": "Baseline value",
     "targetValue": "Target value",
+    "actualValue": "Current value",
     "save": "Save",
     "saving": "Saving...",
     "saved": "Saved.",
@@ -169,11 +175,14 @@
     "markActive": "Mark Active",
     "markCompleted": "Mark Completed",
     "completedReadOnly": "This initiative is completed and now read-only.",
+    "preparingPdf": "Preparing PDF...",
+    "printFailed": "Failed to generate PDF.",
     "evidence": "Evidence",
     "noEvidenceYet": "No evidence added yet.",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "e.g. Photos from the reading fair",
     "linkLabel": "Link (optional)",
+    "fileLabel": "Attach file (optional)",
     "addEvidence": "Add Evidence",
     "adding": "Adding...",
     "formNameLabel": "Initiative Name",
@@ -265,7 +274,9 @@
     "save": "Save",
     "saving": "Saving...",
     "saved": "Saved.",
-    "reload": "Reload"
+    "reload": "Reload",
+    "preparingPdf": "Preparing PDF...",
+    "printFailed": "Failed to generate PDF."
   },
   "assessments": {
     "myAssessments": "My Assessments",
@@ -296,6 +307,7 @@
     "open": "Open",
     "questionTextLabel": "Question Text",
     "choicePlaceholder": "Choice {n}",
+    "choices": "Choices",
     "correctAnswerLabel": "Correct Answer",
     "explanationLabel": "Explanation",
     "save": "Save",
@@ -325,6 +337,99 @@
     "concerns": "Concerns",
     "recommendations": "Recommendations"
   },
+  "masterDataPage": {
+    "subjectName": "Subject Name (English)",
+    "subjectNameAr": "Subject Name (Arabic)",
+    "subjectCode": "Subject Code",
+    "subjectCodePlaceholder": "e.g. MATH",
+    "createSubjectTitle": "Create Subject",
+    "subjectCreated": "Subject created.",
+    "gradeLevel": "Grade Level",
+    "gradeName": "Grade Name (English)",
+    "gradeNameAr": "Grade Name (Arabic)",
+    "createGradeTitle": "Create Grade",
+    "gradeCreated": "Grade created.",
+    "creating": "Creating..."
+  },
+  "impactReport": {
+    "title": "Impact Report",
+    "subtitle": "Baseline, current, and target values across every initiative's performance indicators.",
+    "indicator": "Indicator",
+    "baseline": "Baseline",
+    "current": "Current",
+    "target": "Target",
+    "empty": "No initiatives with performance indicators yet."
+  },
+  "messages": {
+    "title": "Messages",
+    "inbox": "Inbox",
+    "sent": "Sent",
+    "composeTitle": "Compose",
+    "recipient": "To",
+    "subject": "Subject",
+    "body": "Message",
+    "send": "Send",
+    "sending": "Sending...",
+    "empty": "No messages yet.",
+    "noRecipients": "No other users in your school to message yet.",
+    "to": "To:",
+    "from": "From:"
+  },
+  "knowledgeMemory": {
+    "title": "Knowledge Memory",
+    "subtitle": "Institutional best practices your school has recorded — the AI factors these into future generations for the same module, subject, and grade.",
+    "addNoteTitle": "Add a Best Practice",
+    "moduleLabel": "Applies to",
+    "subjectOptional": "Subject (optional)",
+    "gradeOptional": "Grade (optional)",
+    "anySubject": "Any subject",
+    "anyGrade": "Any grade",
+    "noteTitleLabel": "Title",
+    "noteTitlePlaceholder": "e.g. Effective warm-up for algebra lessons",
+    "noteContentLabel": "What worked",
+    "noteContentPlaceholder": "Describe the practice so the AI (and other staff) can reuse it...",
+    "adding": "Adding...",
+    "addNote": "Add Note",
+    "noteAdded": "Note added.",
+    "remove": "Remove",
+    "empty": "No notes recorded yet.",
+    "modules": {
+      "LESSON_PLAN": "Lesson Plans",
+      "INITIATIVE": "Initiatives",
+      "OPERATIONAL_PLAN": "Operational Plans",
+      "ASSESSMENT": "Assessments",
+      "INSIGHT": "Insights"
+    }
+  },
+  "aiQuality": {
+    "score": "Quality: {score}/100",
+    "wasHelpful": "Was this helpful?",
+    "issues": {
+      "TOO_SHORT": "{field} seems too short — check it before saving.",
+      "TOO_FEW_ITEMS": "{field} may need more items.",
+      "PLACEHOLDER_TEXT": "{field} looks like placeholder text — check it before saving.",
+      "DUPLICATE_TEXT": "{field} looks identical to another field — check it before saving."
+    }
+  },
+  "questionBank": {
+    "title": "Question Bank",
+    "subtitle": "Search and reuse questions your school has generated before.",
+    "subject": "Subject",
+    "grade": "Grade",
+    "allSubjects": "All subjects",
+    "allGrades": "All grades",
+    "allDifficulties": "All difficulties",
+    "allTypes": "All types",
+    "search": "Search",
+    "searching": "Searching...",
+    "searchPlaceholder": "Search question text...",
+    "filter": "Filter",
+    "close": "Close",
+    "add": "Add",
+    "browseButton": "Browse Question Bank",
+    "createdBy": "Added by",
+    "empty": "No questions found."
+  },
   "dashboard": {
     "title": "Dashboard",
     "lessonPlans": "Lesson Plans",
@@ -342,7 +447,15 @@
     "open": "Open",
     "inProgress": "In Progress",
     "done": "Done",
-    "printed": "Printed"
+    "printed": "Printed",
+    "lessonPlanTrend": "Lesson Plans Created — Last 8 Weeks",
+    "questionDifficulty": "Question Bank Difficulty Distribution",
+    "topTeachers": "Most Active Teachers (Lesson Plans)",
+    "noData": "Not enough data yet.",
+    "easy": "Easy",
+    "medium": "Medium",
+    "advanced": "Advanced",
+    "challenge": "Challenge"
   },
   "admin": {
     "schools": "Schools",
@@ -353,7 +466,8 @@
     "timetable": "Timetable",
     "auditLog": "Audit Log",
     "permissions": "Permissions",
-    "translations": "Translations"
+    "translations": "Translations",
+    "masterData": "Master Data"
   },
   "adminOverview": {
     "users": "Users",
@@ -492,6 +606,8 @@
     "source": "Source",
     "model": "Model",
     "status": "Status",
+    "quality": "Quality",
+    "feedback": "Feedback",
     "error": "Error",
     "noAiLogs": "No AI generation attempts yet.",
     "sourceTypes": {

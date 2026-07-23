@@ -6,6 +6,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { OPENAI_MODEL } from "@/lib/ai/client";
 import { generateOperationalPlan } from "@/lib/ai/generateOperationalPlan";
+import { evaluateOperationalPlan } from "@/lib/ai/evaluate";
+import { getRelevantKnowledge } from "@/lib/knowledgeMemory";
 import { getRoleGroup } from "@/lib/permissions";
 import { getActiveSchoolId } from "@/lib/activeSchool";
 
@@ -33,17 +35,21 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   }
 
   const locale = (await getLocale()) as "ar" | "en";
+  const knowledgeSchoolId = plan.schoolId ?? plan.team?.schoolId;
+  const knowledgeNotes = knowledgeSchoolId ? await getRelevantKnowledge(knowledgeSchoolId, "OPERATIONAL_PLAN", {}) : [];
   const promptInput = {
     title: plan.title,
     level: plan.level,
     initialIdea: plan.initialIdea,
     locale,
+    knowledgeNotes,
   };
 
   try {
     const result = await generateOperationalPlan(promptInput);
+    const evaluation = evaluateOperationalPlan(result.content);
 
-    await prisma.aIGenerationLog.create({
+    const log = await prisma.aIGenerationLog.create({
       data: {
         operationalPlanId: plan.id,
         userId: session.user.id,
@@ -51,10 +57,12 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
         promptInput,
         responseJson: result.content,
         status: "SUCCESS",
+        qualityScore: evaluation.score,
+        qualityIssues: evaluation.issues,
       },
     });
 
-    return NextResponse.json({ content: result.content });
+    return NextResponse.json({ content: result.content, generationLogId: log.id, quality: evaluation });
   } catch (error) {
     await prisma.aIGenerationLog.create({
       data: {

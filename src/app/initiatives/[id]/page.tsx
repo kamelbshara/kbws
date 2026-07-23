@@ -8,7 +8,7 @@ import { InitiativeEditor } from "@/components/initiative/InitiativeEditor";
 import { EvidenceSection } from "@/components/initiative/EvidenceSection";
 import { getRoleGroup } from "@/lib/permissions";
 import { getActiveSchoolId } from "@/lib/activeSchool";
-import type { InitiativeGeneration } from "@/lib/ai/initiativeSchema";
+import type { InitiativeSave } from "@/lib/ai/initiativeSchema";
 
 export default async function InitiativeDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -33,7 +33,7 @@ export default async function InitiativeDetailPage({ params }: { params: Promise
     notFound();
   }
 
-  const initialContent: InitiativeGeneration | null = initiative.goal
+  const initialContent: InitiativeSave | null = initiative.goal
     ? {
         goal: initiative.goal,
         targetGroup: initiative.targetGroup ?? "",
@@ -41,7 +41,9 @@ export default async function InitiativeDetailPage({ params }: { params: Promise
         indicators: initiative.indicators.map((i) => ({
           name: i.name,
           measurementMethod: i.measurementMethod,
+          baselineValue: i.baselineValue ?? "",
           targetValue: i.targetValue ?? "",
+          actualValue: i.actualValue ?? "",
         })),
       }
     : null;
@@ -75,6 +77,8 @@ export default async function InitiativeDetailPage({ params }: { params: Promise
               id: e.id,
               description: e.description,
               link: e.link,
+              fileUrl: e.fileUrl,
+              fileName: e.fileName,
               createdAt: e.createdAt.toISOString().slice(0, 10),
               createdBy: { name: e.createdBy.name },
             }))}

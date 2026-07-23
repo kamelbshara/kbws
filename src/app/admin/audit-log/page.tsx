@@ -61,6 +61,7 @@ export default async function AuditLogPage({
             operationalPlan: true,
             assessment: true,
             insight: true,
+            feedback: true,
           },
           orderBy: { createdAt: "desc" },
           take: 25,
@@ -221,6 +222,8 @@ export default async function AuditLogPage({
                   <th className="px-4 py-2 font-medium">{t("source")}</th>
                   <th className="px-4 py-2 font-medium">{t("model")}</th>
                   <th className="px-4 py-2 font-medium">{t("status")}</th>
+                  <th className="px-4 py-2 font-medium">{t("quality")}</th>
+                  <th className="px-4 py-2 font-medium">{t("feedback")}</th>
                   <th className="px-4 py-2 font-medium">{t("error")}</th>
                 </tr>
               </thead>
@@ -237,6 +240,8 @@ export default async function AuditLogPage({
                           : log.insight
                             ? `${t("sourceTypes.insight")} · ${log.insight.scope}`
                             : "—";
+                  const upCount = log.feedback.filter((f) => f.rating === "UP").length;
+                  const downCount = log.feedback.filter((f) => f.rating === "DOWN").length;
                   return (
                     <tr key={log.id} className="border-b border-slate-100 last:border-0">
                       <td className="whitespace-nowrap px-4 py-2 text-slate-600" dir="ltr">
@@ -250,13 +255,19 @@ export default async function AuditLogPage({
                           {log.status}
                         </span>
                       </td>
+                      <td className="px-4 py-2 text-slate-600" dir="ltr">
+                        {log.qualityScore !== null ? `${log.qualityScore}/100` : "—"}
+                      </td>
+                      <td className="px-4 py-2 text-slate-600" dir="ltr">
+                        {upCount > 0 || downCount > 0 ? `👍${upCount} 👎${downCount}` : "—"}
+                      </td>
                       <td className="max-w-xs truncate px-4 py-2 text-xs text-slate-500">{log.errorMessage ?? "—"}</td>
                     </tr>
                   );
                 })}
                 {aiLogs.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-6 text-center text-slate-400">
+                    <td colSpan={8} className="px-4 py-6 text-center text-slate-400">
                       {t("noAiLogs")}
                     </td>
                   </tr>
