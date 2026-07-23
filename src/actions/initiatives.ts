@@ -6,7 +6,9 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { requireRole, INITIATIVE_CREATOR_ROLES, ForbiddenError } from "@/lib/permissions";
+import { requireRoleGroup, getRoleGroup, ForbiddenError } from "@/lib/permissions";
+import { getActiveSchoolId } from "@/lib/activeSchool";
+import { createNotifications } from "@/lib/notifications";
 import { InitiativeSaveSchema } from "@/lib/ai/initiativeSchema";
 import type { InitiativeCategory } from "@/generated/prisma/enums";
 
@@ -20,7 +22,7 @@ const createInitiativeSchema = z.object({
 
 export async function createInitiativeAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await auth();
-  requireRole(session, INITIATIVE_CREATOR_ROLES);
+  await requireRoleGroup(session, "INITIATIVE_CREATOR_ROLES");
   const ownerId = session!.user.id;
 
   const parsed = createInitiativeSchema.safeParse({
@@ -32,12 +34,15 @@ export async function createInitiativeAction(_prevState: ActionState, formData: 
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  const school = await prisma.school.findFirstOrThrow();
+  const schoolId = await getActiveSchoolId(session!);
+  if (!schoolId) {
+    return { error: "No school is associated with this account." };
+  }
 
   const initiative = await prisma.initiative.create({
     data: {
       ownerId,
-      schoolId: school.id,
+      schoolId,
       title: parsed.data.title,
       category: parsed.data.category as InitiativeCategory,
       initialIdea: parsed.data.initialIdea,
@@ -64,10 +69,23 @@ async function requireOwnedInitiative(initiativeId: string, userId: string) {
   return initiative;
 }
 
-export async function saveInitiativePlanAction(initiativeId: string, content: unknown): Promise<{ error?: string }> {
+export type SaveResult = { error?: string; conflict?: boolean; updatedAt?: string };
+
+export async function saveInitiativePlanAction(
+  initiativeId: string,
+  content: unknown,
+  expectedUpdatedAt: string,
+): Promise<SaveResult> {
   const session = await auth();
-  requireRole(session, INITIATIVE_CREATOR_ROLES);
+  await requireRoleGroup(session, "INITIATIVE_CREATOR_ROLES");
   const initiative = await requireOwnedInitiative(initiativeId, session!.user.id);
+
+  if (initiative.updatedAt.toISOString() !== expectedUpdatedAt) {
+    return {
+      conflict: true,
+      error: "This initiative was changed elsewhere since you opened it. Reload the page to see the latest version before saving.",
+    };
+  }
 
   const result = InitiativeSaveSchema.safeParse(content);
   if (!result.success) {
@@ -75,7 +93,7 @@ export async function saveInitiativePlanAction(initiativeId: string, content: un
   }
   const parsed = result.data;
 
-  await prisma.$transaction([
+  const [updated] = await prisma.$transaction([
     prisma.initiative.update({
       where: { id: initiativeId },
       data: { goal: parsed.goal, targetGroup: parsed.targetGroup },
@@ -111,7 +129,7 @@ export async function saveInitiativePlanAction(initiativeId: string, content: un
   });
 
   revalidatePath(`/initiatives/${initiativeId}`);
-  return {};
+  return { updatedAt: updated.updatedAt.toISOString() };
 }
 
 const addEvidenceSchema = z.object({
@@ -121,7 +139,7 @@ const addEvidenceSchema = z.object({
 
 export async function addInitiativeEvidenceAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await auth();
-  requireRole(session, INITIATIVE_CREATOR_ROLES);
+  await requireRoleGroup(session, "INITIATIVE_CREATOR_ROLES");
 
   const initiativeId = formData.get("initiativeId");
   if (typeof initiativeId !== "string") {
@@ -166,7 +184,7 @@ const STATUS_TRANSITIONS: Record<string, string[]> = {
 
 export async function updateInitiativeStatusAction(initiativeId: string, nextStatus: "ACTIVE" | "COMPLETED") {
   const session = await auth();
-  requireRole(session, INITIATIVE_CREATOR_ROLES);
+  await requireRoleGroup(session, "INITIATIVE_CREATOR_ROLES");
   const initiative = await requireOwnedInitiative(initiativeId, session!.user.id);
 
   if (!STATUS_TRANSITIONS[initiative.status]?.includes(nextStatus)) {
@@ -183,6 +201,19 @@ export async function updateInitiativeStatusAction(initiativeId: string, nextSta
     before: { status: initiative.status },
     after: { status: nextStatus },
   });
+
+  const managementRoles = await getRoleGroup("MANAGEMENT_ROLES");
+  const managers = await prisma.user.findMany({
+    where: { schoolId: initiative.schoolId, role: { in: managementRoles }, isActive: true },
+  });
+  await createNotifications(
+    managers.map((m) => m.id).filter((id) => id !== session!.user.id),
+    {
+      type: "INITIATIVE_STATUS_CHANGE",
+      title: `Initiative "${initiative.title}" is now ${nextStatus}`,
+      link: `/initiatives/${initiativeId}`,
+    },
+  );
 
   revalidatePath(`/initiatives/${initiativeId}`);
 }

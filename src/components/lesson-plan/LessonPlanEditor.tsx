@@ -31,15 +31,19 @@ export function LessonPlanEditor({
   lessonPlanId,
   initialContent,
   isPrinted,
+  updatedAt,
 }: {
   lessonPlanId: string;
   initialContent: LessonPlanContent | null;
   isPrinted: boolean;
+  updatedAt: string;
 }) {
   const router = useRouter();
   const [content, setContent] = useState<LessonPlanContent | null>(initialContent);
+  const [loadedAt, setLoadedAt] = useState(updatedAt);
   const [generating, setGenerating] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [conflict, setConflict] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [isSaving, startSaving] = useTransition();
   const [isPrinting, setIsPrinting] = useState(false);
@@ -73,7 +77,17 @@ export function LessonPlanEditor({
   function save() {
     if (!content) return;
     startSaving(async () => {
-      await saveLessonPlanContentAction(lessonPlanId, content);
+      const result = await saveLessonPlanContentAction(lessonPlanId, content, loadedAt);
+      if (result.conflict) {
+        setConflict(true);
+        setError(result.error ?? null);
+        return;
+      }
+      if (result.updatedAt) {
+        setLoadedAt(result.updatedAt);
+      }
+      setConflict(false);
+      setError(null);
       setSaveMessage("Saved.");
       router.refresh();
       setTimeout(() => setSaveMessage(null), 2000);
@@ -220,9 +234,14 @@ export function LessonPlanEditor({
       </Section>
 
       <div className="flex items-center gap-3 border-t border-slate-200 pt-4">
-        {!isPrinted && (
+        {!isPrinted && !conflict && (
           <Button onClick={save} disabled={isSaving}>
             {isSaving ? "Saving..." : "Save"}
+          </Button>
+        )}
+        {conflict && (
+          <Button onClick={() => window.location.reload()} variant="outline">
+            Reload
           </Button>
         )}
         <Button onClick={print} variant="outline" disabled={isPrinting}>

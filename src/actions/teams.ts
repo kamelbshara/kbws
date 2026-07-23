@@ -7,7 +7,9 @@ import type { Session } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { requireRole, TEAM_CREATOR_ROLES, MANAGEMENT_ROLES, ForbiddenError } from "@/lib/permissions";
+import { requireRoleGroup, getRoleGroup, ForbiddenError } from "@/lib/permissions";
+import { getActiveSchoolId } from "@/lib/activeSchool";
+import { createNotification, createNotifications } from "@/lib/notifications";
 import { OperationalPlanSaveSchema } from "@/lib/ai/operationalPlanSchema";
 import type { TeamType, ActionItemStatus } from "@/generated/prisma/enums";
 
@@ -21,7 +23,7 @@ const createTeamSchema = z.object({
 
 export async function createTeamAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await auth();
-  requireRole(session, TEAM_CREATOR_ROLES);
+  await requireRoleGroup(session, "TEAM_CREATOR_ROLES");
   const leaderId = session!.user.id;
 
   const parsed = createTeamSchema.safeParse({
@@ -33,11 +35,14 @@ export async function createTeamAction(_prevState: ActionState, formData: FormDa
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  const school = await prisma.school.findFirstOrThrow();
+  const schoolId = await getActiveSchoolId(session!);
+  if (!schoolId) {
+    return { error: "No school is associated with this account." };
+  }
 
   const team = await prisma.team.create({
     data: {
-      schoolId: school.id,
+      schoolId,
       name: parsed.data.name,
       type: parsed.data.type as TeamType,
       goal: parsed.data.goal,
@@ -79,7 +84,7 @@ const addMemberSchema = z.object({
 
 export async function addTeamMemberAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await auth();
-  requireRole(session, TEAM_CREATOR_ROLES);
+  await requireRoleGroup(session, "TEAM_CREATOR_ROLES");
 
   const parsed = addMemberSchema.safeParse({
     teamId: formData.get("teamId"),
@@ -89,7 +94,11 @@ export async function addTeamMemberAction(_prevState: ActionState, formData: For
     return { error: "Invalid input" };
   }
 
-  await requireTeamLeader(parsed.data.teamId, session!.user.id);
+  const team = await requireTeamLeader(parsed.data.teamId, session!.user.id);
+  const candidate = await prisma.user.findUnique({ where: { id: parsed.data.userId } });
+  if (!candidate || candidate.schoolId !== team.schoolId) {
+    return { error: "This user does not belong to your school." };
+  }
 
   try {
     await prisma.teamMember.create({ data: { teamId: parsed.data.teamId, userId: parsed.data.userId } });
@@ -105,6 +114,15 @@ export async function addTeamMemberAction(_prevState: ActionState, formData: For
     after: { addedUserId: parsed.data.userId },
   });
 
+  if (parsed.data.userId !== session!.user.id) {
+    await createNotification({
+      userId: parsed.data.userId,
+      type: "TEAM_ASSIGNMENT",
+      title: `You were added to the team "${team.name}"`,
+      link: `/teams/${team.id}`,
+    });
+  }
+
   revalidatePath(`/teams/${parsed.data.teamId}`);
   return { error: undefined };
 }
@@ -118,7 +136,7 @@ const createMeetingSchema = z.object({
 
 export async function createMeetingAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await auth();
-  requireRole(session, TEAM_CREATOR_ROLES);
+  await requireRoleGroup(session, "TEAM_CREATOR_ROLES");
 
   const parsed = createMeetingSchema.safeParse({
     teamId: formData.get("teamId"),
@@ -150,13 +168,25 @@ export async function createMeetingAction(_prevState: ActionState, formData: For
     after: { teamId: parsed.data.teamId, title: parsed.data.title },
   });
 
+  const members = await prisma.teamMember.findMany({ where: { teamId: parsed.data.teamId } });
+  const dateLabel = meeting.date.toISOString().slice(0, 10);
+  await createNotifications(
+    members.map((m) => m.userId).filter((userId) => userId !== session!.user.id),
+    {
+      type: "MEETING_SCHEDULED",
+      title: `Meeting scheduled: "${parsed.data.title}"`,
+      body: `${dateLabel}${parsed.data.agenda ? ` — ${parsed.data.agenda}` : ""}`,
+      link: `/teams/${parsed.data.teamId}`,
+    },
+  );
+
   revalidatePath(`/teams/${parsed.data.teamId}`);
   return { error: undefined };
 }
 
 export async function saveMeetingMinutesAction(meetingId: string, minutes: string) {
   const session = await auth();
-  requireRole(session, TEAM_CREATOR_ROLES);
+  await requireRoleGroup(session, "TEAM_CREATOR_ROLES");
 
   const meeting = await prisma.meeting.findUniqueOrThrow({ where: { id: meetingId } });
   await requireTeamLeader(meeting.teamId, session!.user.id);
@@ -184,7 +214,7 @@ const addActionItemSchema = z.object({
 
 export async function addActionItemAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await auth();
-  requireRole(session, TEAM_CREATOR_ROLES);
+  await requireRoleGroup(session, "TEAM_CREATOR_ROLES");
 
   const parsed = addActionItemSchema.safeParse({
     meetingId: formData.get("meetingId"),
@@ -215,6 +245,15 @@ export async function addActionItemAction(_prevState: ActionState, formData: For
     entityId: actionItem.id,
     after: { meetingId: parsed.data.meetingId, task: parsed.data.task },
   });
+
+  if (parsed.data.ownerId !== session!.user.id) {
+    await createNotification({
+      userId: parsed.data.ownerId,
+      type: "ACTION_ITEM_ASSIGNMENT",
+      title: `New task assigned: "${parsed.data.task}"`,
+      link: `/teams/${meeting.teamId}`,
+    });
+  }
 
   revalidatePath(`/teams/${meeting.teamId}`);
   return { error: undefined };
@@ -254,17 +293,33 @@ async function requireOperationalPlanAccess(planId: string, session: Session) {
   const plan = await prisma.operationalPlan.findUnique({ where: { id: planId }, include: { team: true } });
   if (!plan) throw new ForbiddenError("Plan not found.");
 
+  const activeSchoolId = await getActiveSchoolId(session);
   const authorized =
-    plan.level === "SCHOOL" ? MANAGEMENT_ROLES.includes(session.user.role) : plan.team?.leaderId === session.user.id;
+    plan.level === "SCHOOL"
+      ? plan.schoolId === activeSchoolId && (await getRoleGroup("MANAGEMENT_ROLES")).includes(session.user.role)
+      : plan.team?.leaderId === session.user.id;
 
   if (!authorized) throw new ForbiddenError("You do not have access to this operational plan.");
   return plan;
 }
 
-export async function saveOperationalPlanAction(planId: string, content: unknown): Promise<{ error?: string }> {
+export type SaveResult = { error?: string; conflict?: boolean; updatedAt?: string };
+
+export async function saveOperationalPlanAction(
+  planId: string,
+  content: unknown,
+  expectedUpdatedAt: string,
+): Promise<SaveResult> {
   const session = await auth();
   if (!session?.user) throw new Error("Unauthorized");
   const plan = await requireOperationalPlanAccess(planId, session);
+
+  if (plan.updatedAt.toISOString() !== expectedUpdatedAt) {
+    return {
+      conflict: true,
+      error: "This plan was changed elsewhere since you opened it. Reload the page to see the latest version before saving.",
+    };
+  }
 
   const result = OperationalPlanSaveSchema.safeParse(content);
   if (!result.success) {
@@ -272,7 +327,11 @@ export async function saveOperationalPlanAction(planId: string, content: unknown
   }
   const parsed = result.data;
 
-  await prisma.$transaction([
+  const [updated] = await prisma.$transaction([
+    // Re-set title (no-op value change) so this update also bumps the plan's
+    // own updatedAt -- otherwise only the item rows change, and the parent
+    // record never reflects "last saved", breaking the conflict check above.
+    prisma.operationalPlan.update({ where: { id: planId }, data: { title: plan.title } }),
     prisma.operationalPlanItem.deleteMany({ where: { operationalPlanId: planId } }),
     prisma.operationalPlanItem.createMany({
       data: parsed.items.map((item, index) => ({
@@ -298,5 +357,5 @@ export async function saveOperationalPlanAction(planId: string, content: unknown
   });
 
   revalidatePath(plan.level === "SCHOOL" ? "/operational-plan" : `/teams/${plan.teamId}`);
-  return {};
+  return { updatedAt: updated.updatedAt.toISOString() };
 }

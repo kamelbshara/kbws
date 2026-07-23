@@ -6,7 +6,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { OPENAI_MODEL } from "@/lib/ai/client";
 import { generateOperationalPlan } from "@/lib/ai/generateOperationalPlan";
-import { MANAGEMENT_ROLES } from "@/lib/permissions";
+import { getRoleGroup } from "@/lib/permissions";
+import { getActiveSchoolId } from "@/lib/activeSchool";
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -21,9 +22,10 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  const activeSchoolId = await getActiveSchoolId(session);
   const isAuthorized =
     plan.level === "SCHOOL"
-      ? MANAGEMENT_ROLES.includes(session.user.role)
+      ? plan.schoolId === activeSchoolId && (await getRoleGroup("MANAGEMENT_ROLES")).includes(session.user.role)
       : plan.team?.leaderId === session.user.id;
 
   if (!isAuthorized) {

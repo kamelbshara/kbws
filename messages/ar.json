@@ -27,7 +27,8 @@
     "initiatives": "المبادرات",
     "teams": "الفرق",
     "schoolPlan": "خطة المدرسة",
-    "assessments": "التقييمات"
+    "assessments": "التقييمات",
+    "insights": "الرؤى"
   },
   "schedule": {
     "title": "جدولي الأسبوعي",
@@ -54,6 +55,10 @@
     "academicYears": "الأعوام الدراسية",
     "users": "المستخدمون",
     "classes": "الشعب",
-    "timetable": "الجدول الدراسي"
+    "curriculum": "المنهج الدراسي",
+    "timetable": "الجدول الدراسي",
+    "auditLog": "سجل التدقيق",
+    "permissions": "الصلاحيات",
+    "translations": "الترجمات"
   }
 }

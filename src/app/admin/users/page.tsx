@@ -6,17 +6,19 @@ import { CreateUserForm } from "@/components/admin/CreateUserForm";
 import { toggleUserActiveAction } from "@/actions/school-config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getActiveSchoolId } from "@/lib/activeSchool";
 
 export default async function AdminUsersPage() {
   const session = await auth();
   const user = session!.user;
+  const schoolId = await getActiveSchoolId(session!);
 
-  const users = await prisma.user.findMany({ orderBy: { createdAt: "asc" } });
+  const users = schoolId ? await prisma.user.findMany({ where: { schoolId }, orderBy: { createdAt: "asc" } }) : [];
 
   return (
     <div>
       <AppHeader userName={user.name} role={user.role} />
-      <AdminNav />
+      <AdminNav role={user.role} />
       <main className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-[2fr_1fr]">
         <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
           <table className="w-full text-sm">

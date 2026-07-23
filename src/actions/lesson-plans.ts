@@ -5,7 +5,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { requireRole, TEACHER_ROLES, ForbiddenError } from "@/lib/permissions";
+import { requireRoleGroup, ForbiddenError } from "@/lib/permissions";
 
 export type ActionState = { error?: string } | undefined;
 
@@ -23,7 +23,7 @@ const createLessonPlanSchema = z.object({
 
 export async function createLessonPlanAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await auth();
-  requireRole(session, TEACHER_ROLES);
+  await requireRoleGroup(session, "TEACHER_ROLES");
   const teacherId = session!.user.id;
 
   const parsed = createLessonPlanSchema.safeParse({
@@ -83,16 +83,29 @@ export async function createLessonPlanAction(_prevState: ActionState, formData: 
   redirect(`/lesson-plans/${lessonPlan.id}`);
 }
 
-export async function saveLessonPlanContentAction(lessonPlanId: string, content: unknown) {
+export type SaveResult = { error?: string; conflict?: boolean; updatedAt?: string };
+
+export async function saveLessonPlanContentAction(
+  lessonPlanId: string,
+  content: unknown,
+  expectedUpdatedAt: string,
+): Promise<SaveResult> {
   const session = await auth();
-  requireRole(session, TEACHER_ROLES);
+  await requireRoleGroup(session, "TEACHER_ROLES");
 
   const existing = await prisma.lessonPlan.findUnique({ where: { id: lessonPlanId } });
   if (!existing || existing.teacherId !== session!.user.id) {
     throw new ForbiddenError("This lesson plan does not belong to you.");
   }
 
-  await prisma.lessonPlan.update({
+  if (existing.updatedAt.toISOString() !== expectedUpdatedAt) {
+    return {
+      conflict: true,
+      error: "This lesson plan was changed elsewhere since you opened it. Reload the page to see the latest version before saving.",
+    };
+  }
+
+  const updated = await prisma.lessonPlan.update({
     where: { id: lessonPlanId },
     data: { contentJson: content as object },
   });
@@ -105,4 +118,6 @@ export async function saveLessonPlanContentAction(lessonPlanId: string, content:
     before: { contentJson: existing.contentJson },
     after: { contentJson: content },
   });
+
+  return { updatedAt: updated.updatedAt.toISOString() };
 }

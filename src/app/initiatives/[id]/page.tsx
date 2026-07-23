@@ -5,7 +5,8 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { MainNav } from "@/components/layout/MainNav";
 import { InitiativeEditor } from "@/components/initiative/InitiativeEditor";
 import { EvidenceSection } from "@/components/initiative/EvidenceSection";
-import { MANAGEMENT_ROLES } from "@/lib/permissions";
+import { getRoleGroup } from "@/lib/permissions";
+import { getActiveSchoolId } from "@/lib/activeSchool";
 import { INITIATIVE_CATEGORY_LABELS, INITIATIVE_STATUS_LABELS } from "@/lib/initiativeLabels";
 import type { InitiativeGeneration } from "@/lib/ai/initiativeSchema";
 
@@ -24,8 +25,10 @@ export default async function InitiativeDetailPage({ params }: { params: Promise
     },
   });
 
-  const isManagement = MANAGEMENT_ROLES.includes(user.role);
-  if (!initiative || (initiative.ownerId !== user.id && !isManagement)) {
+  const isManagement = (await getRoleGroup("MANAGEMENT_ROLES")).includes(user.role);
+  const schoolId = await getActiveSchoolId(session!);
+  const isManagementForThisSchool = isManagement && initiative?.schoolId === schoolId;
+  if (!initiative || (initiative.ownerId !== user.id && !isManagementForThisSchool)) {
     notFound();
   }
 
@@ -57,7 +60,12 @@ export default async function InitiativeDetailPage({ params }: { params: Promise
         </div>
 
         <div className="mt-6">
-          <InitiativeEditor initiativeId={initiative.id} initialContent={initialContent} status={initiative.status} />
+          <InitiativeEditor
+            initiativeId={initiative.id}
+            initialContent={initialContent}
+            status={initiative.status}
+            updatedAt={initiative.updatedAt.toISOString()}
+          />
         </div>
 
         <div className="mt-6">

@@ -4,23 +4,28 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { AdminNav } from "@/components/layout/AdminNav";
 import { CreateClassSectionForm } from "@/components/admin/CreateClassSectionForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getActiveSchoolId } from "@/lib/activeSchool";
 
 export default async function AdminClassesPage() {
   const session = await auth();
   const user = session!.user;
+  const schoolId = await getActiveSchoolId(session!);
 
   const [classSections, grades] = await Promise.all([
-    prisma.classSection.findMany({
-      include: { grade: true },
-      orderBy: [{ grade: { level: "asc" } }, { name: "asc" }],
-    }),
+    schoolId
+      ? prisma.classSection.findMany({
+          where: { schoolId },
+          include: { grade: true },
+          orderBy: [{ grade: { level: "asc" } }, { name: "asc" }],
+        })
+      : Promise.resolve([]),
     prisma.grade.findMany({ orderBy: { level: "asc" } }),
   ]);
 
   return (
     <div>
       <AppHeader userName={user.name} role={user.role} />
-      <AdminNav />
+      <AdminNav role={user.role} />
       <main className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-[2fr_1fr]">
         <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
           <table className="w-full text-sm">

@@ -42,6 +42,11 @@ enum AuditAction {
   DELETE
 }
 
+enum InsightScope {
+  TEACHER
+  SCHOOL
+}
+
 enum InitiativeStatus {
   DRAFT
   ACTIVE
@@ -100,9 +105,11 @@ model School {
   academicYears    AcademicYear[]
   classSections    ClassSection[]
   timetables       Timetable[]
+  curriculumContents CurriculumContent[]
   initiatives      Initiative[]
   teams            Team[]
   operationalPlans OperationalPlan[]
+  insights         Insight[]
 }
 
 model AcademicYear {
@@ -191,6 +198,9 @@ model User {
   actionItems        ActionItem[]
   createdQuestions   QuestionBankItem[]
   assessments        Assessment[]
+  requestedInsights  Insight[]
+  notifications      Notification[]
+  passwordResetTokens PasswordResetToken[]
 }
 
 model TeacherAssignment {
@@ -232,6 +242,8 @@ model Timetable {
 
 model CurriculumContent {
   id          String   @id @default(cuid())
+  schoolId    String
+  school      School   @relation(fields: [schoolId], references: [id])
   subjectId   String
   subject     Subject  @relation(fields: [subjectId], references: [id])
   gradeId     String
@@ -245,7 +257,7 @@ model CurriculumContent {
   learningOutcomes LearningOutcome[]
   lessonPlans      LessonPlan[]
 
-  @@index([subjectId, gradeId, track])
+  @@index([schoolId, subjectId, gradeId, track])
 }
 
 model LearningOutcome {
@@ -312,6 +324,8 @@ model AIGenerationLog {
   operationalPlan   OperationalPlan? @relation(fields: [operationalPlanId], references: [id])
   assessmentId      String?
   assessment        Assessment?      @relation(fields: [assessmentId], references: [id])
+  insightId         String?
+  insight           Insight?         @relation(fields: [insightId], references: [id])
   userId            String
   user              User             @relation(fields: [userId], references: [id])
   section           String?
@@ -472,6 +486,67 @@ model AuditLog {
   beforeJson Json?
   afterJson  Json?
   createdAt  DateTime    @default(now())
+}
+
+model PasswordResetToken {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String
+  title     String
+  body      String?
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, read, createdAt])
+}
+
+model TranslationOverride {
+  id        String   @id @default(cuid())
+  locale    String
+  key       String
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@unique([locale, key])
+}
+
+model PermissionGroup {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  roles     Role[]
+  updatedAt DateTime @updatedAt
+}
+
+model Insight {
+  id              String       @id @default(cuid())
+  scope           InsightScope
+  schoolId        String
+  school          School       @relation(fields: [schoolId], references: [id])
+  requestedById   String
+  requestedBy     User         @relation(fields: [requestedById], references: [id])
+  summary         String
+  strengths       Json
+  concerns        Json
+  recommendations Json
+  createdAt       DateTime     @default(now())
+
+  aiGenerationLogs AIGenerationLog[]
+
+  @@index([scope, schoolId, requestedById])
 }
 
 model QuestionBankItem {

@@ -27,7 +27,8 @@
     "initiatives": "Initiatives",
     "teams": "Teams",
     "schoolPlan": "School Plan",
-    "assessments": "Assessments"
+    "assessments": "Assessments",
+    "insights": "Insights"
   },
   "schedule": {
     "title": "My Weekly Schedule",
@@ -54,6 +55,10 @@
     "academicYears": "Academic Years",
     "users": "Users",
     "classes": "Class Sections",
-    "timetable": "Timetable"
+    "curriculum": "Curriculum",
+    "timetable": "Timetable",
+    "auditLog": "Audit Log",
+    "permissions": "Permissions",
+    "translations": "Translations"
   }
 }

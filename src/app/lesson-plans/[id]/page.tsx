@@ -51,8 +51,17 @@ export default async function LessonPlanPage({ params }: { params: Promise<{ id:
             lessonPlanId={lessonPlan.id}
             initialContent={initialContent}
             isPrinted={lessonPlan.status === "PRINTED"}
+            updatedAt={lessonPlan.updatedAt.toISOString()}
           />
         </div>
+
+        {lessonPlan.status === "PRINTED" && (
+          <div className="mt-4">
+            <Link href={`/lesson-plans/${lessonPlan.id}/versions`} className="text-sm text-slate-500 hover:underline">
+              View version history →
+            </Link>
+          </div>
+        )}
 
         <div className="mt-6 rounded-md border border-slate-200 p-4">
           <div className="flex items-center justify-between">
