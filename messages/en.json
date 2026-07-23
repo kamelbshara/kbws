@@ -58,6 +58,7 @@
     "curriculum": "Curriculum",
     "timetable": "Timetable",
     "auditLog": "Audit Log",
-    "permissions": "Permissions"
+    "permissions": "Permissions",
+    "translations": "Translations"
   }
 }

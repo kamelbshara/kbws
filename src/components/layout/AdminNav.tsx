@@ -14,6 +14,7 @@ export async function AdminNav({ role }: { role?: Role } = {}) {
     { href: "/admin/curriculum", label: t("curriculum") },
     { href: "/admin/timetable", label: t("timetable") },
     { href: "/admin/audit-log", label: t("auditLog") },
+    { href: "/admin/translations", label: t("translations") },
     role === "SYSTEM_ADMIN" && { href: "/admin/permissions", label: t("permissions") },
     { href: "/insights", label: nav("insights") },
     { href: "/initiatives", label: nav("initiatives") },

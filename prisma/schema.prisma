@@ -483,6 +483,16 @@ model AuditLog {
   createdAt  DateTime    @default(now())
 }
 
+model TranslationOverride {
+  id        String   @id @default(cuid())
+  locale    String
+  key       String
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@unique([locale, key])
+}
+
 model PermissionGroup {
   id        String   @id @default(cuid())
   name      String   @unique
