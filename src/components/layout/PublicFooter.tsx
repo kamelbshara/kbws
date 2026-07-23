@@ -27,6 +27,7 @@ export async function PublicFooter() {
         <p className="text-xs text-brand-cream/50">
           {t("schoolNameEn")} — {t("schoolNameAr")} · {t("footer.rightsReserved")}
         </p>
+        <p className="text-xs text-brand-cream/40">{t("footer.designCredit")}</p>
       </div>
     </footer>
   );
