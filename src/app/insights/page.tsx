@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -11,6 +12,7 @@ import type { InsightGeneration } from "@/lib/ai/insightSchema";
 export default async function InsightsPage() {
   const session = await auth();
   const user = session!.user;
+  const t = await getTranslations("insights");
 
   const managementRoles = await getRoleGroup("MANAGEMENT_ROLES");
   const scope: "TEACHER" | "SCHOOL" | null =
@@ -44,11 +46,9 @@ export default async function InsightsPage() {
       <AppHeader userName={user.name} role={user.role} />
       {isManagement ? <AdminNav role={user.role} /> : <MainNav role={user.role} />}
       <main className="mx-auto max-w-4xl p-6">
-        <h1 className="text-xl font-semibold">{scope === "TEACHER" ? "My Insights" : "School Insights"}</h1>
+        <h1 className="text-xl font-semibold">{scope === "TEACHER" ? t("myInsights") : t("schoolInsights")}</h1>
         <p className="mt-1 text-sm text-slate-500">
-          {scope === "TEACHER"
-            ? "AI-generated reflections on your lesson plans and assessments — grounded in your own data."
-            : "AI-generated school-wide analysis across initiatives, teams, and assessments."}
+          {scope === "TEACHER" ? t("teacherSubtitle") : t("schoolSubtitle")}
         </p>
 
         <div className="mt-6">

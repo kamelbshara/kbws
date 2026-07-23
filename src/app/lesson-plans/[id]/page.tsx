@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -11,6 +12,7 @@ export default async function LessonPlanPage({ params }: { params: Promise<{ id:
   const session = await auth();
   const user = session!.user;
   const { id } = await params;
+  const t = await getTranslations("lessonPlan");
 
   const lessonPlan = await prisma.lessonPlan.findUnique({
     where: { id },
@@ -43,7 +45,7 @@ export default async function LessonPlanPage({ params }: { params: Promise<{ id:
           {lessonPlan.outcomeOverrideText || lessonPlan.learningOutcome.textAr}
         </div>
         <div className="mt-2 text-sm text-slate-700">
-          <strong>Teacher prompt:</strong> {lessonPlan.teacherPrompt}
+          <strong>{t("teacherPromptShown")}</strong> {lessonPlan.teacherPrompt}
         </div>
 
         <div className="mt-6">
@@ -58,16 +60,16 @@ export default async function LessonPlanPage({ params }: { params: Promise<{ id:
         {lessonPlan.status === "PRINTED" && (
           <div className="mt-4">
             <Link href={`/lesson-plans/${lessonPlan.id}/versions`} className="text-sm text-slate-500 hover:underline">
-              View version history →
+              {t("viewVersionHistory")}
             </Link>
           </div>
         )}
 
         <div className="mt-6 rounded-md border border-slate-200 p-4">
           <div className="flex items-center justify-between">
-            <h2 className="font-medium">Assessments</h2>
+            <h2 className="font-medium">{t("assessmentsTitle")}</h2>
             <Button asChild variant="outline" size="sm">
-              <Link href={`/assessments/new?lessonPlanId=${lessonPlan.id}`}>New Assessment</Link>
+              <Link href={`/assessments/new?lessonPlanId=${lessonPlan.id}`}>{t("newAssessment")}</Link>
             </Button>
           </div>
           {lessonPlan.assessments.length > 0 ? (
@@ -81,7 +83,7 @@ export default async function LessonPlanPage({ params }: { params: Promise<{ id:
               ))}
             </ul>
           ) : (
-            <p className="mt-2 text-sm text-slate-500">No assessments yet for this lesson.</p>
+            <p className="mt-2 text-sm text-slate-500">{t("noAssessmentsYet")}</p>
           )}
         </div>
       </main>

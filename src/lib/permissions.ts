@@ -49,14 +49,6 @@ export const PERMISSION_GROUP_NAMES = [
 ] as const;
 export type PermissionGroupName = (typeof PERMISSION_GROUP_NAMES)[number];
 
-export const PERMISSION_GROUP_LABELS: Record<PermissionGroupName, string> = {
-  ADMIN_ROLES: "Manage users (create/suspend accounts)",
-  MANAGEMENT_ROLES: "Manage school config, view dashboard & school-wide insights",
-  TEACHER_ROLES: "Access schedule, lesson plans & assessments",
-  INITIATIVE_CREATOR_ROLES: "Create initiatives",
-  TEAM_CREATOR_ROLES: "Create teams",
-};
-
 /** Default role membership for each group — matches this app's original hardcoded behavior exactly. */
 export const DEFAULT_PERMISSION_GROUPS: Record<PermissionGroupName, Role[]> = {
   ADMIN_ROLES: ["SYSTEM_ADMIN"],

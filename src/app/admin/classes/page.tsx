@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -10,6 +11,7 @@ export default async function AdminClassesPage() {
   const session = await auth();
   const user = session!.user;
   const schoolId = await getActiveSchoolId(session!);
+  const t = await getTranslations("classesPage");
 
   const [classSections, grades] = await Promise.all([
     schoolId
@@ -31,16 +33,18 @@ export default async function AdminClassesPage() {
           <table className="w-full text-sm">
             <thead className="border-b border-slate-200 text-left text-slate-500">
               <tr>
-                <th className="px-4 py-2 font-medium">Grade</th>
-                <th className="px-4 py-2 font-medium">Track</th>
-                <th className="px-4 py-2 font-medium">Section</th>
+                <th className="px-4 py-2 font-medium">{t("grade")}</th>
+                <th className="px-4 py-2 font-medium">{t("track")}</th>
+                <th className="px-4 py-2 font-medium">{t("section")}</th>
               </tr>
             </thead>
             <tbody>
               {classSections.map((c) => (
                 <tr key={c.id} className="border-b border-slate-100 last:border-0">
                   <td className="px-4 py-2">{c.grade.name}</td>
-                  <td className="px-4 py-2 text-slate-600">{c.track ?? "—"}</td>
+                  <td className="px-4 py-2 text-slate-600">
+                    {c.track === "GENERAL" ? t("trackGeneral") : c.track === "ADVANCED" ? t("trackAdvanced") : "—"}
+                  </td>
                   <td className="px-4 py-2 font-medium">{c.name}</td>
                 </tr>
               ))}
@@ -49,7 +53,7 @@ export default async function AdminClassesPage() {
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>Create Class Section</CardTitle>
+            <CardTitle>{t("createTitle")}</CardTitle>
           </CardHeader>
           <CardContent>
             <CreateClassSectionForm grades={grades} />

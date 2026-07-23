@@ -1,14 +1,16 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AdminNav } from "@/components/layout/AdminNav";
 import { PermissionGroupEditor } from "@/components/admin/PermissionGroupEditor";
-import { PERMISSION_GROUP_NAMES, PERMISSION_GROUP_LABELS, DEFAULT_PERMISSION_GROUPS, ADMIN_ROLES } from "@/lib/permissions";
+import { PERMISSION_GROUP_NAMES, DEFAULT_PERMISSION_GROUPS, ADMIN_ROLES } from "@/lib/permissions";
 
 export default async function AdminPermissionsPage() {
   const session = await auth();
   const user = session!.user;
+  const t = await getTranslations("permissionsPage");
 
   // Deliberately checked against the static ADMIN_ROLES constant, not a
   // dynamic group lookup — see the note in src/actions/permissions.ts.
@@ -24,17 +26,15 @@ export default async function AdminPermissionsPage() {
       <AppHeader userName={user.name} role={user.role} />
       <AdminNav role={user.role} />
       <main className="mx-auto max-w-3xl p-6">
-        <h1 className="text-xl font-semibold">Permission Templates</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Control which roles can perform each capability. Changes take effect within about 30 seconds.
-        </p>
+        <h1 className="text-xl font-semibold">{t("title")}</h1>
+        <p className="mt-1 text-sm text-slate-500">{t("subtitle")}</p>
 
         <div className="mt-6 flex flex-col gap-4">
           {PERMISSION_GROUP_NAMES.map((name) => (
             <PermissionGroupEditor
               key={name}
               groupName={name}
-              label={PERMISSION_GROUP_LABELS[name]}
+              label={t(`groups.${name}`)}
               initialRoles={stored.get(name) ?? DEFAULT_PERMISSION_GROUPS[name]}
             />
           ))}

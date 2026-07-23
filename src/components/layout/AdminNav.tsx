@@ -7,8 +7,8 @@ export async function AdminNav({ role }: { role?: Role } = {}) {
   const nav = await getTranslations("nav");
 
   const links = [
-    { href: "/admin", label: "Overview" },
-    { href: "/dashboard", label: "Dashboard" },
+    { href: "/admin", label: nav("overview") },
+    { href: "/dashboard", label: nav("dashboard") },
     { href: "/admin/users", label: t("users") },
     { href: "/admin/academic-years", label: t("academicYears") },
     { href: "/admin/classes", label: t("classes") },

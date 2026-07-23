@@ -1,13 +1,14 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 import { createTimetableSlotAction, type ActionState } from "@/actions/school-config";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const DAYS = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+const DAYS = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"] as const;
 
 type Option = { id: string; label: string };
 
@@ -20,27 +21,28 @@ export function CreateTimetableSlotForm({
   classSections: Option[];
   subjects: Option[];
 }) {
+  const t = useTranslations("timetablePage");
   const [state, action, pending] = useActionState<ActionState, FormData>(createTimetableSlotAction, undefined);
 
   return (
     <form action={action} className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <Label htmlFor="teacherId">Teacher</Label>
+        <Label htmlFor="teacherId">{t("teacher")}</Label>
         <Select name="teacherId" defaultValue={teachers[0]?.id}>
           <SelectTrigger id="teacherId">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {teachers.map((t) => (
-              <SelectItem key={t.id} value={t.id}>
-                {t.label}
+            {teachers.map((teacher) => (
+              <SelectItem key={teacher.id} value={teacher.id}>
+                {teacher.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="classSectionId">Class Section</Label>
+        <Label htmlFor="classSectionId">{t("class")}</Label>
         <Select name="classSectionId" defaultValue={classSections[0]?.id}>
           <SelectTrigger id="classSectionId">
             <SelectValue />
@@ -55,7 +57,7 @@ export function CreateTimetableSlotForm({
         </Select>
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="subjectId">Subject</Label>
+        <Label htmlFor="subjectId">{t("subject")}</Label>
         <Select name="subjectId" defaultValue={subjects[0]?.id}>
           <SelectTrigger id="subjectId">
             <SelectValue />
@@ -71,7 +73,7 @@ export function CreateTimetableSlotForm({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="dayOfWeek">Day</Label>
+          <Label htmlFor="dayOfWeek">{t("day")}</Label>
           <Select name="dayOfWeek" defaultValue="SUNDAY">
             <SelectTrigger id="dayOfWeek">
               <SelectValue />
@@ -79,31 +81,31 @@ export function CreateTimetableSlotForm({
             <SelectContent>
               {DAYS.map((d) => (
                 <SelectItem key={d} value={d}>
-                  {d}
+                  {t(`days.${d}`)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="periodNumber">Period #</Label>
+          <Label htmlFor="periodNumber">{t("periodNumber")}</Label>
           <Input id="periodNumber" name="periodNumber" type="number" min={1} max={12} required />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="startTime">Start Time</Label>
+          <Label htmlFor="startTime">{t("startTime")}</Label>
           <Input id="startTime" name="startTime" type="time" />
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="endTime">End Time</Label>
+          <Label htmlFor="endTime">{t("endTime")}</Label>
           <Input id="endTime" name="endTime" type="time" />
         </div>
       </div>
       {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
-      {state?.success && <p className="text-sm text-green-700">Timetable slot created.</p>}
+      {state?.success && <p className="text-sm text-green-700">{t("created")}</p>}
       <Button type="submit" disabled={pending} className="w-fit">
-        {pending ? "Creating..." : "Create Slot"}
+        {pending ? t("creating") : t("create")}
       </Button>
     </form>
   );

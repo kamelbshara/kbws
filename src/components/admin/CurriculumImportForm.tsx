@@ -1,17 +1,19 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 import { importCurriculumAction, type CurriculumImportState } from "@/actions/school-config";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
 export function CurriculumImportForm() {
+  const t = useTranslations("curriculumPage");
   const [state, action, pending] = useActionState<CurriculumImportState, FormData>(importCurriculumAction, undefined);
 
   return (
     <form action={action} className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <Label htmlFor="file">CSV file</Label>
+        <Label htmlFor="file">{t("csvFile")}</Label>
         <input
           id="file"
           name="file"
@@ -22,16 +24,16 @@ export function CurriculumImportForm() {
         />
       </div>
       <a href="/templates/curriculum-import-template.csv" download className="w-fit text-sm text-slate-500 underline">
-        Download template
+        {t("downloadTemplate")}
       </a>
       <Button type="submit" disabled={pending} className="w-fit">
-        {pending ? "Importing..." : "Import"}
+        {pending ? t("importing") : t("import")}
       </Button>
 
       {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
       {state?.created !== undefined && (
         <div className="rounded-md bg-slate-50 p-3 text-sm">
-          <p className="text-green-700">Imported {state.created} lesson(s).</p>
+          <p className="text-green-700">{t("importedCount", { count: state.created })}</p>
           {state.rowErrors.length > 0 && (
             <ul className="mt-2 flex flex-col gap-1 text-amber-700">
               {state.rowErrors.map((e, i) => (

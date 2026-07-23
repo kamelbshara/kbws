@@ -1,13 +1,3 @@
-export const TEAM_TYPE_LABELS: Record<string, string> = {
-  ACADEMIC: "Academic",
-  QUALITY: "Quality & Development",
-  INITIATIVE: "Initiative",
-  ADMINISTRATIVE: "Administrative",
-  SUPPORT: "Support",
-};
+export const TEAM_TYPES = ["ACADEMIC", "QUALITY", "INITIATIVE", "ADMINISTRATIVE", "SUPPORT"] as const;
 
-export const ACTION_ITEM_STATUS_LABELS: Record<string, string> = {
-  OPEN: "Open",
-  IN_PROGRESS: "In Progress",
-  DONE: "Done",
-};
+export const ACTION_ITEM_STATUSES = ["OPEN", "IN_PROGRESS", "DONE"] as const;

@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { saveMeetingMinutesAction } from "@/actions/teams";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
 export function MeetingMinutes({ meetingId, initialMinutes }: { meetingId: string; initialMinutes: string }) {
+  const t = useTranslations("teams");
   const [minutes, setMinutes] = useState(initialMinutes);
   const [isSaving, startSaving] = useTransition();
   const [saved, setSaved] = useState(false);
@@ -20,17 +22,12 @@ export function MeetingMinutes({ meetingId, initialMinutes }: { meetingId: strin
 
   return (
     <div className="flex flex-col gap-1">
-      <Textarea
-        value={minutes}
-        onChange={(e) => setMinutes(e.target.value)}
-        rows={2}
-        placeholder="Meeting minutes / decisions..."
-      />
+      <Textarea value={minutes} onChange={(e) => setMinutes(e.target.value)} rows={2} placeholder={t("minutesPlaceholder")} />
       <div className="flex items-center gap-2">
         <Button type="button" size="sm" variant="outline" onClick={save} disabled={isSaving}>
-          {isSaving ? "Saving..." : "Save Minutes"}
+          {isSaving ? t("saving") : t("saveMinutes")}
         </Button>
-        {saved && <span className="text-xs text-green-700">Saved.</span>}
+        {saved && <span className="text-xs text-green-700">{t("saved")}</span>}
       </div>
     </div>
   );

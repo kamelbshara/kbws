@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -9,6 +10,7 @@ export default async function LessonPlanVersionsPage({ params }: { params: Promi
   const session = await auth();
   const user = session!.user;
   const { id } = await params;
+  const t = await getTranslations("lessonPlanVersions");
 
   const lessonPlan = await prisma.lessonPlan.findUnique({
     where: { id },
@@ -27,23 +29,21 @@ export default async function LessonPlanVersionsPage({ params }: { params: Promi
       <AppHeader userName={user.name} role={user.role} />
       <main className="mx-auto max-w-2xl p-6">
         <Link href={`/lesson-plans/${lessonPlan.id}`} className="text-sm text-slate-500 hover:underline">
-          ← Back to lesson plan
+          {t("backToLessonPlan")}
         </Link>
-        <h1 className="mt-2 text-xl font-semibold">Version History</h1>
+        <h1 className="mt-2 text-xl font-semibold">{t("title")}</h1>
         <p className="mt-1 text-sm text-slate-500">{lessonPlan.curriculumContent.lessonTitle}</p>
 
         {lessonPlan.versions.length === 0 ? (
-          <p className="mt-6 text-sm text-slate-500">
-            No printed versions yet. Versions are created automatically each time this lesson plan is printed.
-          </p>
+          <p className="mt-6 text-sm text-slate-500">{t("noneYet")}</p>
         ) : (
           <div className="mt-6 overflow-x-auto rounded-lg border border-slate-200 bg-white">
             <table className="w-full text-sm">
               <thead className="border-b border-slate-200 text-left text-slate-500">
                 <tr>
-                  <th className="px-4 py-2 font-medium">Version</th>
-                  <th className="px-4 py-2 font-medium">Printed</th>
-                  <th className="px-4 py-2 font-medium">Printed By</th>
+                  <th className="px-4 py-2 font-medium">{t("version")}</th>
+                  <th className="px-4 py-2 font-medium">{t("printed")}</th>
+                  <th className="px-4 py-2 font-medium">{t("printedBy")}</th>
                   <th className="px-4 py-2 font-medium"></th>
                 </tr>
               </thead>
@@ -58,21 +58,21 @@ export default async function LessonPlanVersionsPage({ params }: { params: Promi
                     <td className="px-4 py-2 text-right">
                       <div className="flex justify-end gap-2">
                         <Button asChild variant="outline" size="sm">
-                          <Link href={`/lesson-plans/${lessonPlan.id}/versions/${v.versionNumber}`}>View</Link>
+                          <Link href={`/lesson-plans/${lessonPlan.id}/versions/${v.versionNumber}`}>{t("view")}</Link>
                         </Button>
                         {index < lessonPlan.versions.length - 1 && (
                           <Button asChild variant="ghost" size="sm">
                             <Link
                               href={`/lesson-plans/${lessonPlan.id}/versions/compare?a=${lessonPlan.versions[index + 1].versionNumber}&b=${v.versionNumber}`}
                             >
-                              Compare to previous
+                              {t("compareToPrevious")}
                             </Link>
                           </Button>
                         )}
                         {index === 0 && (
                           <Button asChild variant="ghost" size="sm">
                             <Link href={`/lesson-plans/${lessonPlan.id}/versions/compare?a=${v.versionNumber}&b=current`}>
-                              Compare to current draft
+                              {t("compareToCurrentDraft")}
                             </Link>
                           </Button>
                         )}

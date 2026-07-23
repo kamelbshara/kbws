@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import type { DayOfWeek } from "@/generated/prisma/enums";
 
 type ScheduleSlot = {
@@ -12,17 +13,9 @@ type ScheduleSlot = {
 };
 
 const DAY_ORDER: DayOfWeek[] = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY"];
-const DAY_LABELS: Record<DayOfWeek, string> = {
-  SUNDAY: "Sunday",
-  MONDAY: "Monday",
-  TUESDAY: "Tuesday",
-  WEDNESDAY: "Wednesday",
-  THURSDAY: "Thursday",
-  FRIDAY: "Friday",
-  SATURDAY: "Saturday",
-};
 
-export function WeeklyScheduleGrid({ slots }: { slots: ScheduleSlot[] }) {
+export async function WeeklyScheduleGrid({ slots }: { slots: ScheduleSlot[] }) {
+  const t = await getTranslations("timetablePage");
   const maxPeriod = Math.max(1, ...slots.map((s) => s.periodNumber));
   const periods = Array.from({ length: maxPeriod }, (_, i) => i + 1);
 
@@ -37,14 +30,14 @@ export function WeeklyScheduleGrid({ slots }: { slots: ScheduleSlot[] }) {
         <thead>
           <tr>
             <th className="border-b border-e border-slate-200 bg-slate-50 px-3 py-2 text-start font-medium text-slate-500">
-              Period
+              {t("period")}
             </th>
             {DAY_ORDER.map((day) => (
               <th
                 key={day}
                 className="border-b border-slate-200 bg-slate-50 px-3 py-2 text-start font-medium text-slate-500"
               >
-                {DAY_LABELS[day]}
+                {t(`days.${day}`)}
               </th>
             ))}
           </tr>

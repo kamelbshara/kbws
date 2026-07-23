@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 import { updatePermissionGroupAction, type PermissionActionState } from "@/actions/permissions";
 import { Button } from "@/components/ui/button";
 import type { Role } from "@/generated/prisma/enums";
@@ -16,6 +17,8 @@ export function PermissionGroupEditor({
   label: string;
   initialRoles: Role[];
 }) {
+  const t = useTranslations("permissionsPage");
+  const common = useTranslations("common");
   const [state, action, pending] = useActionState<PermissionActionState, FormData>(updatePermissionGroupAction, undefined);
 
   return (
@@ -35,10 +38,10 @@ export function PermissionGroupEditor({
 
       <div className="mt-3 flex items-center gap-3">
         <Button type="submit" size="sm" disabled={pending}>
-          {pending ? "Saving..." : "Save"}
+          {pending ? t("saving") : common("save")}
         </Button>
         {state?.error && <span className="text-sm text-red-600">{state.error}</span>}
-        {state?.success && <span className="text-sm text-green-700">Saved.</span>}
+        {state?.success && <span className="text-sm text-green-700">{t("saved")}</span>}
       </div>
     </form>
   );
