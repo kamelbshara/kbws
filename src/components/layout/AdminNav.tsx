@@ -7,6 +7,7 @@ export async function AdminNav() {
 
   const links = [
     { href: "/admin", label: "Overview" },
+    { href: "/dashboard", label: "Dashboard" },
     { href: "/admin/users", label: t("users") },
     { href: "/admin/classes", label: t("classes") },
     { href: "/admin/timetable", label: t("timetable") },
