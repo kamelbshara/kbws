@@ -83,7 +83,13 @@ export async function createLessonPlanAction(_prevState: ActionState, formData: 
   redirect(`/lesson-plans/${lessonPlan.id}`);
 }
 
-export async function saveLessonPlanContentAction(lessonPlanId: string, content: unknown) {
+export type SaveResult = { error?: string; conflict?: boolean; updatedAt?: string };
+
+export async function saveLessonPlanContentAction(
+  lessonPlanId: string,
+  content: unknown,
+  expectedUpdatedAt: string,
+): Promise<SaveResult> {
   const session = await auth();
   await requireRoleGroup(session, "TEACHER_ROLES");
 
@@ -92,7 +98,14 @@ export async function saveLessonPlanContentAction(lessonPlanId: string, content:
     throw new ForbiddenError("This lesson plan does not belong to you.");
   }
 
-  await prisma.lessonPlan.update({
+  if (existing.updatedAt.toISOString() !== expectedUpdatedAt) {
+    return {
+      conflict: true,
+      error: "This lesson plan was changed elsewhere since you opened it. Reload the page to see the latest version before saving.",
+    };
+  }
+
+  const updated = await prisma.lessonPlan.update({
     where: { id: lessonPlanId },
     data: { contentJson: content as object },
   });
@@ -105,4 +118,6 @@ export async function saveLessonPlanContentAction(lessonPlanId: string, content:
     before: { contentJson: existing.contentJson },
     after: { contentJson: content },
   });
+
+  return { updatedAt: updated.updatedAt.toISOString() };
 }

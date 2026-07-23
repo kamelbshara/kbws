@@ -60,7 +60,12 @@ export default async function InitiativeDetailPage({ params }: { params: Promise
         </div>
 
         <div className="mt-6">
-          <InitiativeEditor initiativeId={initiative.id} initialContent={initialContent} status={initiative.status} />
+          <InitiativeEditor
+            initiativeId={initiative.id}
+            initialContent={initialContent}
+            status={initiative.status}
+            updatedAt={initiative.updatedAt.toISOString()}
+          />
         </div>
 
         <div className="mt-6">

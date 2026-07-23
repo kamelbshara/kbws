@@ -10,14 +10,18 @@ import type { OperationalPlanGeneration } from "@/lib/ai/operationalPlanSchema";
 export function OperationalPlanEditor({
   planId,
   initialContent,
+  updatedAt,
 }: {
   planId: string;
   initialContent: OperationalPlanGeneration | null;
+  updatedAt: string;
 }) {
   const router = useRouter();
   const [content, setContent] = useState<OperationalPlanGeneration | null>(initialContent);
+  const [loadedAt, setLoadedAt] = useState(updatedAt);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [conflict, setConflict] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [isSaving, startSaving] = useTransition();
 
@@ -42,11 +46,20 @@ export function OperationalPlanEditor({
   function save() {
     if (!content) return;
     startSaving(async () => {
-      const result = await saveOperationalPlanAction(planId, content);
+      const result = await saveOperationalPlanAction(planId, content, loadedAt);
+      if (result.conflict) {
+        setConflict(true);
+        setError(result.error ?? null);
+        return;
+      }
       if (result.error) {
         setError(result.error);
         return;
       }
+      if (result.updatedAt) {
+        setLoadedAt(result.updatedAt);
+      }
+      setConflict(false);
       setError(null);
       setSaveMessage("Saved.");
       router.refresh();
@@ -117,9 +130,16 @@ export function OperationalPlanEditor({
       </div>
 
       <div className="flex items-center gap-3">
-        <Button onClick={save} disabled={isSaving} className="w-fit">
-          {isSaving ? "Saving..." : "Save"}
-        </Button>
+        {!conflict && (
+          <Button onClick={save} disabled={isSaving} className="w-fit">
+            {isSaving ? "Saving..." : "Save"}
+          </Button>
+        )}
+        {conflict && (
+          <Button onClick={() => window.location.reload()} variant="outline" className="w-fit">
+            Reload
+          </Button>
+        )}
         {saveMessage && <span className="text-sm text-green-700">{saveMessage}</span>}
       </div>
     </div>

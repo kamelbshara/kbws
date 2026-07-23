@@ -131,7 +131,11 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
                   <CardTitle>Team Operational Plan</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <OperationalPlanEditor planId={team.operationalPlan.id} initialContent={planContent} />
+                  <OperationalPlanEditor
+                    planId={team.operationalPlan.id}
+                    initialContent={planContent}
+                    updatedAt={team.operationalPlan.updatedAt.toISOString()}
+                  />
                 </CardContent>
               </Card>
             )}

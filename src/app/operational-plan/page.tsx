@@ -68,7 +68,7 @@ export default async function SchoolOperationalPlanPage() {
               <CardTitle>Plan Matrix</CardTitle>
             </CardHeader>
             <CardContent>
-              <OperationalPlanEditor planId={plan.id} initialContent={planContent} />
+              <OperationalPlanEditor planId={plan.id} initialContent={planContent} updatedAt={plan.updatedAt.toISOString()} />
             </CardContent>
           </Card>
         </div>

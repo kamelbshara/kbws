@@ -51,6 +51,7 @@ export default async function LessonPlanPage({ params }: { params: Promise<{ id:
             lessonPlanId={lessonPlan.id}
             initialContent={initialContent}
             isPrinted={lessonPlan.status === "PRINTED"}
+            updatedAt={lessonPlan.updatedAt.toISOString()}
           />
         </div>
 

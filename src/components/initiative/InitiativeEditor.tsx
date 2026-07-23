@@ -13,15 +13,19 @@ export function InitiativeEditor({
   initiativeId,
   initialContent,
   status,
+  updatedAt,
 }: {
   initiativeId: string;
   initialContent: InitiativeGeneration | null;
   status: "DRAFT" | "ACTIVE" | "COMPLETED";
+  updatedAt: string;
 }) {
   const router = useRouter();
   const [content, setContent] = useState<InitiativeGeneration | null>(initialContent);
+  const [loadedAt, setLoadedAt] = useState(updatedAt);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [conflict, setConflict] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [isSaving, startSaving] = useTransition();
   const [isTransitioning, startTransitioning] = useTransition();
@@ -48,11 +52,20 @@ export function InitiativeEditor({
   function save() {
     if (!content) return;
     startSaving(async () => {
-      const result = await saveInitiativePlanAction(initiativeId, content);
+      const result = await saveInitiativePlanAction(initiativeId, content, loadedAt);
+      if (result.conflict) {
+        setConflict(true);
+        setError(result.error ?? null);
+        return;
+      }
       if (result.error) {
         setError(result.error);
         return;
       }
+      if (result.updatedAt) {
+        setLoadedAt(result.updatedAt);
+      }
+      setConflict(false);
       setError(null);
       setSaveMessage("Saved.");
       router.refresh();
@@ -201,9 +214,14 @@ export function InitiativeEditor({
       </div>
 
       <div className="flex flex-wrap items-center gap-3 border-t border-slate-200 pt-4">
-        {!readOnly && (
+        {!readOnly && !conflict && (
           <Button onClick={save} disabled={isSaving}>
             {isSaving ? "Saving..." : "Save"}
+          </Button>
+        )}
+        {conflict && (
+          <Button onClick={() => window.location.reload()} variant="outline">
+            Reload
           </Button>
         )}
         {status === "DRAFT" && (

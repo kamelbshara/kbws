@@ -303,10 +303,23 @@ async function requireOperationalPlanAccess(planId: string, session: Session) {
   return plan;
 }
 
-export async function saveOperationalPlanAction(planId: string, content: unknown): Promise<{ error?: string }> {
+export type SaveResult = { error?: string; conflict?: boolean; updatedAt?: string };
+
+export async function saveOperationalPlanAction(
+  planId: string,
+  content: unknown,
+  expectedUpdatedAt: string,
+): Promise<SaveResult> {
   const session = await auth();
   if (!session?.user) throw new Error("Unauthorized");
   const plan = await requireOperationalPlanAccess(planId, session);
+
+  if (plan.updatedAt.toISOString() !== expectedUpdatedAt) {
+    return {
+      conflict: true,
+      error: "This plan was changed elsewhere since you opened it. Reload the page to see the latest version before saving.",
+    };
+  }
 
   const result = OperationalPlanSaveSchema.safeParse(content);
   if (!result.success) {
@@ -314,7 +327,11 @@ export async function saveOperationalPlanAction(planId: string, content: unknown
   }
   const parsed = result.data;
 
-  await prisma.$transaction([
+  const [updated] = await prisma.$transaction([
+    // Re-set title (no-op value change) so this update also bumps the plan's
+    // own updatedAt -- otherwise only the item rows change, and the parent
+    // record never reflects "last saved", breaking the conflict check above.
+    prisma.operationalPlan.update({ where: { id: planId }, data: { title: plan.title } }),
     prisma.operationalPlanItem.deleteMany({ where: { operationalPlanId: planId } }),
     prisma.operationalPlanItem.createMany({
       data: parsed.items.map((item, index) => ({
@@ -340,5 +357,5 @@ export async function saveOperationalPlanAction(planId: string, content: unknown
   });
 
   revalidatePath(plan.level === "SCHOOL" ? "/operational-plan" : `/teams/${plan.teamId}`);
-  return {};
+  return { updatedAt: updated.updatedAt.toISOString() };
 }

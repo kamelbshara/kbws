@@ -69,10 +69,23 @@ async function requireOwnedInitiative(initiativeId: string, userId: string) {
   return initiative;
 }
 
-export async function saveInitiativePlanAction(initiativeId: string, content: unknown): Promise<{ error?: string }> {
+export type SaveResult = { error?: string; conflict?: boolean; updatedAt?: string };
+
+export async function saveInitiativePlanAction(
+  initiativeId: string,
+  content: unknown,
+  expectedUpdatedAt: string,
+): Promise<SaveResult> {
   const session = await auth();
   await requireRoleGroup(session, "INITIATIVE_CREATOR_ROLES");
   const initiative = await requireOwnedInitiative(initiativeId, session!.user.id);
+
+  if (initiative.updatedAt.toISOString() !== expectedUpdatedAt) {
+    return {
+      conflict: true,
+      error: "This initiative was changed elsewhere since you opened it. Reload the page to see the latest version before saving.",
+    };
+  }
 
   const result = InitiativeSaveSchema.safeParse(content);
   if (!result.success) {
@@ -80,7 +93,7 @@ export async function saveInitiativePlanAction(initiativeId: string, content: un
   }
   const parsed = result.data;
 
-  await prisma.$transaction([
+  const [updated] = await prisma.$transaction([
     prisma.initiative.update({
       where: { id: initiativeId },
       data: { goal: parsed.goal, targetGroup: parsed.targetGroup },
@@ -116,7 +129,7 @@ export async function saveInitiativePlanAction(initiativeId: string, content: un
   });
 
   revalidatePath(`/initiatives/${initiativeId}`);
-  return {};
+  return { updatedAt: updated.updatedAt.toISOString() };
 }
 
 const addEvidenceSchema = z.object({
