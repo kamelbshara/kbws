@@ -3,6 +3,7 @@ import { logoutAction } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { SchoolSwitcher } from "@/components/layout/SchoolSwitcher";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 
 export async function AppHeader({ userName, role }: { userName: string; role: string }) {
   const t = await getTranslations("common");
@@ -12,6 +13,7 @@ export async function AppHeader({ userName, role }: { userName: string; role: st
       <div className="text-sm font-semibold">{t("appName")}</div>
       <div className="flex items-center gap-4 text-sm">
         <SchoolSwitcher />
+        <NotificationBell />
         <LocaleSwitcher />
         <span className="text-slate-600">
           {userName} · {role}

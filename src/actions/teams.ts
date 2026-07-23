@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { requireRoleGroup, getRoleGroup, ForbiddenError } from "@/lib/permissions";
 import { getActiveSchoolId } from "@/lib/activeSchool";
+import { createNotification, createNotifications } from "@/lib/notifications";
 import { OperationalPlanSaveSchema } from "@/lib/ai/operationalPlanSchema";
 import type { TeamType, ActionItemStatus } from "@/generated/prisma/enums";
 
@@ -113,6 +114,15 @@ export async function addTeamMemberAction(_prevState: ActionState, formData: For
     after: { addedUserId: parsed.data.userId },
   });
 
+  if (parsed.data.userId !== session!.user.id) {
+    await createNotification({
+      userId: parsed.data.userId,
+      type: "TEAM_ASSIGNMENT",
+      title: `You were added to the team "${team.name}"`,
+      link: `/teams/${team.id}`,
+    });
+  }
+
   revalidatePath(`/teams/${parsed.data.teamId}`);
   return { error: undefined };
 }
@@ -157,6 +167,18 @@ export async function createMeetingAction(_prevState: ActionState, formData: For
     entityId: meeting.id,
     after: { teamId: parsed.data.teamId, title: parsed.data.title },
   });
+
+  const members = await prisma.teamMember.findMany({ where: { teamId: parsed.data.teamId } });
+  const dateLabel = meeting.date.toISOString().slice(0, 10);
+  await createNotifications(
+    members.map((m) => m.userId).filter((userId) => userId !== session!.user.id),
+    {
+      type: "MEETING_SCHEDULED",
+      title: `Meeting scheduled: "${parsed.data.title}"`,
+      body: `${dateLabel}${parsed.data.agenda ? ` — ${parsed.data.agenda}` : ""}`,
+      link: `/teams/${parsed.data.teamId}`,
+    },
+  );
 
   revalidatePath(`/teams/${parsed.data.teamId}`);
   return { error: undefined };
@@ -223,6 +245,15 @@ export async function addActionItemAction(_prevState: ActionState, formData: For
     entityId: actionItem.id,
     after: { meetingId: parsed.data.meetingId, task: parsed.data.task },
   });
+
+  if (parsed.data.ownerId !== session!.user.id) {
+    await createNotification({
+      userId: parsed.data.ownerId,
+      type: "ACTION_ITEM_ASSIGNMENT",
+      title: `New task assigned: "${parsed.data.task}"`,
+      link: `/teams/${meeting.teamId}`,
+    });
+  }
 
   revalidatePath(`/teams/${meeting.teamId}`);
   return { error: undefined };

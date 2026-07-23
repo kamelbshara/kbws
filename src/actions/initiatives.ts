@@ -6,8 +6,9 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { requireRoleGroup, ForbiddenError } from "@/lib/permissions";
+import { requireRoleGroup, getRoleGroup, ForbiddenError } from "@/lib/permissions";
 import { getActiveSchoolId } from "@/lib/activeSchool";
+import { createNotifications } from "@/lib/notifications";
 import { InitiativeSaveSchema } from "@/lib/ai/initiativeSchema";
 import type { InitiativeCategory } from "@/generated/prisma/enums";
 
@@ -187,6 +188,19 @@ export async function updateInitiativeStatusAction(initiativeId: string, nextSta
     before: { status: initiative.status },
     after: { status: nextStatus },
   });
+
+  const managementRoles = await getRoleGroup("MANAGEMENT_ROLES");
+  const managers = await prisma.user.findMany({
+    where: { schoolId: initiative.schoolId, role: { in: managementRoles }, isActive: true },
+  });
+  await createNotifications(
+    managers.map((m) => m.id).filter((id) => id !== session!.user.id),
+    {
+      type: "INITIATIVE_STATUS_CHANGE",
+      title: `Initiative "${initiative.title}" is now ${nextStatus}`,
+      link: `/initiatives/${initiativeId}`,
+    },
+  );
 
   revalidatePath(`/initiatives/${initiativeId}`);
 }
