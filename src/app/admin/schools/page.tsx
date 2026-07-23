@@ -39,6 +39,7 @@ export default async function AdminSchoolsPage() {
             <thead className="border-b border-slate-200 text-left text-slate-500">
               <tr>
                 <th className="px-4 py-2 font-medium">{t("name")}</th>
+                <th className="px-4 py-2 font-medium">{t("nameArabic")}</th>
                 <th className="px-4 py-2 font-medium">{t("users")}</th>
                 <th className="px-4 py-2 font-medium">{t("classSections")}</th>
                 <th className="px-4 py-2 font-medium">{t("initiatives")}</th>
@@ -50,6 +51,9 @@ export default async function AdminSchoolsPage() {
                   <td className="px-4 py-2 font-medium">
                     {s.name}
                     {s.id === activeSchoolId && <span className="ml-2 text-xs text-slate-400">{t("active")}</span>}
+                  </td>
+                  <td className="px-4 py-2 text-slate-600" dir="rtl">
+                    {s.nameAr}
                   </td>
                   <td className="px-4 py-2 text-slate-600">{s._count.users}</td>
                   <td className="px-4 py-2 text-slate-600">{s._count.classSections}</td>
