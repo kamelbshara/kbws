@@ -76,6 +76,18 @@ enum OperationalPlanLevel {
   SCHOOL
 }
 
+enum QuestionType {
+  MULTIPLE_CHOICE
+  OPEN
+}
+
+enum QuestionDifficulty {
+  EASY
+  MEDIUM
+  ADVANCED
+  CHALLENGE
+}
+
 model School {
   id            String         @id @default(cuid())
   name          String
@@ -118,6 +130,7 @@ model Grade {
 
   classSections      ClassSection[]
   curriculumContents CurriculumContent[]
+  questionBankItems  QuestionBankItem[]
 }
 
 model ClassSection {
@@ -148,6 +161,7 @@ model Subject {
   teacherAssignments TeacherAssignment[]
   timetables         Timetable[]
   curriculumContents CurriculumContent[]
+  questionBankItems  QuestionBankItem[]
 }
 
 model User {
@@ -175,6 +189,8 @@ model User {
   teamMemberships    TeamMember[]
   meetingsCreated    Meeting[]
   actionItems        ActionItem[]
+  createdQuestions   QuestionBankItem[]
+  assessments        Assessment[]
 }
 
 model TeacherAssignment {
@@ -269,6 +285,7 @@ model LessonPlan {
 
   versions         LessonPlanVersion[]
   aiGenerationLogs AIGenerationLog[]
+  assessments      Assessment[]
 }
 
 model LessonPlanVersion {
@@ -293,6 +310,8 @@ model AIGenerationLog {
   initiative        Initiative?      @relation(fields: [initiativeId], references: [id])
   operationalPlanId String?
   operationalPlan   OperationalPlan? @relation(fields: [operationalPlanId], references: [id])
+  assessmentId      String?
+  assessment        Assessment?      @relation(fields: [assessmentId], references: [id])
   userId            String
   user              User             @relation(fields: [userId], references: [id])
   section           String?
@@ -453,4 +472,50 @@ model AuditLog {
   beforeJson Json?
   afterJson  Json?
   createdAt  DateTime    @default(now())
+}
+
+model QuestionBankItem {
+  id             String             @id @default(cuid())
+  subjectId      String
+  subject        Subject            @relation(fields: [subjectId], references: [id])
+  gradeId        String
+  grade          Grade              @relation(fields: [gradeId], references: [id])
+  skill          String
+  difficulty     QuestionDifficulty
+  type           QuestionType
+  questionText   String
+  choices        Json?
+  correctAnswer  String
+  explanation    String?
+  createdById    String
+  createdBy      User               @relation(fields: [createdById], references: [id])
+  createdAt      DateTime           @default(now())
+
+  assessmentQuestions AssessmentQuestion[]
+
+  @@index([subjectId, gradeId, skill])
+}
+
+model Assessment {
+  id             String      @id @default(cuid())
+  teacherId      String
+  teacher        User        @relation(fields: [teacherId], references: [id])
+  lessonPlanId   String?
+  lessonPlan     LessonPlan? @relation(fields: [lessonPlanId], references: [id])
+  title          String
+  createdAt      DateTime    @default(now())
+
+  questions        AssessmentQuestion[]
+  aiGenerationLogs AIGenerationLog[]
+}
+
+model AssessmentQuestion {
+  id            String           @id @default(cuid())
+  assessmentId  String
+  assessment    Assessment       @relation(fields: [assessmentId], references: [id])
+  questionId    String
+  question      QuestionBankItem @relation(fields: [questionId], references: [id])
+  orderIndex    Int              @default(0)
+
+  @@unique([assessmentId, questionId])
 }

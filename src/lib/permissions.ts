@@ -40,4 +40,5 @@ export const ROUTE_ROLE_MAP: Array<{ prefix: string; roles: Role[] }> = [
   { prefix: "/admin", roles: MANAGEMENT_ROLES },
   { prefix: "/schedule", roles: TEACHER_ROLES },
   { prefix: "/lesson-plans", roles: TEACHER_ROLES },
+  { prefix: "/assessments", roles: TEACHER_ROLES },
 ];

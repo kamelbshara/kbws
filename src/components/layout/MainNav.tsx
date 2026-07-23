@@ -7,6 +7,7 @@ export async function MainNav({ role }: { role: Role }) {
 
   const links = [
     role === "TEACHER" && { href: "/schedule", label: t("schedule") },
+    role === "TEACHER" && { href: "/assessments", label: t("assessments") },
     { href: "/initiatives", label: t("initiatives") },
     { href: "/teams", label: t("teams") },
     (role === "PRINCIPAL" || role === "VICE_PRINCIPAL" || role === "SYSTEM_ADMIN") && {

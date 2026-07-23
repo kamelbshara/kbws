@@ -1,9 +1,11 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { LessonPlanEditor } from "@/components/lesson-plan/LessonPlanEditor";
 import { LessonPlanContentSchema } from "@/lib/ai/lessonPlanSchema";
+import { Button } from "@/components/ui/button";
 
 export default async function LessonPlanPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -16,6 +18,7 @@ export default async function LessonPlanPage({ params }: { params: Promise<{ id:
       classSection: { include: { grade: true } },
       curriculumContent: { include: { subject: true } },
       learningOutcome: true,
+      assessments: true,
     },
   });
 
@@ -49,6 +52,28 @@ export default async function LessonPlanPage({ params }: { params: Promise<{ id:
             initialContent={initialContent}
             isPrinted={lessonPlan.status === "PRINTED"}
           />
+        </div>
+
+        <div className="mt-6 rounded-md border border-slate-200 p-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-medium">Assessments</h2>
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/assessments/new?lessonPlanId=${lessonPlan.id}`}>New Assessment</Link>
+            </Button>
+          </div>
+          {lessonPlan.assessments.length > 0 ? (
+            <ul className="mt-3 flex flex-col gap-1 text-sm">
+              {lessonPlan.assessments.map((a) => (
+                <li key={a.id}>
+                  <Link href={`/assessments/${a.id}`} className="hover:underline">
+                    {a.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 text-sm text-slate-500">No assessments yet for this lesson.</p>
+          )}
         </div>
       </main>
     </div>

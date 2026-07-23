@@ -26,7 +26,8 @@
     "admin": "Admin",
     "initiatives": "Initiatives",
     "teams": "Teams",
-    "schoolPlan": "School Plan"
+    "schoolPlan": "School Plan",
+    "assessments": "Assessments"
   },
   "schedule": {
     "title": "My Weekly Schedule",
