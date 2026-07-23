@@ -1,23 +1,25 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { diffWords } from "diff";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { LessonPlanContentSchema } from "@/lib/ai/lessonPlanSchema";
-import { flattenLessonPlanContent, LESSON_PLAN_FIELD_LABELS } from "@/lib/lessonPlanDiff";
+import { flattenLessonPlanContent, LESSON_PLAN_FIELD_KEYS } from "@/lib/lessonPlanDiff";
 import type { LessonPlanContent } from "@/lib/ai/lessonPlanSchema";
 
 async function resolveSide(
   lessonPlanId: string,
   side: string | undefined,
+  currentDraftLabel: string,
 ): Promise<{ label: string; content: LessonPlanContent | null } | null> {
   if (!side) return null;
   if (side === "current") {
     const lessonPlan = await prisma.lessonPlan.findUnique({ where: { id: lessonPlanId } });
     if (!lessonPlan) return null;
     const parsed = lessonPlan.contentJson ? LessonPlanContentSchema.safeParse(lessonPlan.contentJson) : null;
-    return { label: "Current draft", content: parsed?.success ? parsed.data : null };
+    return { label: currentDraftLabel, content: parsed?.success ? parsed.data : null };
   }
   const versionNumber = Number(side);
   if (!Number.isInteger(versionNumber)) return null;
@@ -40,13 +42,18 @@ export default async function LessonPlanVersionComparePage({
   const user = session!.user;
   const { id } = await params;
   const { a, b } = await searchParams;
+  const t = await getTranslations("lessonPlanVersions");
+  const tFields = await getTranslations("lessonPlanFields");
 
   const lessonPlan = await prisma.lessonPlan.findUnique({ where: { id }, include: { curriculumContent: true } });
   if (!lessonPlan || lessonPlan.teacherId !== user.id) {
     notFound();
   }
 
-  const [sideA, sideB] = await Promise.all([resolveSide(id, a), resolveSide(id, b)]);
+  const [sideA, sideB] = await Promise.all([
+    resolveSide(id, a, t("currentDraft")),
+    resolveSide(id, b, t("currentDraft")),
+  ]);
   if (!sideA || !sideB || !sideA.content || !sideB.content) {
     notFound();
   }
@@ -59,25 +66,23 @@ export default async function LessonPlanVersionComparePage({
       <AppHeader userName={user.name} role={user.role} />
       <main className="mx-auto max-w-4xl p-6">
         <Link href={`/lesson-plans/${lessonPlan.id}/versions`} className="text-sm text-slate-500 hover:underline">
-          ← Back to version history
+          {t("backToVersionHistory")}
         </Link>
         <h1 className="mt-2 text-xl font-semibold">{lessonPlan.curriculumContent.lessonTitle}</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Comparing <strong>{sideA.label}</strong> → <strong>{sideB.label}</strong>
-        </p>
+        <p className="mt-1 text-sm text-slate-500">{t("comparing", { a: sideA.label, b: sideB.label })}</p>
         <p className="mt-1 text-xs text-slate-400">
-          <span className="bg-red-100 text-red-700 line-through">removed</span> ·{" "}
-          <span className="bg-green-100 text-green-700">added</span>
+          <span className="bg-red-100 text-red-700 line-through">{t("removedLabel")}</span> ·{" "}
+          <span className="bg-green-100 text-green-700">{t("addedLabel")}</span>
         </p>
 
         <div className="mt-6 flex flex-col gap-4">
-          {Object.keys(LESSON_PLAN_FIELD_LABELS).map((key) => {
+          {LESSON_PLAN_FIELD_KEYS.map((key) => {
             const textA = fieldsA.find((f) => f.key === key)?.text ?? "";
             const textB = fieldsB.find((f) => f.key === key)?.text ?? "";
             if (textA === textB) {
               return (
                 <div key={key} className="rounded-md border border-slate-200 p-4">
-                  <h2 className="text-sm font-medium text-slate-500">{LESSON_PLAN_FIELD_LABELS[key]}</h2>
+                  <h2 className="text-sm font-medium text-slate-500">{tFields(key)}</h2>
                   <p className="mt-1 whitespace-pre-wrap text-sm text-slate-500">{textA || "—"}</p>
                 </div>
               );
@@ -85,7 +90,7 @@ export default async function LessonPlanVersionComparePage({
             const parts = diffWords(textA, textB);
             return (
               <div key={key} className="rounded-md border border-amber-300 bg-amber-50/40 p-4">
-                <h2 className="text-sm font-medium text-slate-700">{LESSON_PLAN_FIELD_LABELS[key]}</h2>
+                <h2 className="text-sm font-medium text-slate-700">{tFields(key)}</h2>
                 <p className="mt-1 whitespace-pre-wrap text-sm text-slate-800">
                   {parts.map((part, i) => (
                     <span

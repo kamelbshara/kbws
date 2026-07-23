@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -12,13 +13,13 @@ import { ActionItemRow } from "@/components/team/ActionItemRow";
 import { AddMemberForm } from "@/components/team/AddMemberForm";
 import { getRoleGroup } from "@/lib/permissions";
 import { getActiveSchoolId } from "@/lib/activeSchool";
-import { TEAM_TYPE_LABELS } from "@/lib/teamLabels";
 import type { OperationalPlanGeneration } from "@/lib/ai/operationalPlanSchema";
 
 export default async function TeamDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   const user = session!.user;
   const { id } = await params;
+  const t = await getTranslations("teams");
 
   const team = await prisma.team.findUnique({
     where: { id },
@@ -69,7 +70,7 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
       <main className="mx-auto max-w-4xl p-6">
         <h1 className="text-xl font-semibold">{team.name}</h1>
         <p className="mt-1 text-sm text-slate-500">
-          {TEAM_TYPE_LABELS[team.type]} · Led by {team.leader.name}
+          {t(`types.${team.type}`)} · {t("ledBy")} {team.leader.name}
         </p>
         {team.goal && <p className="mt-2 text-sm text-slate-700">{team.goal}</p>}
 
@@ -77,7 +78,7 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
           <div className="flex flex-col gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Meetings</CardTitle>
+                <CardTitle>{t("meetingsTitle")}</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
                 {isLeader && <CreateMeetingForm teamId={team.id} />}
@@ -120,7 +121,7 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
                       )}
                     </div>
                   ))}
-                  {team.meetings.length === 0 && <p className="text-sm text-slate-400">No meetings yet.</p>}
+                  {team.meetings.length === 0 && <p className="text-sm text-slate-400">{t("noMeetingsYet")}</p>}
                 </div>
               </CardContent>
             </Card>
@@ -128,7 +129,7 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
             {team.operationalPlan && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Team Operational Plan</CardTitle>
+                  <CardTitle>{t("teamOperationalPlan")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <OperationalPlanEditor
@@ -143,14 +144,14 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
 
           <Card>
             <CardHeader>
-              <CardTitle>Members ({team.members.length})</CardTitle>
+              <CardTitle>{t("membersCount", { count: team.members.length })}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
               <ul className="flex flex-col gap-1 text-sm">
                 {team.members.map((m) => (
                   <li key={m.id} className="flex items-center justify-between">
                     <span>{m.user.name}</span>
-                    {m.userId === team.leaderId && <span className="text-xs text-slate-400">Leader</span>}
+                    {m.userId === team.leaderId && <span className="text-xs text-slate-400">{t("leaderBadge")}</span>}
                   </li>
                 ))}
               </ul>

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { saveAssessmentQuestionsAction } from "@/actions/assessments";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,12 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { AssessmentGeneration, QuestionItem } from "@/lib/ai/questionSchema";
 
-const DIFFICULTY_LABELS: Record<QuestionItem["difficulty"], string> = {
-  EASY: "Easy",
-  MEDIUM: "Medium",
-  ADVANCED: "Advanced",
-  CHALLENGE: "Challenge",
-};
+const DIFFICULTIES: QuestionItem["difficulty"][] = ["EASY", "MEDIUM", "ADVANCED", "CHALLENGE"];
 
 export function AssessmentEditor({
   assessmentId,
@@ -24,6 +20,7 @@ export function AssessmentEditor({
   assessmentId: string;
   initialContent: AssessmentGeneration | null;
 }) {
+  const t = useTranslations("assessments");
   const router = useRouter();
   const [content, setContent] = useState<AssessmentGeneration | null>(initialContent);
   const [generating, setGenerating] = useState(false);
@@ -38,12 +35,12 @@ export function AssessmentEditor({
       const res = await fetch(`/api/assessments/${assessmentId}/generate`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Generation failed.");
+        setError(data.error ?? t("generationFailed"));
         return;
       }
       setContent(data.content);
     } catch {
-      setError("Network error while generating. Please try again.");
+      setError(t("networkError"));
     } finally {
       setGenerating(false);
     }
@@ -78,7 +75,7 @@ export function AssessmentEditor({
         return;
       }
       setError(null);
-      setSaveMessage("Saved.");
+      setSaveMessage(t("saved"));
       router.refresh();
       setTimeout(() => setSaveMessage(null), 2000);
     });
@@ -87,9 +84,9 @@ export function AssessmentEditor({
   if (!content) {
     return (
       <div className="rounded-md border border-dashed border-slate-300 p-6 text-center">
-        <p className="text-sm text-slate-600">No questions generated yet.</p>
+        <p className="text-sm text-slate-600">{t("noQuestionsYet")}</p>
         <Button className="mt-4" onClick={generate} disabled={generating}>
-          {generating ? "Generating..." : "Generate Questions with AI"}
+          {generating ? t("generating") : t("generateQuestions")}
         </Button>
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       </div>
@@ -101,24 +98,24 @@ export function AssessmentEditor({
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-500">{content.questions.length} question(s)</p>
+        <p className="text-sm text-slate-500">{t("questionCount", { count: content.questions.length })}</p>
         <Button type="button" variant="ghost" size="sm" onClick={generate} disabled={generating}>
-          {generating ? "Regenerating..." : "Regenerate All"}
+          {generating ? t("regenerating") : t("regenerateAll")}
         </Button>
       </div>
 
       {content.questions.map((question, index) => (
         <div key={index} className="rounded-md border border-slate-200 p-4">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-medium">Question {index + 1}</h2>
+            <h2 className="font-medium">{t("questionLabel", { n: index + 1 })}</h2>
             <Button type="button" variant="ghost" size="sm" onClick={() => removeQuestion(index)}>
-              Remove
+              {t("remove")}
             </Button>
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div>
-              <Label className="text-xs text-slate-500">Type</Label>
+              <Label className="text-xs text-slate-500">{t("typeLabel")}</Label>
               <Select
                 value={question.type}
                 onValueChange={(value) =>
@@ -132,13 +129,13 @@ export function AssessmentEditor({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="MULTIPLE_CHOICE">Multiple Choice</SelectItem>
-                  <SelectItem value="OPEN">Open</SelectItem>
+                  <SelectItem value="MULTIPLE_CHOICE">{t("multipleChoice")}</SelectItem>
+                  <SelectItem value="OPEN">{t("open")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-xs text-slate-500">Difficulty</Label>
+              <Label className="text-xs text-slate-500">{t("difficultyLabel")}</Label>
               <Select
                 value={question.difficulty}
                 onValueChange={(value) => updateQuestion(index, { difficulty: value as QuestionItem["difficulty"] })}
@@ -147,22 +144,22 @@ export function AssessmentEditor({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(DIFFICULTY_LABELS).map(([value, label]) => (
+                  {DIFFICULTIES.map((value) => (
                     <SelectItem key={value} value={value}>
-                      {label}
+                      {t(`difficulties.${value}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-xs text-slate-500">Skill</Label>
+              <Label className="text-xs text-slate-500">{t("skillLabel")}</Label>
               <Input value={question.skill} onChange={(e) => updateQuestion(index, { skill: e.target.value })} />
             </div>
           </div>
 
           <div className="mt-3">
-            <Label className="text-xs text-slate-500">Question Text</Label>
+            <Label className="text-xs text-slate-500">{t("questionTextLabel")}</Label>
             <Textarea
               rows={2}
               value={question.questionText}
@@ -176,7 +173,7 @@ export function AssessmentEditor({
                 <Input
                   key={cIndex}
                   value={choice}
-                  placeholder={`Choice ${cIndex + 1}`}
+                  placeholder={t("choicePlaceholder", { n: cIndex + 1 })}
                   onChange={(e) => updateChoice(index, cIndex, e.target.value)}
                 />
               ))}
@@ -184,7 +181,7 @@ export function AssessmentEditor({
           )}
 
           <div className="mt-3">
-            <Label className="text-xs text-slate-500">Correct Answer</Label>
+            <Label className="text-xs text-slate-500">{t("correctAnswerLabel")}</Label>
             <Input
               value={question.correctAnswer}
               onChange={(e) => updateQuestion(index, { correctAnswer: e.target.value })}
@@ -192,7 +189,7 @@ export function AssessmentEditor({
           </div>
 
           <div className="mt-3">
-            <Label className="text-xs text-slate-500">Explanation</Label>
+            <Label className="text-xs text-slate-500">{t("explanationLabel")}</Label>
             <Textarea
               rows={2}
               value={question.explanation}
@@ -204,7 +201,7 @@ export function AssessmentEditor({
 
       <div className="flex flex-wrap items-center gap-3 border-t border-slate-200 pt-4">
         <Button onClick={save} disabled={isSaving}>
-          {isSaving ? "Saving..." : "Save"}
+          {isSaving ? t("saving") : t("save")}
         </Button>
         {saveMessage && <span className="text-sm text-green-700">{saveMessage}</span>}
       </div>

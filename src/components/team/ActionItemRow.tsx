@@ -2,9 +2,10 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { updateActionItemStatusAction } from "@/actions/teams";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ACTION_ITEM_STATUS_LABELS } from "@/lib/teamLabels";
+import { ACTION_ITEM_STATUSES } from "@/lib/teamLabels";
 
 export function ActionItemRow({
   actionItemId,
@@ -19,6 +20,7 @@ export function ActionItemRow({
   dueDate: string | null;
   status: string;
 }) {
+  const t = useTranslations("teams");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -43,9 +45,9 @@ export function ActionItemRow({
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {Object.entries(ACTION_ITEM_STATUS_LABELS).map(([value, label]) => (
+          {ACTION_ITEM_STATUSES.map((value) => (
             <SelectItem key={value} value={value}>
-              {label}
+              {t(`actionItemStatuses.${value}`)}
             </SelectItem>
           ))}
         </SelectContent>

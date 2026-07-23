@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -7,13 +8,13 @@ import { InitiativeEditor } from "@/components/initiative/InitiativeEditor";
 import { EvidenceSection } from "@/components/initiative/EvidenceSection";
 import { getRoleGroup } from "@/lib/permissions";
 import { getActiveSchoolId } from "@/lib/activeSchool";
-import { INITIATIVE_CATEGORY_LABELS, INITIATIVE_STATUS_LABELS } from "@/lib/initiativeLabels";
 import type { InitiativeGeneration } from "@/lib/ai/initiativeSchema";
 
 export default async function InitiativeDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   const user = session!.user;
   const { id } = await params;
+  const t = await getTranslations("initiatives");
 
   const initiative = await prisma.initiative.findUnique({
     where: { id },
@@ -52,11 +53,10 @@ export default async function InitiativeDetailPage({ params }: { params: Promise
       <main className="mx-auto max-w-3xl p-6">
         <h1 className="text-xl font-semibold">{initiative.title}</h1>
         <p className="mt-1 text-sm text-slate-500">
-          {INITIATIVE_CATEGORY_LABELS[initiative.category]} · {INITIATIVE_STATUS_LABELS[initiative.status]} ·{" "}
-          {initiative.owner.name}
+          {t(`categories.${initiative.category}`)} · {t(`statuses.${initiative.status}`)} · {initiative.owner.name}
         </p>
         <div className="mt-3 rounded-md bg-slate-50 p-3 text-sm text-slate-700">
-          <strong>Initial idea:</strong> {initiative.initialIdea}
+          <strong>{t("initialIdeaLabel")}</strong> {initiative.initialIdea}
         </div>
 
         <div className="mt-6">

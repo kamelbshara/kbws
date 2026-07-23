@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -12,6 +13,7 @@ import type { OperationalPlanGeneration } from "@/lib/ai/operationalPlanSchema";
 export default async function SchoolOperationalPlanPage() {
   const session = await auth();
   const user = session!.user;
+  const t = await getTranslations("operationalPlan");
 
   if (!(await getRoleGroup("MANAGEMENT_ROLES")).includes(user.role)) {
     redirect("/");
@@ -61,11 +63,11 @@ export default async function SchoolOperationalPlanPage() {
       <MainNav role={user.role} />
       <main className="mx-auto max-w-4xl p-6">
         <h1 className="text-xl font-semibold">{plan.title}</h1>
-        <p className="mt-1 text-sm text-slate-500">School-wide development plan</p>
+        <p className="mt-1 text-sm text-slate-500">{t("schoolPlanSubtitle")}</p>
         <div className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>Plan Matrix</CardTitle>
+              <CardTitle>{t("planMatrixTitle")}</CardTitle>
             </CardHeader>
             <CardContent>
               <OperationalPlanEditor planId={plan.id} initialContent={planContent} updatedAt={plan.updatedAt.toISOString()} />

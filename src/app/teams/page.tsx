@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -6,13 +7,13 @@ import { MainNav } from "@/components/layout/MainNav";
 import { Button } from "@/components/ui/button";
 import { getRoleGroup } from "@/lib/permissions";
 import { getActiveSchoolId } from "@/lib/activeSchool";
-import { TEAM_TYPE_LABELS } from "@/lib/teamLabels";
 
 export default async function TeamsListPage() {
   const session = await auth();
   const user = session!.user;
   const isManagement = (await getRoleGroup("MANAGEMENT_ROLES")).includes(user.role);
   const schoolId = await getActiveSchoolId(session!);
+  const t = await getTranslations("teams");
 
   const teams =
     isManagement && !schoolId
@@ -29,9 +30,9 @@ export default async function TeamsListPage() {
       <MainNav role={user.role} />
       <main className="p-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold">{isManagement ? "All Teams" : "My Teams"}</h1>
+          <h1 className="text-xl font-semibold">{isManagement ? t("allTeams") : t("myTeams")}</h1>
           <Button asChild>
-            <Link href="/teams/new">New Team</Link>
+            <Link href="/teams/new">{t("newTeam")}</Link>
           </Button>
         </div>
 
@@ -39,29 +40,29 @@ export default async function TeamsListPage() {
           <table className="w-full text-sm">
             <thead className="border-b border-slate-200 text-left text-slate-500">
               <tr>
-                <th className="px-4 py-2 font-medium">Name</th>
-                <th className="px-4 py-2 font-medium">Type</th>
-                <th className="px-4 py-2 font-medium">Leader</th>
-                <th className="px-4 py-2 font-medium">Members</th>
+                <th className="px-4 py-2 font-medium">{t("nameHeader")}</th>
+                <th className="px-4 py-2 font-medium">{t("typeHeader")}</th>
+                <th className="px-4 py-2 font-medium">{t("leaderHeader")}</th>
+                <th className="px-4 py-2 font-medium">{t("membersHeader")}</th>
               </tr>
             </thead>
             <tbody>
-              {teams.map((t) => (
-                <tr key={t.id} className="border-b border-slate-100 last:border-0">
+              {teams.map((team) => (
+                <tr key={team.id} className="border-b border-slate-100 last:border-0">
                   <td className="px-4 py-2">
-                    <Link href={`/teams/${t.id}`} className="font-medium hover:underline">
-                      {t.name}
+                    <Link href={`/teams/${team.id}`} className="font-medium hover:underline">
+                      {team.name}
                     </Link>
                   </td>
-                  <td className="px-4 py-2 text-slate-600">{TEAM_TYPE_LABELS[t.type]}</td>
-                  <td className="px-4 py-2 text-slate-600">{t.leader.name}</td>
-                  <td className="px-4 py-2 text-slate-600">{t.members.length}</td>
+                  <td className="px-4 py-2 text-slate-600">{t(`types.${team.type}`)}</td>
+                  <td className="px-4 py-2 text-slate-600">{team.leader.name}</td>
+                  <td className="px-4 py-2 text-slate-600">{team.members.length}</td>
                 </tr>
               ))}
               {teams.length === 0 && (
                 <tr>
                   <td colSpan={4} className="px-4 py-6 text-center text-slate-400">
-                    No teams yet.
+                    {t("empty")}
                   </td>
                 </tr>
               )}

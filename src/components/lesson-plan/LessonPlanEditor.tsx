@@ -2,20 +2,15 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { saveLessonPlanContentAction } from "@/actions/lesson-plans";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import type { LessonPlanContent } from "@/lib/ai/lessonPlanSchema";
 
-const SECTION_LABELS: Record<string, string> = {
-  objectives: "Objectives",
-  lessonFlow: "Lesson Flow",
-  activities: "Activities",
-  assessment: "Assessment",
-  differentiation: "Differentiation",
-  reflection: "Reflection",
-};
+type LessonPlanSection = "objectives" | "lessonFlow" | "activities" | "assessment" | "differentiation" | "reflection";
+const LESSON_FLOW_KEYS = ["intro", "development", "application", "closure"] as const;
 
 function toLines(value: string[]): string {
   return value.join("\n");
@@ -38,6 +33,8 @@ export function LessonPlanEditor({
   isPrinted: boolean;
   updatedAt: string;
 }) {
+  const t = useTranslations("lessonPlan");
+  const common = useTranslations("common");
   const router = useRouter();
   const [content, setContent] = useState<LessonPlanContent | null>(initialContent);
   const [loadedAt, setLoadedAt] = useState(updatedAt);
@@ -48,7 +45,7 @@ export function LessonPlanEditor({
   const [isSaving, startSaving] = useTransition();
   const [isPrinting, setIsPrinting] = useState(false);
 
-  async function generate(section?: keyof typeof SECTION_LABELS) {
+  async function generate(section?: LessonPlanSection) {
     setGenerating(section ?? "full");
     setError(null);
     try {
@@ -59,7 +56,7 @@ export function LessonPlanEditor({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Generation failed.");
+        setError(data.error ?? t("generationFailed"));
         return;
       }
       if (section && content) {
@@ -68,7 +65,7 @@ export function LessonPlanEditor({
         setContent(data.content);
       }
     } catch {
-      setError("Network error while generating. Please try again.");
+      setError(t("networkError"));
     } finally {
       setGenerating(null);
     }
@@ -88,7 +85,7 @@ export function LessonPlanEditor({
       }
       setConflict(false);
       setError(null);
-      setSaveMessage("Saved.");
+      setSaveMessage(t("saved"));
       router.refresh();
       setTimeout(() => setSaveMessage(null), 2000);
     });
@@ -114,9 +111,9 @@ export function LessonPlanEditor({
   if (!content) {
     return (
       <div className="rounded-md border border-dashed border-slate-300 p-6 text-center">
-        <p className="text-sm text-slate-600">No lesson plan content yet.</p>
+        <p className="text-sm text-slate-600">{t("noContentYet")}</p>
         <Button className="mt-4" onClick={() => generate()} disabled={generating !== null}>
-          {generating ? "Generating..." : "Generate Plan with AI"}
+          {generating ? t("generating") : t("generate")}
         </Button>
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       </div>
@@ -127,11 +124,7 @@ export function LessonPlanEditor({
     <div className="flex flex-col gap-6">
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <Section
-        title={SECTION_LABELS.objectives}
-        onRegenerate={() => generate("objectives")}
-        generating={generating === "objectives"}
-      >
+      <Section title={t("objectives")} onRegenerate={() => generate("objectives")} generating={generating === "objectives"}>
         <Textarea
           rows={3}
           value={toLines(content.objectives)}
@@ -140,15 +133,11 @@ export function LessonPlanEditor({
         />
       </Section>
 
-      <Section
-        title={SECTION_LABELS.lessonFlow}
-        onRegenerate={() => generate("lessonFlow")}
-        generating={generating === "lessonFlow"}
-      >
+      <Section title={t("lessonFlow")} onRegenerate={() => generate("lessonFlow")} generating={generating === "lessonFlow"}>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {(["intro", "development", "application", "closure"] as const).map((key) => (
+          {LESSON_FLOW_KEYS.map((key) => (
             <div key={key} className="flex flex-col gap-1">
-              <Label className="text-xs capitalize text-slate-500">{key}</Label>
+              <Label className="text-xs text-slate-500">{t(`lessonFlow${key.charAt(0).toUpperCase()}${key.slice(1)}`)}</Label>
               <Textarea
                 rows={3}
                 value={content.lessonFlow[key]}
@@ -160,11 +149,7 @@ export function LessonPlanEditor({
         </div>
       </Section>
 
-      <Section
-        title={SECTION_LABELS.activities}
-        onRegenerate={() => generate("activities")}
-        generating={generating === "activities"}
-      >
+      <Section title={t("activities")} onRegenerate={() => generate("activities")} generating={generating === "activities"}>
         <Textarea
           rows={3}
           value={toLines(content.activities)}
@@ -173,11 +158,7 @@ export function LessonPlanEditor({
         />
       </Section>
 
-      <Section
-        title={SECTION_LABELS.assessment}
-        onRegenerate={() => generate("assessment")}
-        generating={generating === "assessment"}
-      >
+      <Section title={t("assessment")} onRegenerate={() => generate("assessment")} generating={generating === "assessment"}>
         <Textarea
           rows={2}
           value={content.assessment}
@@ -187,13 +168,13 @@ export function LessonPlanEditor({
       </Section>
 
       <Section
-        title={SECTION_LABELS.differentiation}
+        title={t("differentiation")}
         onRegenerate={() => generate("differentiation")}
         generating={generating === "differentiation"}
       >
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="flex flex-col gap-1">
-            <Label className="text-xs text-slate-500">Support</Label>
+            <Label className="text-xs text-slate-500">{t("support")}</Label>
             <Textarea
               rows={3}
               value={content.differentiation.support}
@@ -204,7 +185,7 @@ export function LessonPlanEditor({
             />
           </div>
           <div className="flex flex-col gap-1">
-            <Label className="text-xs text-slate-500">Enrichment</Label>
+            <Label className="text-xs text-slate-500">{t("enrichment")}</Label>
             <Textarea
               rows={3}
               value={content.differentiation.enrichment}
@@ -220,11 +201,7 @@ export function LessonPlanEditor({
         </div>
       </Section>
 
-      <Section
-        title={SECTION_LABELS.reflection}
-        onRegenerate={() => generate("reflection")}
-        generating={generating === "reflection"}
-      >
+      <Section title={t("reflection")} onRegenerate={() => generate("reflection")} generating={generating === "reflection"}>
         <Textarea
           rows={2}
           value={content.reflection}
@@ -236,19 +213,19 @@ export function LessonPlanEditor({
       <div className="flex items-center gap-3 border-t border-slate-200 pt-4">
         {!isPrinted && !conflict && (
           <Button onClick={save} disabled={isSaving}>
-            {isSaving ? "Saving..." : "Save"}
+            {isSaving ? t("saving") : t("save")}
           </Button>
         )}
         {conflict && (
           <Button onClick={() => window.location.reload()} variant="outline">
-            Reload
+            {t("reload")}
           </Button>
         )}
         <Button onClick={print} variant="outline" disabled={isPrinting}>
-          {isPrinting ? "Preparing PDF..." : "Print"}
+          {isPrinting ? t("preparingPdf") : common("print")}
         </Button>
         {saveMessage && <span className="text-sm text-green-700">{saveMessage}</span>}
-        {isPrinted && <span className="text-sm text-slate-500">This plan has been printed and is now read-only.</span>}
+        {isPrinted && <span className="text-sm text-slate-500">{t("printedReadOnly")}</span>}
       </div>
     </div>
   );
@@ -265,12 +242,13 @@ function Section({
   onRegenerate: () => void;
   generating: boolean;
 }) {
+  const t = useTranslations("lessonPlan");
   return (
     <div className="rounded-md border border-slate-200 p-4">
       <div className="mb-2 flex items-center justify-between">
         <h2 className="font-medium">{title}</h2>
         <Button type="button" variant="ghost" size="sm" onClick={onRegenerate} disabled={generating}>
-          {generating ? "Regenerating..." : "Regenerate"}
+          {generating ? t("regenerating") : t("regenerate")}
         </Button>
       </div>
       {children}

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { saveInitiativePlanAction, updateInitiativeStatusAction } from "@/actions/initiatives";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,7 @@ export function InitiativeEditor({
   status: "DRAFT" | "ACTIVE" | "COMPLETED";
   updatedAt: string;
 }) {
+  const t = useTranslations("initiatives");
   const router = useRouter();
   const [content, setContent] = useState<InitiativeGeneration | null>(initialContent);
   const [loadedAt, setLoadedAt] = useState(updatedAt);
@@ -38,12 +40,12 @@ export function InitiativeEditor({
       const res = await fetch(`/api/initiatives/${initiativeId}/generate`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Generation failed.");
+        setError(data.error ?? t("generationFailed"));
         return;
       }
       setContent(data.content);
     } catch {
-      setError("Network error while generating. Please try again.");
+      setError(t("networkError"));
     } finally {
       setGenerating(false);
     }
@@ -67,7 +69,7 @@ export function InitiativeEditor({
       }
       setConflict(false);
       setError(null);
-      setSaveMessage("Saved.");
+      setSaveMessage(t("saved"));
       router.refresh();
       setTimeout(() => setSaveMessage(null), 2000);
     });
@@ -90,9 +92,9 @@ export function InitiativeEditor({
   if (!content) {
     return (
       <div className="rounded-md border border-dashed border-slate-300 p-6 text-center">
-        <p className="text-sm text-slate-600">No plan generated yet.</p>
+        <p className="text-sm text-slate-600">{t("noPlanYet")}</p>
         <Button className="mt-4" onClick={generate} disabled={generating}>
-          {generating ? "Generating..." : "Generate Plan with AI"}
+          {generating ? t("generating") : t("generatePlan")}
         </Button>
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       </div>
@@ -105,14 +107,14 @@ export function InitiativeEditor({
 
       <div className="rounded-md border border-slate-200 p-4">
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="font-medium">Goal &amp; Target Group</h2>
+          <h2 className="font-medium">{t("goalTargetGroupTitle")}</h2>
           <Button type="button" variant="ghost" size="sm" onClick={generate} disabled={generating}>
-            {generating ? "Regenerating..." : "Regenerate"}
+            {generating ? t("regenerating") : t("regenerate")}
           </Button>
         </div>
         <div className="flex flex-col gap-3">
           <div>
-            <Label className="text-xs text-slate-500">Goal</Label>
+            <Label className="text-xs text-slate-500">{t("goal")}</Label>
             <Textarea
               rows={2}
               value={content.goal}
@@ -121,7 +123,7 @@ export function InitiativeEditor({
             />
           </div>
           <div>
-            <Label className="text-xs text-slate-500">Target Group</Label>
+            <Label className="text-xs text-slate-500">{t("targetGroup")}</Label>
             <Textarea
               rows={1}
               value={content.targetGroup}
@@ -133,13 +135,13 @@ export function InitiativeEditor({
       </div>
 
       <div className="rounded-md border border-slate-200 p-4">
-        <h2 className="mb-2 font-medium">Implementation Phases</h2>
+        <h2 className="mb-2 font-medium">{t("implementationPhases")}</h2>
         <div className="flex flex-col gap-3">
           {content.phases.map((phase, index) => (
             <div key={index} className="grid grid-cols-1 gap-2 rounded-md bg-slate-50 p-3 sm:grid-cols-3">
               <Input
                 value={phase.name}
-                placeholder="Phase name"
+                placeholder={t("phaseName")}
                 disabled={readOnly}
                 onChange={(e) => {
                   const phases = [...content.phases];
@@ -150,7 +152,7 @@ export function InitiativeEditor({
               <Input
                 className="sm:col-span-2"
                 value={phase.description}
-                placeholder="Description"
+                placeholder={t("phaseDescription")}
                 disabled={readOnly}
                 onChange={(e) => {
                   const phases = [...content.phases];
@@ -160,7 +162,7 @@ export function InitiativeEditor({
               />
               <Input
                 value={phase.timeline}
-                placeholder="Timeline"
+                placeholder={t("phaseTimeline")}
                 disabled={readOnly}
                 onChange={(e) => {
                   const phases = [...content.phases];
@@ -174,13 +176,13 @@ export function InitiativeEditor({
       </div>
 
       <div className="rounded-md border border-slate-200 p-4">
-        <h2 className="mb-2 font-medium">Performance Indicators</h2>
+        <h2 className="mb-2 font-medium">{t("performanceIndicators")}</h2>
         <div className="flex flex-col gap-3">
           {content.indicators.map((indicator, index) => (
             <div key={index} className="grid grid-cols-1 gap-2 rounded-md bg-slate-50 p-3 sm:grid-cols-3">
               <Input
                 value={indicator.name}
-                placeholder="Indicator"
+                placeholder={t("indicatorName")}
                 disabled={readOnly}
                 onChange={(e) => {
                   const indicators = [...content.indicators];
@@ -190,7 +192,7 @@ export function InitiativeEditor({
               />
               <Input
                 value={indicator.measurementMethod}
-                placeholder="Measurement method"
+                placeholder={t("measurementMethod")}
                 disabled={readOnly}
                 onChange={(e) => {
                   const indicators = [...content.indicators];
@@ -200,7 +202,7 @@ export function InitiativeEditor({
               />
               <Input
                 value={indicator.targetValue}
-                placeholder="Target value"
+                placeholder={t("targetValue")}
                 disabled={readOnly}
                 onChange={(e) => {
                   const indicators = [...content.indicators];
@@ -216,26 +218,26 @@ export function InitiativeEditor({
       <div className="flex flex-wrap items-center gap-3 border-t border-slate-200 pt-4">
         {!readOnly && !conflict && (
           <Button onClick={save} disabled={isSaving}>
-            {isSaving ? "Saving..." : "Save"}
+            {isSaving ? t("saving") : t("save")}
           </Button>
         )}
         {conflict && (
           <Button onClick={() => window.location.reload()} variant="outline">
-            Reload
+            {t("reload")}
           </Button>
         )}
         {status === "DRAFT" && (
           <Button onClick={markActive} variant="outline" disabled={isTransitioning}>
-            Mark Active
+            {t("markActive")}
           </Button>
         )}
         {status === "ACTIVE" && (
           <Button onClick={markCompleted} variant="outline" disabled={isTransitioning}>
-            Mark Completed
+            {t("markCompleted")}
           </Button>
         )}
         {saveMessage && <span className="text-sm text-green-700">{saveMessage}</span>}
-        {readOnly && <span className="text-sm text-slate-500">This initiative is completed and now read-only.</span>}
+        {readOnly && <span className="text-sm text-slate-500">{t("completedReadOnly")}</span>}
       </div>
     </div>
   );

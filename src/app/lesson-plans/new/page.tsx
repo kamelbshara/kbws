@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -12,6 +13,7 @@ export default async function NewLessonPlanPage({
   const session = await auth();
   const user = session!.user;
   const { timetableId } = await searchParams;
+  const t = await getTranslations("lessonPlan");
 
   if (!timetableId) {
     notFound();
@@ -43,7 +45,7 @@ export default async function NewLessonPlanPage({
     <div>
       <AppHeader userName={user.name} role={user.role} />
       <main className="mx-auto max-w-2xl p-6">
-        <h1 className="text-xl font-semibold">New Lesson Plan</h1>
+        <h1 className="text-xl font-semibold">{t("newTitle")}</h1>
         <p className="mt-1 text-sm text-slate-500">
           {timetable.subject.name} · {timetable.classSection.grade.name} · {timetable.classSection.name}
         </p>
@@ -60,9 +62,7 @@ export default async function NewLessonPlanPage({
               }))}
             />
           ) : (
-            <p className="text-sm text-slate-600">
-              No curriculum content has been loaded yet for this subject/grade. Ask an administrator to import it.
-            </p>
+            <p className="text-sm text-slate-600">{t("noCurriculumContent")}</p>
           )}
         </div>
       </main>

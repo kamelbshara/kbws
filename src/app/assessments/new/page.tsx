@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
@@ -13,6 +14,7 @@ export default async function NewAssessmentPage({
   const session = await auth();
   const user = session!.user;
   const { lessonPlanId } = await searchParams;
+  const t = await getTranslations("assessments");
 
   if (!lessonPlanId) {
     notFound();
@@ -32,9 +34,9 @@ export default async function NewAssessmentPage({
       <AppHeader userName={user.name} role={user.role} />
       <MainNav role={user.role} />
       <main className="mx-auto max-w-xl p-6">
-        <h1 className="text-xl font-semibold">New Assessment</h1>
+        <h1 className="text-xl font-semibold">{t("newAssessment")}</h1>
         <p className="mt-1 text-sm text-slate-500">
-          Linked to lesson: {lessonPlan.curriculumContent.lessonTitle}
+          {t("linkedToLesson", { title: lessonPlan.curriculumContent.lessonTitle })}
         </p>
         <div className="mt-6">
           <CreateAssessmentForm
