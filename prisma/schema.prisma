@@ -200,6 +200,7 @@ model User {
   assessments        Assessment[]
   requestedInsights  Insight[]
   notifications      Notification[]
+  passwordResetTokens PasswordResetToken[]
 }
 
 model TeacherAssignment {
@@ -485,6 +486,18 @@ model AuditLog {
   beforeJson Json?
   afterJson  Json?
   createdAt  DateTime    @default(now())
+}
+
+model PasswordResetToken {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
 }
 
 model Notification {

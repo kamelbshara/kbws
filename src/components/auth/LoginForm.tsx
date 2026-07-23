@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 import { loginAction, type LoginState } from "@/actions/auth";
@@ -18,7 +19,12 @@ export function LoginForm() {
         <Input id="email" name="email" type="email" required autoComplete="email" placeholder="you@school.edu" />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="password">{t("common.password")}</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="password">{t("common.password")}</Label>
+          <Link href="/forgot-password" className="text-xs text-slate-500 hover:underline">
+            Forgot password?
+          </Link>
+        </div>
         <Input id="password" name="password" type="password" required autoComplete="current-password" />
       </div>
       {state?.error && <p className="text-sm text-red-600">{t("login.invalidCredentials")}</p>}

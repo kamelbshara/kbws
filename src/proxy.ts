@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { ROUTE_ROLE_GROUP_MAP, getRoleGroup } from "@/lib/permissions";
 
-const PUBLIC_PATHS = ["/login"];
+const PUBLIC_PATHS = ["/login", "/forgot-password", "/reset-password"];
 
 export default auth(async (req) => {
   const { pathname } = req.nextUrl;
