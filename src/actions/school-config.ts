@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { requireRole, ADMIN_ROLES, MANAGEMENT_ROLES } from "@/lib/permissions";
+import { parseCurriculumCsv } from "@/lib/curriculumImport";
 import type { Role, Track, DayOfWeek } from "@/generated/prisma/enums";
 
 export type ActionState = { error?: string; success?: boolean } | undefined;
@@ -194,4 +195,88 @@ export async function createTimetableSlotAction(_prevState: ActionState, formDat
 
   revalidatePath("/admin/timetable");
   return { success: true };
+}
+
+export type CurriculumImportState =
+  | { error: string; created?: undefined; rowErrors?: undefined }
+  | { error?: undefined; created: number; rowErrors: string[] }
+  | undefined;
+
+const MAX_IMPORT_FILE_BYTES = 2 * 1024 * 1024;
+
+export async function importCurriculumAction(
+  _prevState: CurriculumImportState,
+  formData: FormData,
+): Promise<CurriculumImportState> {
+  const session = await auth();
+  requireRole(session, MANAGEMENT_ROLES);
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: "Please choose a CSV file to upload." };
+  }
+  if (file.size > MAX_IMPORT_FILE_BYTES) {
+    return { error: "File is too large (max 2MB)." };
+  }
+
+  const text = await file.text();
+  const { rows, errors } = parseCurriculumCsv(text);
+
+  if (rows.length === 0) {
+    return { error: errors[0]?.message ?? "No valid rows found in the file." };
+  }
+
+  const [subjects, grades] = await Promise.all([prisma.subject.findMany(), prisma.grade.findMany()]);
+  const subjectByCode = new Map(subjects.map((s) => [s.code.toUpperCase(), s]));
+  const gradeByLevel = new Map(grades.map((g) => [g.level, g]));
+
+  const rowErrors = errors.map((e) => `Row ${e.row}: ${e.message}`);
+  let created = 0;
+
+  for (const row of rows) {
+    const subject = subjectByCode.get(row.subjectCode.toUpperCase());
+    const grade = gradeByLevel.get(row.gradeLevel);
+    if (!subject) {
+      rowErrors.push(`Lesson "${row.lessonTitle}": unknown subject code "${row.subjectCode}".`);
+      continue;
+    }
+    if (!grade) {
+      rowErrors.push(`Lesson "${row.lessonTitle}": unknown grade level "${row.gradeLevel}".`);
+      continue;
+    }
+
+    const content = await prisma.curriculumContent.create({
+      data: {
+        subjectId: subject.id,
+        gradeId: grade.id,
+        track: (row.track || undefined) as Track | undefined,
+        unit: row.unit,
+        unitTitle: row.unitTitle,
+        lessonTitle: row.lessonTitle,
+        orderIndex: row.orderIndex,
+      },
+    });
+    await prisma.learningOutcome.create({
+      data: {
+        curriculumContentId: content.id,
+        textEn: row.textEn,
+        textAr: row.textAr,
+        skill: row.skill,
+      },
+    });
+    created += 1;
+  }
+
+  if (created > 0) {
+    await logAudit({
+      userId: session!.user.id,
+      action: "CREATE",
+      module: "CurriculumImport",
+      entityId: `batch-${Date.now()}`,
+      after: { created, skipped: rowErrors.length },
+    });
+  }
+
+  revalidatePath("/admin/curriculum");
+  return { created, rowErrors };
 }
