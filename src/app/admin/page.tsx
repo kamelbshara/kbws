@@ -19,7 +19,7 @@ export default async function AdminHomePage() {
   return (
     <div>
       <AppHeader userName={user.name} role={user.role} />
-      <AdminNav />
+      <AdminNav role={user.role} />
       <main className="p-6">
         <h1 className="text-xl font-semibold">
           {school?.name} <span className="text-slate-400">·</span> {academicYear?.name}

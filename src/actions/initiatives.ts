@@ -6,7 +6,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { requireRole, INITIATIVE_CREATOR_ROLES, ForbiddenError } from "@/lib/permissions";
+import { requireRoleGroup, ForbiddenError } from "@/lib/permissions";
 import { InitiativeSaveSchema } from "@/lib/ai/initiativeSchema";
 import type { InitiativeCategory } from "@/generated/prisma/enums";
 
@@ -20,7 +20,7 @@ const createInitiativeSchema = z.object({
 
 export async function createInitiativeAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await auth();
-  requireRole(session, INITIATIVE_CREATOR_ROLES);
+  await requireRoleGroup(session, "INITIATIVE_CREATOR_ROLES");
   const ownerId = session!.user.id;
 
   const parsed = createInitiativeSchema.safeParse({
@@ -66,7 +66,7 @@ async function requireOwnedInitiative(initiativeId: string, userId: string) {
 
 export async function saveInitiativePlanAction(initiativeId: string, content: unknown): Promise<{ error?: string }> {
   const session = await auth();
-  requireRole(session, INITIATIVE_CREATOR_ROLES);
+  await requireRoleGroup(session, "INITIATIVE_CREATOR_ROLES");
   const initiative = await requireOwnedInitiative(initiativeId, session!.user.id);
 
   const result = InitiativeSaveSchema.safeParse(content);
@@ -121,7 +121,7 @@ const addEvidenceSchema = z.object({
 
 export async function addInitiativeEvidenceAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await auth();
-  requireRole(session, INITIATIVE_CREATOR_ROLES);
+  await requireRoleGroup(session, "INITIATIVE_CREATOR_ROLES");
 
   const initiativeId = formData.get("initiativeId");
   if (typeof initiativeId !== "string") {
@@ -166,7 +166,7 @@ const STATUS_TRANSITIONS: Record<string, string[]> = {
 
 export async function updateInitiativeStatusAction(initiativeId: string, nextStatus: "ACTIVE" | "COMPLETED") {
   const session = await auth();
-  requireRole(session, INITIATIVE_CREATOR_ROLES);
+  await requireRoleGroup(session, "INITIATIVE_CREATOR_ROLES");
   const initiative = await requireOwnedInitiative(initiativeId, session!.user.id);
 
   if (!STATUS_TRANSITIONS[initiative.status]?.includes(nextStatus)) {

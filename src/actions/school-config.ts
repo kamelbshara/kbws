@@ -6,7 +6,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { requireRole, ADMIN_ROLES, MANAGEMENT_ROLES } from "@/lib/permissions";
+import { requireRoleGroup } from "@/lib/permissions";
 import { parseCurriculumCsv } from "@/lib/curriculumImport";
 import type { Role, Track, DayOfWeek } from "@/generated/prisma/enums";
 
@@ -22,7 +22,7 @@ const createUserSchema = z.object({
 
 export async function createUserAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await auth();
-  requireRole(session, ADMIN_ROLES);
+  await requireRoleGroup(session, "ADMIN_ROLES");
 
   const parsed = createUserSchema.safeParse({
     email: formData.get("email"),
@@ -68,7 +68,7 @@ export async function createUserAction(_prevState: ActionState, formData: FormDa
 
 export async function toggleUserActiveAction(userId: string) {
   const session = await auth();
-  requireRole(session, ADMIN_ROLES);
+  await requireRoleGroup(session, "ADMIN_ROLES");
 
   const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
   const updated = await prisma.user.update({
@@ -96,7 +96,7 @@ const createClassSectionSchema = z.object({
 
 export async function createClassSectionAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await auth();
-  requireRole(session, MANAGEMENT_ROLES);
+  await requireRoleGroup(session, "MANAGEMENT_ROLES");
 
   const rawTrack = formData.get("track");
   const parsed = createClassSectionSchema.safeParse({
@@ -149,7 +149,7 @@ const createTimetableSlotSchema = z.object({
 
 export async function createTimetableSlotAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await auth();
-  requireRole(session, MANAGEMENT_ROLES);
+  await requireRoleGroup(session, "MANAGEMENT_ROLES");
 
   const parsed = createTimetableSlotSchema.safeParse({
     teacherId: formData.get("teacherId"),
@@ -209,7 +209,7 @@ export async function importCurriculumAction(
   formData: FormData,
 ): Promise<CurriculumImportState> {
   const session = await auth();
-  requireRole(session, MANAGEMENT_ROLES);
+  await requireRoleGroup(session, "MANAGEMENT_ROLES");
 
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {

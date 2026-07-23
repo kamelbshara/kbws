@@ -5,14 +5,14 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { AdminNav } from "@/components/layout/AdminNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart } from "@/components/dashboard/BarChart";
-import { MANAGEMENT_ROLES } from "@/lib/permissions";
+import { getRoleGroup } from "@/lib/permissions";
 import { CATEGORICAL, STATUS } from "@/lib/chartColors";
 
 export default async function DashboardPage() {
   const session = await auth();
   const user = session!.user;
 
-  if (!MANAGEMENT_ROLES.includes(user.role)) {
+  if (!(await getRoleGroup("MANAGEMENT_ROLES")).includes(user.role)) {
     redirect("/");
   }
 
@@ -41,7 +41,7 @@ export default async function DashboardPage() {
   return (
     <div>
       <AppHeader userName={user.name} role={user.role} />
-      <AdminNav />
+      <AdminNav role={user.role} />
       <main className="p-6">
         <h1 className="text-xl font-semibold">Dashboard</h1>
 

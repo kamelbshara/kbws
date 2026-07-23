@@ -7,7 +7,7 @@ import type { Session } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { requireRole, TEAM_CREATOR_ROLES, MANAGEMENT_ROLES, ForbiddenError } from "@/lib/permissions";
+import { requireRoleGroup, getRoleGroup, ForbiddenError } from "@/lib/permissions";
 import { OperationalPlanSaveSchema } from "@/lib/ai/operationalPlanSchema";
 import type { TeamType, ActionItemStatus } from "@/generated/prisma/enums";
 
@@ -21,7 +21,7 @@ const createTeamSchema = z.object({
 
 export async function createTeamAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await auth();
-  requireRole(session, TEAM_CREATOR_ROLES);
+  await requireRoleGroup(session, "TEAM_CREATOR_ROLES");
   const leaderId = session!.user.id;
 
   const parsed = createTeamSchema.safeParse({
@@ -79,7 +79,7 @@ const addMemberSchema = z.object({
 
 export async function addTeamMemberAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await auth();
-  requireRole(session, TEAM_CREATOR_ROLES);
+  await requireRoleGroup(session, "TEAM_CREATOR_ROLES");
 
   const parsed = addMemberSchema.safeParse({
     teamId: formData.get("teamId"),
@@ -118,7 +118,7 @@ const createMeetingSchema = z.object({
 
 export async function createMeetingAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await auth();
-  requireRole(session, TEAM_CREATOR_ROLES);
+  await requireRoleGroup(session, "TEAM_CREATOR_ROLES");
 
   const parsed = createMeetingSchema.safeParse({
     teamId: formData.get("teamId"),
@@ -156,7 +156,7 @@ export async function createMeetingAction(_prevState: ActionState, formData: For
 
 export async function saveMeetingMinutesAction(meetingId: string, minutes: string) {
   const session = await auth();
-  requireRole(session, TEAM_CREATOR_ROLES);
+  await requireRoleGroup(session, "TEAM_CREATOR_ROLES");
 
   const meeting = await prisma.meeting.findUniqueOrThrow({ where: { id: meetingId } });
   await requireTeamLeader(meeting.teamId, session!.user.id);
@@ -184,7 +184,7 @@ const addActionItemSchema = z.object({
 
 export async function addActionItemAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await auth();
-  requireRole(session, TEAM_CREATOR_ROLES);
+  await requireRoleGroup(session, "TEAM_CREATOR_ROLES");
 
   const parsed = addActionItemSchema.safeParse({
     meetingId: formData.get("meetingId"),
@@ -255,7 +255,9 @@ async function requireOperationalPlanAccess(planId: string, session: Session) {
   if (!plan) throw new ForbiddenError("Plan not found.");
 
   const authorized =
-    plan.level === "SCHOOL" ? MANAGEMENT_ROLES.includes(session.user.role) : plan.team?.leaderId === session.user.id;
+    plan.level === "SCHOOL"
+      ? (await getRoleGroup("MANAGEMENT_ROLES")).includes(session.user.role)
+      : plan.team?.leaderId === session.user.id;
 
   if (!authorized) throw new ForbiddenError("You do not have access to this operational plan.");
   return plan;

@@ -17,7 +17,7 @@ export default async function AdminCurriculumPage() {
   return (
     <div>
       <AppHeader userName={user.name} role={user.role} />
-      <AdminNav />
+      <AdminNav role={user.role} />
       <main className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-[2fr_1fr]">
         <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
           <table className="w-full text-sm">

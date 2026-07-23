@@ -7,7 +7,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { OPENAI_MODEL } from "@/lib/ai/client";
 import { generateInsights } from "@/lib/ai/generateInsights";
-import { MANAGEMENT_ROLES } from "@/lib/permissions";
+import { getRoleGroup } from "@/lib/permissions";
 
 const bodySchema = z.object({
   scope: z.enum(["TEACHER", "SCHOOL"]),
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
   if (scope === "TEACHER" && session.user.role !== "TEACHER") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
-  if (scope === "SCHOOL" && !MANAGEMENT_ROLES.includes(session.user.role)) {
+  if (scope === "SCHOOL" && !(await getRoleGroup("MANAGEMENT_ROLES")).includes(session.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

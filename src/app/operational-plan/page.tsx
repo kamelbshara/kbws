@@ -5,14 +5,14 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { MainNav } from "@/components/layout/MainNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OperationalPlanEditor } from "@/components/team/OperationalPlanEditor";
-import { MANAGEMENT_ROLES } from "@/lib/permissions";
+import { getRoleGroup } from "@/lib/permissions";
 import type { OperationalPlanGeneration } from "@/lib/ai/operationalPlanSchema";
 
 export default async function SchoolOperationalPlanPage() {
   const session = await auth();
   const user = session!.user;
 
-  if (!MANAGEMENT_ROLES.includes(user.role)) {
+  if (!(await getRoleGroup("MANAGEMENT_ROLES")).includes(user.role)) {
     redirect("/");
   }
 

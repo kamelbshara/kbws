@@ -483,6 +483,13 @@ model AuditLog {
   createdAt  DateTime    @default(now())
 }
 
+model PermissionGroup {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  roles     Role[]
+  updatedAt DateTime @updatedAt
+}
+
 model Insight {
   id              String       @id @default(cuid())
   scope           InsightScope

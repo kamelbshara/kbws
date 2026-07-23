@@ -57,6 +57,7 @@
     "classes": "Class Sections",
     "curriculum": "Curriculum",
     "timetable": "Timetable",
-    "auditLog": "Audit Log"
+    "auditLog": "Audit Log",
+    "permissions": "Permissions"
   }
 }

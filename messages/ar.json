@@ -57,6 +57,7 @@
     "classes": "الشعب",
     "curriculum": "المنهج الدراسي",
     "timetable": "الجدول الدراسي",
-    "auditLog": "سجل التدقيق"
+    "auditLog": "سجل التدقيق",
+    "permissions": "الصلاحيات"
   }
 }

@@ -4,13 +4,13 @@ import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { MainNav } from "@/components/layout/MainNav";
 import { Button } from "@/components/ui/button";
-import { MANAGEMENT_ROLES } from "@/lib/permissions";
+import { getRoleGroup } from "@/lib/permissions";
 import { INITIATIVE_CATEGORY_LABELS, INITIATIVE_STATUS_LABELS } from "@/lib/initiativeLabels";
 
 export default async function InitiativesListPage() {
   const session = await auth();
   const user = session!.user;
-  const isManagement = MANAGEMENT_ROLES.includes(user.role);
+  const isManagement = (await getRoleGroup("MANAGEMENT_ROLES")).includes(user.role);
 
   const initiatives = await prisma.initiative.findMany({
     where: isManagement ? {} : { ownerId: user.id },

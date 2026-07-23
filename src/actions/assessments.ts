@@ -6,7 +6,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { requireRole, TEACHER_ROLES, ForbiddenError } from "@/lib/permissions";
+import { requireRoleGroup, ForbiddenError } from "@/lib/permissions";
 import { AssessmentSaveSchema } from "@/lib/ai/questionSchema";
 import type { QuestionType, QuestionDifficulty } from "@/generated/prisma/enums";
 
@@ -19,7 +19,7 @@ const createAssessmentSchema = z.object({
 
 export async function createAssessmentAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await auth();
-  requireRole(session, TEACHER_ROLES);
+  await requireRoleGroup(session, "TEACHER_ROLES");
   const teacherId = session!.user.id;
 
   const parsed = createAssessmentSchema.safeParse({
@@ -59,7 +59,7 @@ export async function saveAssessmentQuestionsAction(
   content: unknown,
 ): Promise<{ error?: string }> {
   const session = await auth();
-  requireRole(session, TEACHER_ROLES);
+  await requireRoleGroup(session, "TEACHER_ROLES");
   const teacherId = session!.user.id;
 
   const assessment = await prisma.assessment.findUnique({

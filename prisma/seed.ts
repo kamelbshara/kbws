@@ -1,4 +1,5 @@
 import { PrismaClient } from "../src/generated/prisma/client.js";
+import type { Role } from "../src/generated/prisma/enums.js";
 import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
 
@@ -269,6 +270,21 @@ async function main() {
       endTime: "11:15",
     },
   });
+
+  const defaultPermissionGroups: { name: string; roles: Role[] }[] = [
+    { name: "ADMIN_ROLES", roles: ["SYSTEM_ADMIN"] },
+    { name: "MANAGEMENT_ROLES", roles: ["SYSTEM_ADMIN", "PRINCIPAL", "VICE_PRINCIPAL"] },
+    { name: "TEACHER_ROLES", roles: ["TEACHER"] },
+    { name: "INITIATIVE_CREATOR_ROLES", roles: ["TEACHER", "INITIATIVE_OWNER", "TEAM_LEADER"] },
+    { name: "TEAM_CREATOR_ROLES", roles: ["TEACHER", "TEAM_LEADER", "PRINCIPAL", "VICE_PRINCIPAL"] },
+  ];
+  for (const group of defaultPermissionGroups) {
+    await prisma.permissionGroup.upsert({
+      where: { name: group.name },
+      create: group,
+      update: {},
+    });
+  }
 
   console.log("Seed complete.");
   console.log(`Seeded users (password for all: ${SEED_PASSWORD}):`);

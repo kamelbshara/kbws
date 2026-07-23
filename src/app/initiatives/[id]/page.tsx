@@ -5,7 +5,7 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { MainNav } from "@/components/layout/MainNav";
 import { InitiativeEditor } from "@/components/initiative/InitiativeEditor";
 import { EvidenceSection } from "@/components/initiative/EvidenceSection";
-import { MANAGEMENT_ROLES } from "@/lib/permissions";
+import { getRoleGroup } from "@/lib/permissions";
 import { INITIATIVE_CATEGORY_LABELS, INITIATIVE_STATUS_LABELS } from "@/lib/initiativeLabels";
 import type { InitiativeGeneration } from "@/lib/ai/initiativeSchema";
 
@@ -24,7 +24,7 @@ export default async function InitiativeDetailPage({ params }: { params: Promise
     },
   });
 
-  const isManagement = MANAGEMENT_ROLES.includes(user.role);
+  const isManagement = (await getRoleGroup("MANAGEMENT_ROLES")).includes(user.role);
   if (!initiative || (initiative.ownerId !== user.id && !isManagement)) {
     notFound();
   }

@@ -10,7 +10,7 @@ import { MeetingMinutes } from "@/components/team/MeetingMinutes";
 import { AddActionItemForm } from "@/components/team/AddActionItemForm";
 import { ActionItemRow } from "@/components/team/ActionItemRow";
 import { AddMemberForm } from "@/components/team/AddMemberForm";
-import { MANAGEMENT_ROLES } from "@/lib/permissions";
+import { getRoleGroup } from "@/lib/permissions";
 import { TEAM_TYPE_LABELS } from "@/lib/teamLabels";
 import type { OperationalPlanGeneration } from "@/lib/ai/operationalPlanSchema";
 
@@ -32,7 +32,7 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
     },
   });
 
-  const isManagement = MANAGEMENT_ROLES.includes(user.role);
+  const isManagement = (await getRoleGroup("MANAGEMENT_ROLES")).includes(user.role);
   const isMember = team?.members.some((m) => m.userId === user.id);
   if (!team || (!isMember && !isManagement)) {
     notFound();

@@ -59,7 +59,7 @@ export default async function AuditLogPage({
   return (
     <div>
       <AppHeader userName={user.name} role={user.role} />
-      <AdminNav />
+      <AdminNav role={user.role} />
       <main className="flex flex-col gap-8 p-6">
         <section>
           <h1 className="text-xl font-semibold">Audit Log</h1>
