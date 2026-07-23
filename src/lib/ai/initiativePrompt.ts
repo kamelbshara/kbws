@@ -1,8 +1,11 @@
+import { formatKnowledgeContext } from "@/lib/ai/knowledgeContext";
+
 export type InitiativePromptInput = {
   title: string;
   category: string;
   initialIdea: string;
   locale: "ar" | "en";
+  knowledgeNotes?: string[];
 };
 
 export function buildInitiativePrompt(input: InitiativePromptInput): { system: string; user: string } {
@@ -24,7 +27,10 @@ export function buildInitiativePrompt(input: InitiativePromptInput): { system: s
     `Initiative title: ${input.title}`,
     `Category: ${input.category}`,
     `Initial idea from the staff member: ${input.initialIdea}`,
-  ].join("\n");
+    formatKnowledgeContext(input.knowledgeNotes ?? []),
+  ]
+    .filter(Boolean)
+    .join("\n");
 
   return { system, user };
 }

@@ -6,6 +6,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { OPENAI_MODEL } from "@/lib/ai/client";
 import { generateInitiativePlan } from "@/lib/ai/generateInitiative";
+import { evaluateInitiative } from "@/lib/ai/evaluate";
+import { getRelevantKnowledge } from "@/lib/knowledgeMemory";
 
 const OWNER_ROLES = ["TEACHER", "INITIATIVE_OWNER", "TEAM_LEADER"];
 
@@ -26,17 +28,20 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   }
 
   const locale = (await getLocale()) as "ar" | "en";
+  const knowledgeNotes = await getRelevantKnowledge(initiative.schoolId, "INITIATIVE", {});
   const promptInput = {
     title: initiative.title,
     category: initiative.category,
     initialIdea: initiative.initialIdea,
     locale,
+    knowledgeNotes,
   };
 
   try {
     const result = await generateInitiativePlan(promptInput);
+    const evaluation = evaluateInitiative(result.content);
 
-    await prisma.aIGenerationLog.create({
+    const log = await prisma.aIGenerationLog.create({
       data: {
         initiativeId: initiative.id,
         userId: session.user.id,
@@ -44,10 +49,12 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
         promptInput,
         responseJson: result.content,
         status: "SUCCESS",
+        qualityScore: evaluation.score,
+        qualityIssues: evaluation.issues,
       },
     });
 
-    return NextResponse.json({ content: result.content });
+    return NextResponse.json({ content: result.content, generationLogId: log.id, quality: evaluation });
   } catch (error) {
     await prisma.aIGenerationLog.create({
       data: {

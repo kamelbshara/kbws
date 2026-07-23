@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { OPENAI_MODEL } from "@/lib/ai/client";
 import { generateInsights } from "@/lib/ai/generateInsights";
+import { evaluateInsight } from "@/lib/ai/evaluate";
 import { getRoleGroup } from "@/lib/permissions";
 
 const bodySchema = z.object({
@@ -104,6 +105,7 @@ export async function POST(request: Request) {
 
   try {
     const result = await generateInsights(promptInput);
+    const evaluation = evaluateInsight(result.content);
 
     const insight = await prisma.insight.create({
       data: {
@@ -117,7 +119,7 @@ export async function POST(request: Request) {
       },
     });
 
-    await prisma.aIGenerationLog.create({
+    const log = await prisma.aIGenerationLog.create({
       data: {
         insightId: insight.id,
         userId: dbUser.id,
@@ -125,10 +127,17 @@ export async function POST(request: Request) {
         promptInput,
         responseJson: result.content,
         status: "SUCCESS",
+        qualityScore: evaluation.score,
+        qualityIssues: evaluation.issues,
       },
     });
 
-    return NextResponse.json({ content: result.content, createdAt: insight.createdAt });
+    return NextResponse.json({
+      content: result.content,
+      createdAt: insight.createdAt,
+      generationLogId: log.id,
+      quality: evaluation,
+    });
   } catch (error) {
     await prisma.aIGenerationLog.create({
       data: {

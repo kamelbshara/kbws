@@ -1,3 +1,5 @@
+import { formatKnowledgeContext } from "@/lib/ai/knowledgeContext";
+
 export type AssessmentPromptInput = {
   subjectName: string;
   gradeName: string;
@@ -6,6 +8,7 @@ export type AssessmentPromptInput = {
   questionCount: number;
   mcqRatio: number;
   locale: "ar" | "en";
+  knowledgeNotes?: string[];
 };
 
 export function buildAssessmentPrompt(input: AssessmentPromptInput): { system: string; user: string } {
@@ -32,6 +35,7 @@ export function buildAssessmentPrompt(input: AssessmentPromptInput): { system: s
     `Learning outcome: ${input.outcomeText}`,
     input.teacherPrompt ? `Teacher's additional focus: ${input.teacherPrompt}` : null,
     `Total questions: ${input.questionCount}`,
+    formatKnowledgeContext(input.knowledgeNotes ?? []),
   ]
     .filter(Boolean)
     .join("\n");

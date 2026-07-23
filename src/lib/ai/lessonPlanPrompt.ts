@@ -1,4 +1,5 @@
 import type { LessonPlanSection } from "@/lib/ai/lessonPlanSchema";
+import { formatKnowledgeContext } from "@/lib/ai/knowledgeContext";
 
 export type LessonPlanPromptInput = {
   subjectName: string;
@@ -13,6 +14,7 @@ export type LessonPlanPromptInput = {
   tools: string[];
   locale: "ar" | "en";
   focusSection?: LessonPlanSection;
+  knowledgeNotes?: string[];
 };
 
 export function buildLessonPlanPrompt(input: LessonPlanPromptInput): { system: string; user: string } {
@@ -44,6 +46,7 @@ export function buildLessonPlanPrompt(input: LessonPlanPromptInput): { system: s
     input.tools.length > 0 ? `Available teaching tools: ${input.tools.join(", ")}` : null,
     `Teacher's focus for this lesson: ${input.teacherPrompt}`,
     focusInstruction,
+    formatKnowledgeContext(input.knowledgeNotes ?? []),
   ]
     .filter(Boolean)
     .join("\n");

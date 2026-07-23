@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import type { InitiativeGeneration } from "@/lib/ai/initiativeSchema";
+import { AIQualityFeedback } from "@/components/ai/AIQualityFeedback";
+import type { InitiativeSave } from "@/lib/ai/initiativeSchema";
+import type { QualityIssue } from "@/lib/ai/evaluate";
 
 export function InitiativeEditor({
   initiativeId,
@@ -17,13 +19,14 @@ export function InitiativeEditor({
   updatedAt,
 }: {
   initiativeId: string;
-  initialContent: InitiativeGeneration | null;
+  initialContent: InitiativeSave | null;
   status: "DRAFT" | "ACTIVE" | "COMPLETED";
   updatedAt: string;
 }) {
   const t = useTranslations("initiatives");
+  const common = useTranslations("common");
   const router = useRouter();
-  const [content, setContent] = useState<InitiativeGeneration | null>(initialContent);
+  const [content, setContent] = useState<InitiativeSave | null>(initialContent);
   const [loadedAt, setLoadedAt] = useState(updatedAt);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +34,26 @@ export function InitiativeEditor({
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [isSaving, startSaving] = useTransition();
   const [isTransitioning, startTransitioning] = useTransition();
+  const [isPrinting, setIsPrinting] = useState(false);
+  const [generationLogId, setGenerationLogId] = useState<string | null>(null);
+  const [quality, setQuality] = useState<{ score: number; issues: QualityIssue[] } | null>(null);
   const readOnly = status === "COMPLETED";
+
+  async function print() {
+    setIsPrinting(true);
+    try {
+      const res = await fetch(`/api/initiatives/${initiativeId}/pdf`, { method: "POST" });
+      if (!res.ok) {
+        setError(t("printFailed"));
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    } finally {
+      setIsPrinting(false);
+    }
+  }
 
   async function generate() {
     setGenerating(true);
@@ -44,6 +66,8 @@ export function InitiativeEditor({
         return;
       }
       setContent(data.content);
+      setGenerationLogId(data.generationLogId ?? null);
+      setQuality(data.quality ?? null);
     } catch {
       setError(t("networkError"));
     } finally {
@@ -210,10 +234,32 @@ export function InitiativeEditor({
                   setContent({ ...content, indicators });
                 }}
               />
+              <Input
+                value={indicator.baselineValue ?? ""}
+                placeholder={t("baselineValue")}
+                disabled={readOnly}
+                onChange={(e) => {
+                  const indicators = [...content.indicators];
+                  indicators[index] = { ...indicator, baselineValue: e.target.value };
+                  setContent({ ...content, indicators });
+                }}
+              />
+              <Input
+                value={indicator.actualValue ?? ""}
+                placeholder={t("actualValue")}
+                disabled={readOnly}
+                onChange={(e) => {
+                  const indicators = [...content.indicators];
+                  indicators[index] = { ...indicator, actualValue: e.target.value };
+                  setContent({ ...content, indicators });
+                }}
+              />
             </div>
           ))}
         </div>
       </div>
+
+      <AIQualityFeedback generationLogId={generationLogId} quality={quality} fieldNamespace="initiatives" />
 
       <div className="flex flex-wrap items-center gap-3 border-t border-slate-200 pt-4">
         {!readOnly && !conflict && (
@@ -236,6 +282,9 @@ export function InitiativeEditor({
             {t("markCompleted")}
           </Button>
         )}
+        <Button onClick={print} variant="outline" disabled={isPrinting}>
+          {isPrinting ? t("preparingPdf") : common("print")}
+        </Button>
         {saveMessage && <span className="text-sm text-green-700">{saveMessage}</span>}
         {readOnly && <span className="text-sm text-slate-500">{t("completedReadOnly")}</span>}
       </div>

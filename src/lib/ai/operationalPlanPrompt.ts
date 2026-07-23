@@ -1,8 +1,11 @@
+import { formatKnowledgeContext } from "@/lib/ai/knowledgeContext";
+
 export type OperationalPlanPromptInput = {
   title: string;
   level: "TEAM" | "SCHOOL";
   initialIdea: string;
   locale: "ar" | "en";
+  knowledgeNotes?: string[];
 };
 
 export function buildOperationalPlanPrompt(input: OperationalPlanPromptInput): { system: string; user: string } {
@@ -25,7 +28,13 @@ export function buildOperationalPlanPrompt(input: OperationalPlanPromptInput): {
     "Avoid vague or generic items — every item should be something a real school team could execute and report progress on.",
   ].join(" ");
 
-  const user = [`Plan title: ${input.title}`, `Description / starting idea: ${input.initialIdea}`].join("\n");
+  const user = [
+    `Plan title: ${input.title}`,
+    `Description / starting idea: ${input.initialIdea}`,
+    formatKnowledgeContext(input.knowledgeNotes ?? []),
+  ]
+    .filter(Boolean)
+    .join("\n");
 
   return { system, user };
 }

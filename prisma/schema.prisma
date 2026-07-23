@@ -110,6 +110,7 @@ model School {
   teams            Team[]
   operationalPlans OperationalPlan[]
   insights         Insight[]
+  knowledgeMemoryItems KnowledgeMemoryItem[]
 }
 
 model AcademicYear {
@@ -138,6 +139,7 @@ model Grade {
   classSections      ClassSection[]
   curriculumContents CurriculumContent[]
   questionBankItems  QuestionBankItem[]
+  knowledgeMemoryItems KnowledgeMemoryItem[]
 }
 
 model ClassSection {
@@ -169,6 +171,7 @@ model Subject {
   timetables         Timetable[]
   curriculumContents CurriculumContent[]
   questionBankItems  QuestionBankItem[]
+  knowledgeMemoryItems KnowledgeMemoryItem[]
 }
 
 model User {
@@ -201,6 +204,10 @@ model User {
   requestedInsights  Insight[]
   notifications      Notification[]
   passwordResetTokens PasswordResetToken[]
+  aiFeedback           AIFeedback[]
+  knowledgeMemoryItems KnowledgeMemoryItem[]
+  sentMessages         Message[]             @relation("MessageSender")
+  receivedMessages     Message[]             @relation("MessageRecipient")
 }
 
 model TeacherAssignment {
@@ -334,7 +341,60 @@ model AIGenerationLog {
   responseJson      Json?
   status            String
   errorMessage      String?
+  qualityScore      Int?
+  qualityIssues     Json?
   createdAt         DateTime         @default(now())
+
+  feedback AIFeedback[]
+}
+
+enum FeedbackRating {
+  UP
+  DOWN
+}
+
+model AIFeedback {
+  id              String          @id @default(cuid())
+  generationLogId String
+  generationLog   AIGenerationLog @relation(fields: [generationLogId], references: [id])
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  rating          FeedbackRating
+  comment         String?
+  createdAt       DateTime        @default(now())
+
+  @@unique([generationLogId, userId])
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  senderId    String
+  sender      User     @relation("MessageSender", fields: [senderId], references: [id])
+  recipientId String
+  recipient   User     @relation("MessageRecipient", fields: [recipientId], references: [id])
+  subject     String
+  body        String
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([recipientId])
+  @@index([senderId])
+}
+
+model KnowledgeMemoryItem {
+  id          String   @id @default(cuid())
+  schoolId    String
+  school      School   @relation(fields: [schoolId], references: [id])
+  module      String
+  subjectId   String?
+  subject     Subject? @relation(fields: [subjectId], references: [id])
+  gradeId     String?
+  grade       Grade?   @relation(fields: [gradeId], references: [id])
+  title       String
+  content     String
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
 }
 
 model Team {
@@ -461,6 +521,7 @@ model InitiativeIndicator {
   initiative        Initiative @relation(fields: [initiativeId], references: [id])
   name              String
   measurementMethod String
+  baselineValue     String?
   targetValue       String?
   actualValue       String?
 }
@@ -471,6 +532,10 @@ model InitiativeEvidence {
   initiative   Initiative @relation(fields: [initiativeId], references: [id])
   description  String
   link         String?
+  fileUrl      String?
+  fileName     String?
+  fileSize     Int?
+  mimeType     String?
   createdAt    DateTime   @default(now())
   createdById  String
   createdBy    User       @relation(fields: [createdById], references: [id])

@@ -7,7 +7,9 @@ import { saveLessonPlanContentAction } from "@/actions/lesson-plans";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { AIQualityFeedback } from "@/components/ai/AIQualityFeedback";
 import type { LessonPlanContent } from "@/lib/ai/lessonPlanSchema";
+import type { QualityIssue } from "@/lib/ai/evaluate";
 
 type LessonPlanSection = "objectives" | "lessonFlow" | "activities" | "assessment" | "differentiation" | "reflection";
 const LESSON_FLOW_KEYS = ["intro", "development", "application", "closure"] as const;
@@ -44,6 +46,8 @@ export function LessonPlanEditor({
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [isSaving, startSaving] = useTransition();
   const [isPrinting, setIsPrinting] = useState(false);
+  const [generationLogId, setGenerationLogId] = useState<string | null>(null);
+  const [quality, setQuality] = useState<{ score: number; issues: QualityIssue[] } | null>(null);
 
   async function generate(section?: LessonPlanSection) {
     setGenerating(section ?? "full");
@@ -64,6 +68,8 @@ export function LessonPlanEditor({
       } else {
         setContent(data.content);
       }
+      setGenerationLogId(data.generationLogId ?? null);
+      setQuality(data.quality ?? null);
     } catch {
       setError(t("networkError"));
     } finally {
@@ -209,6 +215,8 @@ export function LessonPlanEditor({
           disabled={isPrinted}
         />
       </Section>
+
+      <AIQualityFeedback generationLogId={generationLogId} quality={quality} fieldNamespace="lessonPlanFields" />
 
       <div className="flex items-center gap-3 border-t border-slate-200 pt-4">
         {!isPrinted && !conflict && (

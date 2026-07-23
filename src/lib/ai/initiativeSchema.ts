@@ -22,10 +22,23 @@ export const InitiativeGenerationSchema = z.object({
 
 export type InitiativeGeneration = z.infer<typeof InitiativeGenerationSchema>;
 
+/**
+ * Baseline/actual values are filled in by staff over time as real-world
+ * impact-measurement data -- never AI-generated, so they only exist on the
+ * save schema, not the generation schema.
+ */
+export const InitiativeIndicatorSaveSchema = InitiativeIndicatorSchema.extend({
+  baselineValue: z.string().optional(),
+  actualValue: z.string().optional(),
+});
+
 /** Used when persisting user edits — a teacher may legitimately trim phases/indicators below the AI's minimum. */
 export const InitiativeSaveSchema = z.object({
   goal: z.string(),
   targetGroup: z.string(),
   phases: z.array(InitiativePhaseSchema).max(20),
-  indicators: z.array(InitiativeIndicatorSchema).max(20),
+  indicators: z.array(InitiativeIndicatorSaveSchema).max(20),
 });
+
+export type InitiativeIndicatorSave = z.infer<typeof InitiativeIndicatorSaveSchema>;
+export type InitiativeSave = z.infer<typeof InitiativeSaveSchema>;

@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AIQualityFeedback } from "@/components/ai/AIQualityFeedback";
 import type { InsightGeneration } from "@/lib/ai/insightSchema";
+import type { QualityIssue } from "@/lib/ai/evaluate";
 
 export function InsightPanel({
   scope,
@@ -20,6 +22,8 @@ export function InsightPanel({
   const [generatedAt, setGeneratedAt] = useState<string | null>(initialGeneratedAt);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [generationLogId, setGenerationLogId] = useState<string | null>(null);
+  const [quality, setQuality] = useState<{ score: number; issues: QualityIssue[] } | null>(null);
 
   async function generate() {
     setGenerating(true);
@@ -37,6 +41,8 @@ export function InsightPanel({
       }
       setContent(data.content);
       setGeneratedAt(data.createdAt);
+      setGenerationLogId(data.generationLogId ?? null);
+      setQuality(data.quality ?? null);
     } catch {
       setError(t("networkError"));
     } finally {
@@ -110,6 +116,8 @@ export function InsightPanel({
               </CardContent>
             </Card>
           </div>
+
+          <AIQualityFeedback generationLogId={generationLogId} quality={quality} fieldNamespace="insights" />
         </div>
       )}
     </div>

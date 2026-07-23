@@ -10,6 +10,7 @@ import { requireRoleGroup, getRoleGroup, ForbiddenError } from "@/lib/permission
 import { getActiveSchoolId } from "@/lib/activeSchool";
 import { createNotifications } from "@/lib/notifications";
 import { InitiativeSaveSchema } from "@/lib/ai/initiativeSchema";
+import { saveUploadedFile, isAllowedUploadType, MAX_UPLOAD_BYTES } from "@/lib/storage";
 import type { InitiativeCategory } from "@/generated/prisma/enums";
 
 export type ActionState = { error?: string } | undefined;
@@ -114,7 +115,9 @@ export async function saveInitiativePlanAction(
         initiativeId,
         name: indicator.name,
         measurementMethod: indicator.measurementMethod,
+        baselineValue: indicator.baselineValue,
         targetValue: indicator.targetValue,
+        actualValue: indicator.actualValue,
       })),
     }),
   ]);
@@ -155,11 +158,27 @@ export async function addInitiativeEvidenceAction(_prevState: ActionState, formD
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
+  let stored: { url: string; fileName: string; fileSize: number; mimeType: string } | null = null;
+  const file = formData.get("file");
+  if (file instanceof File && file.size > 0) {
+    if (file.size > MAX_UPLOAD_BYTES) {
+      return { error: "File is too large (max 10MB)." };
+    }
+    if (!isAllowedUploadType(file.type)) {
+      return { error: "Unsupported file type. Allowed: images, PDF, and Word documents." };
+    }
+    stored = await saveUploadedFile(file, "initiative-evidence");
+  }
+
   const evidence = await prisma.initiativeEvidence.create({
     data: {
       initiativeId,
       description: parsed.data.description,
       link: parsed.data.link || undefined,
+      fileUrl: stored?.url,
+      fileName: stored?.fileName,
+      fileSize: stored?.fileSize,
+      mimeType: stored?.mimeType,
       createdById: session!.user.id,
     },
   });
