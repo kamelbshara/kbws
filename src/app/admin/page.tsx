@@ -3,17 +3,19 @@ import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AdminNav } from "@/components/layout/AdminNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getActiveSchoolId } from "@/lib/activeSchool";
 
 export default async function AdminHomePage() {
   const session = await auth();
   const user = session!.user;
+  const schoolId = await getActiveSchoolId(session!);
 
   const [school, academicYear, userCount, classSectionCount, timetableCount] = await Promise.all([
-    prisma.school.findFirst(),
-    prisma.academicYear.findFirst({ where: { isActive: true } }),
-    prisma.user.count(),
-    prisma.classSection.count(),
-    prisma.timetable.count(),
+    schoolId ? prisma.school.findUnique({ where: { id: schoolId } }) : Promise.resolve(null),
+    schoolId ? prisma.academicYear.findFirst({ where: { schoolId, isActive: true } }) : Promise.resolve(null),
+    schoolId ? prisma.user.count({ where: { schoolId } }) : Promise.resolve(0),
+    schoolId ? prisma.classSection.count({ where: { schoolId } }) : Promise.resolve(0),
+    schoolId ? prisma.timetable.count({ where: { schoolId } }) : Promise.resolve(0),
   ]);
 
   return (

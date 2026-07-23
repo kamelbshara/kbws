@@ -77,6 +77,7 @@ async function main() {
   // Curriculum content + learning outcomes: Grade 8 Math
   const mathUnit1 = await prisma.curriculumContent.create({
     data: {
+      schoolId: school.id,
       subjectId: mathSubject.id,
       gradeId: grade8.id,
       unit: "Unit 3",
@@ -96,6 +97,7 @@ async function main() {
 
   const mathUnit2 = await prisma.curriculumContent.create({
     data: {
+      schoolId: school.id,
       subjectId: mathSubject.id,
       gradeId: grade8.id,
       unit: "Unit 3",
@@ -116,6 +118,7 @@ async function main() {
   // Curriculum content + learning outcomes: Grade 10 Physics
   const physicsUnit1 = await prisma.curriculumContent.create({
     data: {
+      schoolId: school.id,
       subjectId: physicsSubject.id,
       gradeId: grade10.id,
       track: "GENERAL",
@@ -136,6 +139,7 @@ async function main() {
 
   const physicsUnit2 = await prisma.curriculumContent.create({
     data: {
+      schoolId: school.id,
       subjectId: physicsSubject.id,
       gradeId: grade10.id,
       track: "GENERAL",

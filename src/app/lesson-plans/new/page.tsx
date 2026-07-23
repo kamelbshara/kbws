@@ -29,6 +29,7 @@ export default async function NewLessonPlanPage({
   const outcomes = await prisma.learningOutcome.findMany({
     where: {
       curriculumContent: {
+        schoolId: timetable.schoolId,
         subjectId: timetable.subjectId,
         gradeId: timetable.classSection.gradeId,
         track: timetable.classSection.track,

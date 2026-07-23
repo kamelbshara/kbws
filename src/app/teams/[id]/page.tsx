@@ -11,6 +11,7 @@ import { AddActionItemForm } from "@/components/team/AddActionItemForm";
 import { ActionItemRow } from "@/components/team/ActionItemRow";
 import { AddMemberForm } from "@/components/team/AddMemberForm";
 import { getRoleGroup } from "@/lib/permissions";
+import { getActiveSchoolId } from "@/lib/activeSchool";
 import { TEAM_TYPE_LABELS } from "@/lib/teamLabels";
 import type { OperationalPlanGeneration } from "@/lib/ai/operationalPlanSchema";
 
@@ -33,14 +34,16 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
   });
 
   const isManagement = (await getRoleGroup("MANAGEMENT_ROLES")).includes(user.role);
+  const schoolId = await getActiveSchoolId(session!);
+  const isManagementForThisSchool = isManagement && team?.schoolId === schoolId;
   const isMember = team?.members.some((m) => m.userId === user.id);
-  if (!team || (!isMember && !isManagement)) {
+  if (!team || (!isMember && !isManagementForThisSchool)) {
     notFound();
   }
 
   const isLeader = team.leaderId === user.id;
 
-  const allUsers = await prisma.user.findMany({ orderBy: { name: "asc" } });
+  const allUsers = await prisma.user.findMany({ where: { schoolId: team.schoolId }, orderBy: { name: "asc" } });
   const memberIds = new Set(team.members.map((m) => m.userId));
   const candidates = allUsers.filter((u) => !memberIds.has(u.id));
 

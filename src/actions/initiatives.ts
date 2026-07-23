@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { requireRoleGroup, ForbiddenError } from "@/lib/permissions";
+import { getActiveSchoolId } from "@/lib/activeSchool";
 import { InitiativeSaveSchema } from "@/lib/ai/initiativeSchema";
 import type { InitiativeCategory } from "@/generated/prisma/enums";
 
@@ -32,12 +33,15 @@ export async function createInitiativeAction(_prevState: ActionState, formData: 
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  const school = await prisma.school.findFirstOrThrow();
+  const schoolId = await getActiveSchoolId(session!);
+  if (!schoolId) {
+    return { error: "No school is associated with this account." };
+  }
 
   const initiative = await prisma.initiative.create({
     data: {
       ownerId,
-      schoolId: school.id,
+      schoolId,
       title: parsed.data.title,
       category: parsed.data.category as InitiativeCategory,
       initialIdea: parsed.data.initialIdea,

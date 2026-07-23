@@ -105,6 +105,7 @@ model School {
   academicYears    AcademicYear[]
   classSections    ClassSection[]
   timetables       Timetable[]
+  curriculumContents CurriculumContent[]
   initiatives      Initiative[]
   teams            Team[]
   operationalPlans OperationalPlan[]
@@ -239,6 +240,8 @@ model Timetable {
 
 model CurriculumContent {
   id          String   @id @default(cuid())
+  schoolId    String
+  school      School   @relation(fields: [schoolId], references: [id])
   subjectId   String
   subject     Subject  @relation(fields: [subjectId], references: [id])
   gradeId     String
@@ -252,7 +255,7 @@ model CurriculumContent {
   learningOutcomes LearningOutcome[]
   lessonPlans      LessonPlan[]
 
-  @@index([subjectId, gradeId, track])
+  @@index([schoolId, subjectId, gradeId, track])
 }
 
 model LearningOutcome {

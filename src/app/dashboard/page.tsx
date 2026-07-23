@@ -6,6 +6,7 @@ import { AdminNav } from "@/components/layout/AdminNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart } from "@/components/dashboard/BarChart";
 import { getRoleGroup } from "@/lib/permissions";
+import { getActiveSchoolId } from "@/lib/activeSchool";
 import { CATEGORICAL, STATUS } from "@/lib/chartColors";
 
 export default async function DashboardPage() {
@@ -16,6 +17,8 @@ export default async function DashboardPage() {
     redirect("/");
   }
 
+  const schoolId = await getActiveSchoolId(session!);
+
   const [
     lessonPlanTotal,
     lessonPlanPrinted,
@@ -23,14 +26,16 @@ export default async function DashboardPage() {
     teamCount,
     actionItemCounts,
     schoolPlanItemCount,
-  ] = await Promise.all([
-    prisma.lessonPlan.count(),
-    prisma.lessonPlan.count({ where: { status: "PRINTED" } }),
-    prisma.initiative.groupBy({ by: ["status"], _count: { _all: true } }),
-    prisma.team.count(),
-    prisma.actionItem.groupBy({ by: ["status"], _count: { _all: true } }),
-    prisma.operationalPlanItem.count({ where: { operationalPlan: { level: "SCHOOL" } } }),
-  ]);
+  ] = schoolId
+    ? await Promise.all([
+        prisma.lessonPlan.count({ where: { teacher: { schoolId } } }),
+        prisma.lessonPlan.count({ where: { teacher: { schoolId }, status: "PRINTED" } }),
+        prisma.initiative.groupBy({ by: ["status"], where: { schoolId }, _count: { _all: true } }),
+        prisma.team.count({ where: { schoolId } }),
+        prisma.actionItem.groupBy({ by: ["status"], where: { meeting: { team: { schoolId } } }, _count: { _all: true } }),
+        prisma.operationalPlanItem.count({ where: { operationalPlan: { level: "SCHOOL", schoolId } } }),
+      ])
+    : [0, 0, [], 0, [], 0];
 
   const initiativeByStatus = { DRAFT: 0, ACTIVE: 0, COMPLETED: 0 } as Record<string, number>;
   for (const row of initiativeCounts) initiativeByStatus[row.status] = row._count._all;

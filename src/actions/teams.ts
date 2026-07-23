@@ -8,6 +8,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { requireRoleGroup, getRoleGroup, ForbiddenError } from "@/lib/permissions";
+import { getActiveSchoolId } from "@/lib/activeSchool";
 import { OperationalPlanSaveSchema } from "@/lib/ai/operationalPlanSchema";
 import type { TeamType, ActionItemStatus } from "@/generated/prisma/enums";
 
@@ -33,11 +34,14 @@ export async function createTeamAction(_prevState: ActionState, formData: FormDa
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  const school = await prisma.school.findFirstOrThrow();
+  const schoolId = await getActiveSchoolId(session!);
+  if (!schoolId) {
+    return { error: "No school is associated with this account." };
+  }
 
   const team = await prisma.team.create({
     data: {
-      schoolId: school.id,
+      schoolId,
       name: parsed.data.name,
       type: parsed.data.type as TeamType,
       goal: parsed.data.goal,
@@ -89,7 +93,11 @@ export async function addTeamMemberAction(_prevState: ActionState, formData: For
     return { error: "Invalid input" };
   }
 
-  await requireTeamLeader(parsed.data.teamId, session!.user.id);
+  const team = await requireTeamLeader(parsed.data.teamId, session!.user.id);
+  const candidate = await prisma.user.findUnique({ where: { id: parsed.data.userId } });
+  if (!candidate || candidate.schoolId !== team.schoolId) {
+    return { error: "This user does not belong to your school." };
+  }
 
   try {
     await prisma.teamMember.create({ data: { teamId: parsed.data.teamId, userId: parsed.data.userId } });
@@ -254,9 +262,10 @@ async function requireOperationalPlanAccess(planId: string, session: Session) {
   const plan = await prisma.operationalPlan.findUnique({ where: { id: planId }, include: { team: true } });
   if (!plan) throw new ForbiddenError("Plan not found.");
 
+  const activeSchoolId = await getActiveSchoolId(session);
   const authorized =
     plan.level === "SCHOOL"
-      ? (await getRoleGroup("MANAGEMENT_ROLES")).includes(session.user.role)
+      ? plan.schoolId === activeSchoolId && (await getRoleGroup("MANAGEMENT_ROLES")).includes(session.user.role)
       : plan.team?.leaderId === session.user.id;
 
   if (!authorized) throw new ForbiddenError("You do not have access to this operational plan.");

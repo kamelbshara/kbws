@@ -4,18 +4,27 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { AdminNav } from "@/components/layout/AdminNav";
 import { CreateTimetableSlotForm } from "@/components/admin/CreateTimetableSlotForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getActiveSchoolId } from "@/lib/activeSchool";
 
 export default async function AdminTimetablePage() {
   const session = await auth();
   const user = session!.user;
+  const schoolId = await getActiveSchoolId(session!);
 
   const [slots, teachers, classSections, subjects] = await Promise.all([
-    prisma.timetable.findMany({
-      include: { teacher: true, classSection: true, subject: true },
-      orderBy: [{ dayOfWeek: "asc" }, { periodNumber: "asc" }],
-    }),
-    prisma.user.findMany({ where: { role: "TEACHER" }, orderBy: { name: "asc" } }),
-    prisma.classSection.findMany({ include: { grade: true }, orderBy: { name: "asc" } }),
+    schoolId
+      ? prisma.timetable.findMany({
+          where: { schoolId },
+          include: { teacher: true, classSection: true, subject: true },
+          orderBy: [{ dayOfWeek: "asc" }, { periodNumber: "asc" }],
+        })
+      : Promise.resolve([]),
+    schoolId
+      ? prisma.user.findMany({ where: { role: "TEACHER", schoolId }, orderBy: { name: "asc" } })
+      : Promise.resolve([]),
+    schoolId
+      ? prisma.classSection.findMany({ where: { schoolId }, include: { grade: true }, orderBy: { name: "asc" } })
+      : Promise.resolve([]),
     prisma.subject.findMany({ orderBy: { name: "asc" } }),
   ]);
 

@@ -5,18 +5,23 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { MainNav } from "@/components/layout/MainNav";
 import { Button } from "@/components/ui/button";
 import { getRoleGroup } from "@/lib/permissions";
+import { getActiveSchoolId } from "@/lib/activeSchool";
 import { INITIATIVE_CATEGORY_LABELS, INITIATIVE_STATUS_LABELS } from "@/lib/initiativeLabels";
 
 export default async function InitiativesListPage() {
   const session = await auth();
   const user = session!.user;
   const isManagement = (await getRoleGroup("MANAGEMENT_ROLES")).includes(user.role);
+  const schoolId = await getActiveSchoolId(session!);
 
-  const initiatives = await prisma.initiative.findMany({
-    where: isManagement ? {} : { ownerId: user.id },
-    include: { owner: true },
-    orderBy: { createdAt: "desc" },
-  });
+  const initiatives =
+    isManagement && !schoolId
+      ? []
+      : await prisma.initiative.findMany({
+          where: isManagement ? { schoolId: schoolId as string } : { ownerId: user.id },
+          include: { owner: true },
+          orderBy: { createdAt: "desc" },
+        });
 
   return (
     <div>

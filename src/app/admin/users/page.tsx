@@ -6,12 +6,14 @@ import { CreateUserForm } from "@/components/admin/CreateUserForm";
 import { toggleUserActiveAction } from "@/actions/school-config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getActiveSchoolId } from "@/lib/activeSchool";
 
 export default async function AdminUsersPage() {
   const session = await auth();
   const user = session!.user;
+  const schoolId = await getActiveSchoolId(session!);
 
-  const users = await prisma.user.findMany({ orderBy: { createdAt: "asc" } });
+  const users = schoolId ? await prisma.user.findMany({ where: { schoolId }, orderBy: { createdAt: "asc" } }) : [];
 
   return (
     <div>

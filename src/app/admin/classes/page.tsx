@@ -4,16 +4,21 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { AdminNav } from "@/components/layout/AdminNav";
 import { CreateClassSectionForm } from "@/components/admin/CreateClassSectionForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getActiveSchoolId } from "@/lib/activeSchool";
 
 export default async function AdminClassesPage() {
   const session = await auth();
   const user = session!.user;
+  const schoolId = await getActiveSchoolId(session!);
 
   const [classSections, grades] = await Promise.all([
-    prisma.classSection.findMany({
-      include: { grade: true },
-      orderBy: [{ grade: { level: "asc" } }, { name: "asc" }],
-    }),
+    schoolId
+      ? prisma.classSection.findMany({
+          where: { schoolId },
+          include: { grade: true },
+          orderBy: [{ grade: { level: "asc" } }, { name: "asc" }],
+        })
+      : Promise.resolve([]),
     prisma.grade.findMany({ orderBy: { level: "asc" } }),
   ]);
 

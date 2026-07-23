@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AdminNav } from "@/components/layout/AdminNav";
+import { getActiveSchoolId } from "@/lib/activeSchool";
 import type { AuditAction } from "@/generated/prisma/enums";
 
 const PAGE_SIZE = 25;
@@ -25,34 +26,45 @@ export default async function AuditLogPage({
   const actionFilter =
     params.action && AUDIT_ACTIONS.includes(params.action as AuditAction) ? (params.action as AuditAction) : undefined;
 
+  const schoolId = await getActiveSchoolId(session!);
+
   const where = {
+    user: { schoolId },
     ...(moduleFilter ? { module: moduleFilter } : {}),
     ...(actionFilter ? { action: actionFilter } : {}),
   };
 
-  const [modules, total, entries, aiLogs] = await Promise.all([
-    prisma.auditLog.findMany({ distinct: ["module"], select: { module: true }, orderBy: { module: "asc" } }),
-    prisma.auditLog.count({ where }),
-    prisma.auditLog.findMany({
-      where,
-      include: { user: true },
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-    }),
-    prisma.aIGenerationLog.findMany({
-      include: {
-        user: true,
-        lessonPlan: { include: { curriculumContent: true } },
-        initiative: true,
-        operationalPlan: true,
-        assessment: true,
-        insight: true,
-      },
-      orderBy: { createdAt: "desc" },
-      take: 25,
-    }),
-  ]);
+  const [modules, total, entries, aiLogs] = schoolId
+    ? await Promise.all([
+        prisma.auditLog.findMany({
+          where: { user: { schoolId } },
+          distinct: ["module"],
+          select: { module: true },
+          orderBy: { module: "asc" },
+        }),
+        prisma.auditLog.count({ where }),
+        prisma.auditLog.findMany({
+          where,
+          include: { user: true },
+          orderBy: { createdAt: "desc" },
+          skip: (page - 1) * PAGE_SIZE,
+          take: PAGE_SIZE,
+        }),
+        prisma.aIGenerationLog.findMany({
+          where: { user: { schoolId } },
+          include: {
+            user: true,
+            lessonPlan: { include: { curriculumContent: true } },
+            initiative: true,
+            operationalPlan: true,
+            assessment: true,
+            insight: true,
+          },
+          orderBy: { createdAt: "desc" },
+          take: 25,
+        }),
+      ])
+    : [[], 0, [], []];
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 

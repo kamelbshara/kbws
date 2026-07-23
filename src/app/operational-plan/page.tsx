@@ -6,6 +6,7 @@ import { MainNav } from "@/components/layout/MainNav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OperationalPlanEditor } from "@/components/team/OperationalPlanEditor";
 import { getRoleGroup } from "@/lib/permissions";
+import { getActiveSchoolId } from "@/lib/activeSchool";
 import type { OperationalPlanGeneration } from "@/lib/ai/operationalPlanSchema";
 
 export default async function SchoolOperationalPlanPage() {
@@ -16,7 +17,11 @@ export default async function SchoolOperationalPlanPage() {
     redirect("/");
   }
 
-  const school = await prisma.school.findFirstOrThrow();
+  const schoolId = await getActiveSchoolId(session!);
+  if (!schoolId) {
+    redirect("/admin/schools");
+  }
+  const school = await prisma.school.findUniqueOrThrow({ where: { id: schoolId } });
 
   let plan = await prisma.operationalPlan.findFirst({
     where: { level: "SCHOOL", schoolId: school.id },

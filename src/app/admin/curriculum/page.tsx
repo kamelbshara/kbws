@@ -4,15 +4,20 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { AdminNav } from "@/components/layout/AdminNav";
 import { CurriculumImportForm } from "@/components/admin/CurriculumImportForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getActiveSchoolId } from "@/lib/activeSchool";
 
 export default async function AdminCurriculumPage() {
   const session = await auth();
   const user = session!.user;
+  const schoolId = await getActiveSchoolId(session!);
 
-  const content = await prisma.curriculumContent.findMany({
-    include: { subject: true, grade: true, learningOutcomes: true },
-    orderBy: [{ subject: { name: "asc" } }, { grade: { level: "asc" } }, { orderIndex: "asc" }],
-  });
+  const content = schoolId
+    ? await prisma.curriculumContent.findMany({
+        where: { schoolId },
+        include: { subject: true, grade: true, learningOutcomes: true },
+        orderBy: [{ subject: { name: "asc" } }, { grade: { level: "asc" } }, { orderIndex: "asc" }],
+      })
+    : [];
 
   return (
     <div>

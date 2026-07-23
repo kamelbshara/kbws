@@ -5,18 +5,23 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { MainNav } from "@/components/layout/MainNav";
 import { Button } from "@/components/ui/button";
 import { getRoleGroup } from "@/lib/permissions";
+import { getActiveSchoolId } from "@/lib/activeSchool";
 import { TEAM_TYPE_LABELS } from "@/lib/teamLabels";
 
 export default async function TeamsListPage() {
   const session = await auth();
   const user = session!.user;
   const isManagement = (await getRoleGroup("MANAGEMENT_ROLES")).includes(user.role);
+  const schoolId = await getActiveSchoolId(session!);
 
-  const teams = await prisma.team.findMany({
-    where: isManagement ? {} : { members: { some: { userId: user.id } } },
-    include: { leader: true, members: true },
-    orderBy: { createdAt: "desc" },
-  });
+  const teams =
+    isManagement && !schoolId
+      ? []
+      : await prisma.team.findMany({
+          where: isManagement ? { schoolId: schoolId as string } : { members: { some: { userId: user.id } } },
+          include: { leader: true, members: true },
+          orderBy: { createdAt: "desc" },
+        });
 
   return (
     <div>
