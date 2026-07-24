@@ -5,9 +5,11 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/layout/AppShell";
 import { LessonPlanEditor } from "@/components/lesson-plan/LessonPlanEditor";
+import { LessonPlanReadOnlyView } from "@/components/lesson-plan/LessonPlanReadOnlyView";
 import { WorksheetSection } from "@/components/lesson-plan/WorksheetSection";
 import { LessonPlanContentSchema } from "@/lib/ai/lessonPlanSchema";
 import { Button } from "@/components/ui/button";
+import { getRoleGroup } from "@/lib/permissions";
 
 export default async function LessonPlanPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -18,6 +20,7 @@ export default async function LessonPlanPage({ params }: { params: Promise<{ id:
   const lessonPlan = await prisma.lessonPlan.findUnique({
     where: { id },
     include: {
+      teacher: true,
       classSection: { include: { grade: true } },
       curriculumContent: { include: { subject: true } },
       learningOutcome: true,
@@ -26,7 +29,12 @@ export default async function LessonPlanPage({ params }: { params: Promise<{ id:
     },
   });
 
-  if (!lessonPlan || lessonPlan.teacherId !== user.id) {
+  const isOwner = lessonPlan?.teacherId === user.id;
+  const managementRoles = await getRoleGroup("MANAGEMENT_ROLES");
+  const isManagementViewer =
+    !isOwner && managementRoles.includes(user.role) && lessonPlan?.teacher.schoolId === user.schoolId && user.schoolId != null;
+
+  if (!lessonPlan || (!isOwner && !isManagementViewer)) {
     notFound();
   }
 
@@ -34,10 +42,11 @@ export default async function LessonPlanPage({ params }: { params: Promise<{ id:
   const initialContent = contentParse?.success ? contentParse.data : null;
 
   return (
-      <AppShell userName={user.name} role={user.role}>
+      <AppShell userName={user.name} role={user.role} isManagement={isManagementViewer}>
       <main className="mx-auto max-w-3xl p-6">
         <h1 className="text-xl font-semibold">{lessonPlan.curriculumContent.lessonTitle}</h1>
         <p className="mt-1 text-sm text-slate-500">
+          {isManagementViewer && `${lessonPlan.teacher.name} · `}
           {lessonPlan.curriculumContent.subject.name} · {lessonPlan.classSection.grade.name} ·{" "}
           {lessonPlan.classSection.name} · {lessonPlan.lessonDate.toISOString().slice(0, 10)} ·{" "}
           {lessonPlan.durationMinutes} min
@@ -50,12 +59,16 @@ export default async function LessonPlanPage({ params }: { params: Promise<{ id:
         </div>
 
         <div className="mt-6">
-          <LessonPlanEditor
-            lessonPlanId={lessonPlan.id}
-            initialContent={initialContent}
-            isPrinted={lessonPlan.status === "PRINTED"}
-            updatedAt={lessonPlan.updatedAt.toISOString()}
-          />
+          {isOwner ? (
+            <LessonPlanEditor
+              lessonPlanId={lessonPlan.id}
+              initialContent={initialContent}
+              isPrinted={lessonPlan.status === "PRINTED"}
+              updatedAt={lessonPlan.updatedAt.toISOString()}
+            />
+          ) : (
+            <LessonPlanReadOnlyView content={initialContent} />
+          )}
         </div>
 
         {lessonPlan.status === "PRINTED" && (
@@ -69,9 +82,11 @@ export default async function LessonPlanPage({ params }: { params: Promise<{ id:
         <div className="mt-6 rounded-md border border-slate-200 p-4">
           <div className="flex items-center justify-between">
             <h2 className="font-medium">{t("assessmentsTitle")}</h2>
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/assessments/new?lessonPlanId=${lessonPlan.id}`}>{t("newAssessment")}</Link>
-            </Button>
+            {isOwner && (
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/assessments/new?lessonPlanId=${lessonPlan.id}`}>{t("newAssessment")}</Link>
+              </Button>
+            )}
           </div>
           {lessonPlan.assessments.length > 0 ? (
             <ul className="mt-3 flex flex-col gap-1 text-sm">
@@ -88,11 +103,13 @@ export default async function LessonPlanPage({ params }: { params: Promise<{ id:
           )}
         </div>
 
-        <WorksheetSection
-          lessonPlanId={lessonPlan.id}
-          worksheets={lessonPlan.worksheets.map((w) => ({ id: w.id, createdAt: w.createdAt.toISOString().slice(0, 10) }))}
-          canGenerate={initialContent !== null}
-        />
+        {isOwner && (
+          <WorksheetSection
+            lessonPlanId={lessonPlan.id}
+            worksheets={lessonPlan.worksheets.map((w) => ({ id: w.id, createdAt: w.createdAt.toISOString().slice(0, 10) }))}
+            canGenerate={initialContent !== null}
+          />
+        )}
       </main>
     </AppShell>
   );

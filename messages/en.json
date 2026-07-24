@@ -496,7 +496,8 @@
     "permissions": "Permissions",
     "translations": "Translations",
     "masterData": "Master Data",
-    "lessonPlanTemplate": "Lesson Plan Template"
+    "lessonPlanTemplate": "Lesson Plan Template",
+    "lessonPlansOversight": "Lesson Plans"
   },
   "adminOverview": {
     "users": "Users",
@@ -596,6 +597,32 @@
       "FRIDAY": "Friday",
       "SATURDAY": "Saturday"
     }
+  },
+  "adminLessonPlansPage": {
+    "title": "Lesson Plans",
+    "subtitle": "View lesson plans across the school, generate teacher reports, and schedule inspection visits.",
+    "teacherReportsTitle": "Teacher Reports",
+    "generateReport": "Generate Report",
+    "generatingReport": "Generating...",
+    "reportFailed": "Report generation failed.",
+    "networkError": "Network error. Please try again.",
+    "strengths": "Strengths",
+    "concerns": "Concerns",
+    "recommendations": "Recommendations",
+    "inspectionVisitsTitle": "Inspection Visits",
+    "classSection": "Class",
+    "selectClass": "Select a class",
+    "visitDate": "Visit Date",
+    "visitNotes": "Notes (optional)",
+    "scheduleVisit": "Schedule Visit",
+    "scheduling": "Scheduling...",
+    "visitScheduled": "Inspection visit scheduled. The teacher has been notified.",
+    "allLessonPlansTitle": "All Lesson Plans",
+    "teacher": "Teacher",
+    "lesson": "Lesson",
+    "date": "Date",
+    "status": "Status",
+    "noLessonPlans": "No lesson plans yet."
   },
   "professionalGoalsPage": {
     "title": "Professional Goals",

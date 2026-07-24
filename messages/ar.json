@@ -496,7 +496,8 @@
     "permissions": "الصلاحيات",
     "translations": "الترجمات",
     "masterData": "البيانات الأساسية",
-    "lessonPlanTemplate": "نموذج خطة الدرس"
+    "lessonPlanTemplate": "نموذج خطة الدرس",
+    "lessonPlansOversight": "خطط الدروس"
   },
   "adminOverview": {
     "users": "المستخدمون",
@@ -596,6 +597,32 @@
       "FRIDAY": "الجمعة",
       "SATURDAY": "السبت"
     }
+  },
+  "adminLessonPlansPage": {
+    "title": "خطط الدروس",
+    "subtitle": "اطّلع على خطط الدروس على مستوى المدرسة، وأنشئ تقارير المعلمين، وحدد مواعيد زيارات التفقد.",
+    "teacherReportsTitle": "تقارير المعلمين",
+    "generateReport": "إنشاء تقرير",
+    "generatingReport": "جارٍ الإنشاء...",
+    "reportFailed": "فشل إنشاء التقرير.",
+    "networkError": "خطأ في الشبكة. يرجى المحاولة مرة أخرى.",
+    "strengths": "نقاط القوة",
+    "concerns": "الملاحظات",
+    "recommendations": "التوصيات",
+    "inspectionVisitsTitle": "زيارات التفقد",
+    "classSection": "الشعبة",
+    "selectClass": "اختر شعبة",
+    "visitDate": "تاريخ الزيارة",
+    "visitNotes": "ملاحظات (اختياري)",
+    "scheduleVisit": "جدولة الزيارة",
+    "scheduling": "جارٍ الجدولة...",
+    "visitScheduled": "تم جدولة زيارة التفقد. تم إشعار المعلم.",
+    "allLessonPlansTitle": "جميع خطط الدروس",
+    "teacher": "المعلم",
+    "lesson": "الدرس",
+    "date": "التاريخ",
+    "status": "الحالة",
+    "noLessonPlans": "لا توجد خطط دروس بعد."
   },
   "professionalGoalsPage": {
     "title": "الأهداف المهنية",

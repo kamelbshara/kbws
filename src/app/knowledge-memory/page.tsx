@@ -13,11 +13,10 @@ export default async function KnowledgeMemoryPage() {
   const session = await auth();
   const user = session!.user;
 
-  const isTeacher = (await getRoleGroup("TEACHER_ROLES")).includes(user.role);
-  const isManagement = (await getRoleGroup("MANAGEMENT_ROLES")).includes(user.role);
-  if (!isTeacher && !isManagement) {
+  if (user.role !== "SYSTEM_ADMIN") {
     redirect("/");
   }
+  const isManagement = (await getRoleGroup("MANAGEMENT_ROLES")).includes(user.role);
 
   const t = await getTranslations("knowledgeMemory");
   const schoolId = await getActiveSchoolId(session!);

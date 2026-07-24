@@ -5,7 +5,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { getRoleGroup, ForbiddenError } from "@/lib/permissions";
+import { ForbiddenError } from "@/lib/permissions";
 import { getActiveSchoolId } from "@/lib/activeSchool";
 import { KNOWLEDGE_MODULES } from "@/lib/knowledgeMemory";
 
@@ -14,9 +14,9 @@ export type ActionState = { error?: string; success?: boolean } | undefined;
 async function requireContributor() {
   const session = await auth();
   if (!session?.user) throw new ForbiddenError("Unauthorized");
-  const isTeacher = (await getRoleGroup("TEACHER_ROLES")).includes(session.user.role);
-  const isManagement = (await getRoleGroup("MANAGEMENT_ROLES")).includes(session.user.role);
-  if (!isTeacher && !isManagement) throw new ForbiddenError("Only teachers and management can manage knowledge memory notes.");
+  if (session.user.role !== "SYSTEM_ADMIN") {
+    throw new ForbiddenError("Only the super admin can manage knowledge memory notes.");
+  }
   return session;
 }
 

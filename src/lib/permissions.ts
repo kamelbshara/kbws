@@ -106,6 +106,6 @@ export async function requireRoleGroup(session: Session | null, groupName: Permi
 export const ROUTE_ROLE_GROUP_MAP: Array<{ prefix: string; group: PermissionGroupName }> = [
   { prefix: "/admin", group: "MANAGEMENT_ROLES" },
   { prefix: "/schedule", group: "TEACHER_ROLES" },
-  { prefix: "/lesson-plans", group: "TEACHER_ROLES" },
+  { prefix: "/lesson-plans/new", group: "TEACHER_ROLES" },
   { prefix: "/assessments", group: "TEACHER_ROLES" },
 ];
