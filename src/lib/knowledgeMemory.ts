@@ -1,6 +1,13 @@
 import { prisma } from "@/lib/prisma";
 
-export const KNOWLEDGE_MODULES = ["LESSON_PLAN", "INITIATIVE", "OPERATIONAL_PLAN", "ASSESSMENT", "INSIGHT"] as const;
+export const KNOWLEDGE_MODULES = [
+  "LESSON_PLAN",
+  "INITIATIVE",
+  "OPERATIONAL_PLAN",
+  "ASSESSMENT",
+  "INSIGHT",
+  "PROFESSIONAL_GOAL",
+] as const;
 export type KnowledgeModule = (typeof KNOWLEDGE_MODULES)[number];
 
 /**

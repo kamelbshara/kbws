@@ -597,6 +597,20 @@
       "SATURDAY": "Saturday"
     }
   },
+  "professionalGoalsPage": {
+    "title": "Professional Goals",
+    "subtitle": "Describe what you'd like to grow in, and let AI suggest goals to choose from.",
+    "promptPlaceholder": "e.g. I want to get better at differentiating instruction for struggling students",
+    "promptTooShort": "Please describe what you'd like to focus on in a bit more detail.",
+    "generate": "Generate Goal Suggestions",
+    "generating": "Generating...",
+    "generationFailed": "Generation failed.",
+    "networkError": "Network error while generating. Please try again.",
+    "chooseOne": "Choose one to adopt as your goal:",
+    "adoptGoal": "Adopt this goal",
+    "adopted": "Adopted",
+    "pastGoalsTitle": "Adopted Goals"
+  },
   "lessonPlanTemplatePage": {
     "title": "Lesson Plan Template",
     "subtitle": "Upload an example lesson plan template to guide how AI-generated lesson plans are shaped for your school.",
