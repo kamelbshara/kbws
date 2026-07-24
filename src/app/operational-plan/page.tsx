@@ -23,19 +23,33 @@ export default async function SchoolOperationalPlanPage() {
     redirect("/admin/schools");
   }
   const school = await prisma.school.findUniqueOrThrow({ where: { id: schoolId } });
+  const activeYear = await prisma.academicYear.findFirst({ where: { schoolId: school.id, isActive: true } });
 
   let plan = await prisma.operationalPlan.findFirst({
-    where: { level: "SCHOOL", schoolId: school.id },
+    where: { level: "SCHOOL", schoolId: school.id, academicYearId: activeYear?.id ?? null },
     include: { items: { orderBy: { orderIndex: "asc" } } },
   });
 
   if (!plan) {
+    const previousPlan = await prisma.operationalPlan.findFirst({
+      where: { level: "SCHOOL", schoolId: school.id },
+      include: { items: true },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const carryForwardNote =
+      previousPlan && previousPlan.items.length > 0
+        ? ` Institutional memory: last year's plan covered these domains -- ${previousPlan.items.map((i) => i.domain).join(", ")}. Build on this progress rather than repeating it.`
+        : "";
+
     plan = await prisma.operationalPlan.create({
       data: {
         level: "SCHOOL",
         schoolId: school.id,
-        title: `${school.name} Development Plan`,
-        initialIdea: "School-wide development plan covering all improvement priorities for the academic year.",
+        academicYearId: activeYear?.id,
+        previousPlanId: previousPlan?.id,
+        title: `${school.name} Development Plan${activeYear ? ` — ${activeYear.name}` : ""}`,
+        initialIdea: `School-wide development plan covering all improvement priorities for the academic year.${carryForwardNote}`,
       },
       include: { items: true },
     });
@@ -57,7 +71,7 @@ export default async function SchoolOperationalPlanPage() {
       : null;
 
   return (
-      <AppShell userName={user.name} role={user.role}>
+      <AppShell userName={user.name} role={user.role} isManagement>
       <main className="mx-auto max-w-4xl p-6">
         <h1 className="text-xl font-semibold">{plan.title}</h1>
         <p className="mt-1 text-sm text-slate-500">{t("schoolPlanSubtitle")}</p>

@@ -304,7 +304,16 @@
     "saved": "Saved.",
     "reload": "Reload",
     "preparingPdf": "Preparing PDF...",
-    "printFailed": "Failed to generate PDF."
+    "printFailed": "Failed to generate PDF.",
+    "generateAxes": "Generate Axis Suggestions",
+    "generatingAxes": "Generating...",
+    "axesTitle": "Plan Axes",
+    "axesSubtitle": "Review and edit the suggested axes before generating the full plan. You can add more.",
+    "removeAxis": "Remove",
+    "addAxis": "Add Axis",
+    "generateFullPlan": "Generate Full Plan",
+    "removeRow": "Remove",
+    "addRow": "Add Row"
   },
   "assessments": {
     "myAssessments": "My Assessments",

@@ -63,7 +63,7 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
       : null;
 
   return (
-      <AppShell userName={user.name} role={user.role}>
+      <AppShell userName={user.name} role={user.role} isManagement={isManagementForThisSchool}>
       <main className="mx-auto max-w-4xl p-6">
         <h1 className="text-xl font-semibold">{team.name}</h1>
         <p className="mt-1 text-sm text-slate-500">

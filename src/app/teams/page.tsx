@@ -24,13 +24,15 @@ export default async function TeamsListPage() {
         });
 
   return (
-      <AppShell userName={user.name} role={user.role}>
+      <AppShell userName={user.name} role={user.role} isManagement={isManagement}>
       <main className="p-6">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold">{isManagement ? t("allTeams") : t("myTeams")}</h1>
-          <Button asChild>
-            <Link href="/teams/new">{t("newTeam")}</Link>
-          </Button>
+          {isManagement && (
+            <Button asChild>
+              <Link href="/teams/new">{t("newTeam")}</Link>
+            </Button>
+          )}
         </div>
 
         <div className="mt-4 overflow-x-auto rounded-lg border border-slate-200 bg-white">

@@ -34,6 +34,54 @@ export function OperationalPlanEditor({
   const [isPrinting, setIsPrinting] = useState(false);
   const [generationLogId, setGenerationLogId] = useState<string | null>(null);
   const [quality, setQuality] = useState<{ score: number; issues: QualityIssue[] } | null>(null);
+  const [axes, setAxes] = useState<string[] | null>(null);
+  const [generatingAxes, setGeneratingAxes] = useState(false);
+
+  async function generateAxes() {
+    setGeneratingAxes(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/operational-plans/${planId}/generate-axes`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Generation failed.");
+        return;
+      }
+      setAxes(data.axes);
+    } catch {
+      setError("Network error while generating. Please try again.");
+    } finally {
+      setGeneratingAxes(false);
+    }
+  }
+
+  function updateAxis(index: number, value: string) {
+    if (!axes) return;
+    const next = [...axes];
+    next[index] = value;
+    setAxes(next);
+  }
+
+  function removeAxis(index: number) {
+    if (!axes) return;
+    setAxes(axes.filter((_, i) => i !== index));
+  }
+
+  function addAxis() {
+    setAxes([...(axes ?? []), ""]);
+  }
+
+  function addRow() {
+    if (!content) return;
+    setContent({
+      items: [...content.items, { domain: "", objective: "", actions: "", responsible: "", timeline: "", indicator: "", risk: "" }],
+    });
+  }
+
+  function removeRow(index: number) {
+    if (!content) return;
+    setContent({ items: content.items.filter((_, i) => i !== index) });
+  }
 
   async function print() {
     setIsPrinting(true);
@@ -51,11 +99,15 @@ export function OperationalPlanEditor({
     }
   }
 
-  async function generate() {
+  async function generate(useAxes?: string[]) {
     setGenerating(true);
     setError(null);
     try {
-      const res = await fetch(`/api/operational-plans/${planId}/generate`, { method: "POST" });
+      const res = await fetch(`/api/operational-plans/${planId}/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ axes: useAxes?.filter((a) => a.trim().length > 0) }),
+      });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? "Generation failed.");
@@ -103,12 +155,40 @@ export function OperationalPlanEditor({
   }
 
   if (!content) {
+    if (axes === null) {
+      return (
+        <div className="rounded-md border border-dashed border-slate-300 p-6 text-center">
+          <p className="text-sm text-slate-600">{t("noneYet")}</p>
+          <Button className="mt-4" onClick={generateAxes} disabled={generatingAxes}>
+            {generatingAxes ? t("generatingAxes") : t("generateAxes")}
+          </Button>
+          {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+        </div>
+      );
+    }
+
     return (
-      <div className="rounded-md border border-dashed border-slate-300 p-6 text-center">
-        <p className="text-sm text-slate-600">{t("noneYet")}</p>
-        <Button className="mt-4" onClick={generate} disabled={generating}>
-          {generating ? "Generating..." : t("generate")}
-        </Button>
+      <div className="rounded-md border border-slate-200 p-4">
+        <h2 className="font-medium">{t("axesTitle")}</h2>
+        <p className="mt-1 text-sm text-slate-500">{t("axesSubtitle")}</p>
+        <div className="mt-3 flex flex-col gap-2">
+          {axes.map((axis, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <Input value={axis} onChange={(e) => updateAxis(index, e.target.value)} />
+              <Button type="button" variant="ghost" size="sm" onClick={() => removeAxis(index)}>
+                {t("removeAxis")}
+              </Button>
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 flex items-center gap-3">
+          <Button type="button" variant="outline" size="sm" onClick={addAxis}>
+            {t("addAxis")}
+          </Button>
+          <Button type="button" onClick={() => generate(axes)} disabled={generating || axes.filter((a) => a.trim()).length < 1}>
+            {generating ? "Generating..." : t("generateFullPlan")}
+          </Button>
+        </div>
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       </div>
     );
@@ -119,7 +199,7 @@ export function OperationalPlanEditor({
       {error && <p className="text-sm text-red-600">{error}</p>}
       <div className="flex items-center justify-between">
         <h2 className="font-medium">{t("matrixTitle")}</h2>
-        <Button type="button" variant="ghost" size="sm" onClick={generate} disabled={generating}>
+        <Button type="button" variant="ghost" size="sm" onClick={() => generate()} disabled={generating}>
           {generating ? t("regenerating") : t("regenerate")}
         </Button>
       </div>
@@ -133,6 +213,7 @@ export function OperationalPlanEditor({
                   {t(field)}
                 </th>
               ))}
+              <th className="px-2 py-2" />
             </tr>
           </thead>
           <tbody>
@@ -147,11 +228,19 @@ export function OperationalPlanEditor({
                     />
                   </td>
                 ))}
+                <td className="px-2 py-1">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => removeRow(index)}>
+                    {t("removeRow")}
+                  </Button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <Button type="button" variant="outline" size="sm" onClick={addRow} className="w-fit">
+        {t("addRow")}
+      </Button>
 
       <AIQualityFeedback generationLogId={generationLogId} quality={quality} fieldNamespace="operationalPlan" />
 

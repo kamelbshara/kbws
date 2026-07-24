@@ -1,6 +1,7 @@
 export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { getLocale } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -11,7 +12,11 @@ import { getRelevantKnowledge } from "@/lib/knowledgeMemory";
 import { getRoleGroup } from "@/lib/permissions";
 import { getActiveSchoolId } from "@/lib/activeSchool";
 
-export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+const bodySchema = z.object({
+  axes: z.array(z.string()).optional(),
+});
+
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -34,6 +39,9 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  const json = await request.json().catch(() => ({}));
+  const parsedBody = bodySchema.safeParse(json);
+
   const locale = (await getLocale()) as "ar" | "en";
   const knowledgeSchoolId = plan.schoolId ?? plan.team?.schoolId;
   const knowledgeNotes = knowledgeSchoolId ? await getRelevantKnowledge(knowledgeSchoolId, "OPERATIONAL_PLAN", {}) : [];
@@ -43,6 +51,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     initialIdea: plan.initialIdea,
     locale,
     knowledgeNotes,
+    axes: parsedBody.success ? parsedBody.data.axes : undefined,
   };
 
   try {

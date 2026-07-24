@@ -20,3 +20,9 @@ export type OperationalPlanGeneration = z.infer<typeof OperationalPlanGeneration
 export const OperationalPlanSaveSchema = z.object({
   items: z.array(OperationalPlanItemSchema).max(30),
 });
+
+/** Step 1 of the wizard: just the axis/domain names, before the full matrix is generated. */
+export const OperationalPlanAxesSchema = z.object({
+  axes: z.array(z.string()).min(3).max(8).describe("Distinct strategic domains/axes for this plan"),
+});
+export type OperationalPlanAxes = z.infer<typeof OperationalPlanAxesSchema>;

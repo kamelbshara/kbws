@@ -304,7 +304,16 @@
     "saved": "تم الحفظ.",
     "reload": "إعادة التحميل",
     "preparingPdf": "جارٍ تجهيز ملف PDF...",
-    "printFailed": "فشل توليد ملف PDF."
+    "printFailed": "فشل توليد ملف PDF.",
+    "generateAxes": "توليد اقتراحات المحاور",
+    "generatingAxes": "جارٍ التوليد...",
+    "axesTitle": "محاور الخطة",
+    "axesSubtitle": "راجع وعدّل المحاور المقترحة قبل توليد الخطة الكاملة. يمكنك إضافة المزيد.",
+    "removeAxis": "إزالة",
+    "addAxis": "إضافة محور",
+    "generateFullPlan": "توليد الخطة الكاملة",
+    "removeRow": "إزالة",
+    "addRow": "إضافة صف"
   },
   "assessments": {
     "myAssessments": "تقييماتي",
