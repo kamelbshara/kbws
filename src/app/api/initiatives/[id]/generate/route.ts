@@ -9,7 +9,7 @@ import { generateInitiativePlan } from "@/lib/ai/generateInitiative";
 import { evaluateInitiative } from "@/lib/ai/evaluate";
 import { getRelevantKnowledge } from "@/lib/knowledgeMemory";
 
-const OWNER_ROLES = ["TEACHER", "INITIATIVE_OWNER", "TEAM_LEADER"];
+const OWNER_ROLES = ["TEACHER", "INITIATIVE_OWNER", "SYSTEM_ADMIN", "PRINCIPAL", "VICE_PRINCIPAL"];
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();

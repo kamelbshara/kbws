@@ -133,13 +133,16 @@ async function main() {
       schoolId: school.id,
     },
   });
+  // Team Leader is no longer a distinct Role -- Team.leaderId can be any
+  // user assigned to lead a specific team. This demo account keeps its
+  // name/email for continuity but is a regular teacher role.
   const teamLeader = await prisma.user.create({
     data: {
       email: "teamleader@demo.school.edu",
       passwordHash,
       name: "Team Leader",
       nameAr: "قائد فريق",
-      role: "TEAM_LEADER",
+      role: "TEACHER",
       schoolId: school.id,
     },
   });

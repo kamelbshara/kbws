@@ -13,7 +13,8 @@
     "print": "طباعة",
     "loading": "جارٍ التحميل...",
     "language": "اللغة",
-    "collapseExpand": "طي / توسيع القائمة الجانبية"
+    "collapseExpand": "طي / توسيع القائمة الجانبية",
+    "remove": "إزالة"
   },
   "login": {
     "title": "منصة خالد بن الوليد الذكية",
@@ -37,7 +38,7 @@
     "knowledgeMemory": "الذاكرة المؤسسية",
     "messages": "الرسائل",
     "impactReport": "تقرير الأثر",
-    "evaluatorDashboard": "لوحة المقيّم"
+    "professionalGoals": "الأهداف المهنية"
   },
   "schedule": {
     "title": "جدولي الأسبوعي",
@@ -91,6 +92,10 @@
     "assessmentsTitle": "التقييمات",
     "newAssessment": "تقييم جديد",
     "noAssessmentsYet": "لا توجد تقييمات بعد لهذا الدرس.",
+    "worksheetsTitle": "أوراق العمل",
+    "generateWorksheet": "إنشاء ورقة عمل",
+    "noWorksheetsYet": "لم يتم إنشاء أوراق عمل بعد لهذا الدرس.",
+    "worksheetDated": "ورقة عمل — {date}",
     "strategies_options": {
       "cooperativeLearning": "التعلم التعاوني",
       "problemBasedLearning": "التعلم القائم على حل المشكلات",
@@ -121,6 +126,23 @@
     "differentiationSupport": "التمايز — الدعم",
     "differentiationEnrichment": "التمايز — الإثراء",
     "reflection": "التأمل"
+  },
+  "worksheet": {
+    "subtitle": "ورقة عمل تدريبية تم إنشاؤها من محتوى هذا الدرس.",
+    "backToLessonPlan": "← العودة إلى خطة الدرس",
+    "worksheetTitle": "عنوان ورقة العمل",
+    "instructions": "التعليمات",
+    "questionLabel": "السؤال {n}",
+    "shortAnswer": "إجابة قصيرة",
+    "multipleChoice": "اختيار من متعدد",
+    "choicePlaceholder": "الخيار {n}",
+    "addChoice": "إضافة خيار",
+    "addQuestion": "إضافة سؤال",
+    "save": "حفظ",
+    "saving": "جارٍ الحفظ...",
+    "saved": "تم الحفظ.",
+    "preparingPdf": "جارٍ تجهيز ملف PDF...",
+    "printFailed": "فشل إنشاء ملف PDF."
   },
   "lessonPlanVersions": {
     "backToLessonPlan": "← العودة إلى خطة الدرس",
@@ -363,32 +385,6 @@
     "target": "المستهدف",
     "empty": "لا توجد مبادرات تحتوي على مؤشرات أداء بعد."
   },
-  "evaluatorPage": {
-    "title": "لوحة المقيّم",
-    "subtitle": "اطّلاع للقراءة فقط على استخدام الذكاء الاصطناعي، والأدلة، والتقارير، والخط الزمني لنشاط المدرسة.",
-    "timelineTitle": "الخط الزمني السنوي",
-    "timelineSubtitle": "عرض زمني للأنشطة البارزة على مستوى المدرسة.",
-    "evidenceTitle": "الأدلة",
-    "evidenceSubtitle": "الأدلة المرفقة بالمبادرات على مستوى المدرسة.",
-    "evidenceEmpty": "لم تُضَف أي أدلة بعد.",
-    "attachedFile": "ملف مرفق",
-    "reportsTitle": "التقارير",
-    "timeline": {
-      "empty": "لا يوجد نشاط مسجَّل بعد.",
-      "types": {
-        "lessonPlanPrinted": "طُبعت خطة درس",
-        "initiativeCreated": "أُنشئت مبادرة",
-        "initiativeCompleted": "اكتملت مبادرة (مخرج نهائي)",
-        "meetingHeld": "عُقد اجتماع فريق",
-        "assessmentCreated": "أُنشئ تقييم",
-        "insightGenerated": "تم توليد رؤية"
-      },
-      "scopes": {
-        "TEACHER": "رؤية على مستوى المعلم",
-        "SCHOOL": "رؤية على مستوى المدرسة"
-      }
-    }
-  },
   "messages": {
     "title": "الرسائل",
     "inbox": "الوارد",
@@ -554,10 +550,8 @@
       "SYSTEM_ADMIN": "مدير النظام",
       "PRINCIPAL": "مدير المدرسة",
       "VICE_PRINCIPAL": "نائب المدير",
-      "TEAM_LEADER": "قائد فريق",
       "TEACHER": "معلم",
-      "INITIATIVE_OWNER": "مسؤول مبادرة",
-      "EVALUATOR": "مقيّم"
+      "INITIATIVE_OWNER": "مسؤول مبادرة"
     }
   },
   "classesPage": {

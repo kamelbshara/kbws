@@ -11,10 +11,8 @@ enum Role {
   SYSTEM_ADMIN
   PRINCIPAL
   VICE_PRINCIPAL
-  TEAM_LEADER
   TEACHER
   INITIATIVE_OWNER
-  EVALUATOR
 }
 
 enum Track {
@@ -94,52 +92,63 @@ enum QuestionDifficulty {
   CHALLENGE
 }
 
-model School {
-  id            String         @id @default(cuid())
-  name          String
-  nameAr        String
-  address       String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+enum InspectionVisitStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
 
-  users            User[]
-  academicYears    AcademicYear[]
-  classSections    ClassSection[]
-  timetables       Timetable[]
-  curriculumContents CurriculumContent[]
-  initiatives      Initiative[]
-  teams            Team[]
-  operationalPlans OperationalPlan[]
-  insights         Insight[]
+model School {
+  id        String   @id @default(cuid())
+  name      String
+  nameAr    String
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users                User[]
+  academicYears        AcademicYear[]
+  classSections        ClassSection[]
+  timetables           Timetable[]
+  curriculumContents   CurriculumContent[]
+  initiatives          Initiative[]
+  teams                Team[]
+  operationalPlans     OperationalPlan[]
+  insights             Insight[]
   knowledgeMemoryItems KnowledgeMemoryItem[]
+  professionalGoals    ProfessionalGoal[]
+  lessonPlanTemplates  LessonPlanTemplate[]
+  inspectionVisits     InspectionVisit[]
 }
 
 model AcademicYear {
-  id                 String               @id @default(cuid())
-  schoolId           String
-  school             School               @relation(fields: [schoolId], references: [id])
-  name               String
-  startDate          DateTime
-  endDate            DateTime
-  isActive           Boolean              @default(false)
-  createdAt          DateTime             @default(now())
+  id        String   @id @default(cuid())
+  schoolId  String
+  school    School   @relation(fields: [schoolId], references: [id])
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
 
   classSections      ClassSection[]
   timetables         Timetable[]
   teacherAssignments TeacherAssignment[]
+  professionalGoals  ProfessionalGoal[]
+  operationalPlans   OperationalPlan[]
 
   @@unique([schoolId, name])
 }
 
 model Grade {
-  id                 String              @id @default(cuid())
-  level              Int                 @unique
-  name               String
-  nameAr             String
+  id     String @id @default(cuid())
+  level  Int    @unique
+  name   String
+  nameAr String
 
-  classSections      ClassSection[]
-  curriculumContents CurriculumContent[]
-  questionBankItems  QuestionBankItem[]
+  classSections        ClassSection[]
+  curriculumContents   CurriculumContent[]
+  questionBankItems    QuestionBankItem[]
   knowledgeMemoryItems KnowledgeMemoryItem[]
 }
 
@@ -158,6 +167,7 @@ model ClassSection {
   teacherAssignments TeacherAssignment[]
   timetables         Timetable[]
   lessonPlans        LessonPlan[]
+  inspectionVisits   InspectionVisit[]
 
   @@unique([academicYearId, gradeId, name])
 }
@@ -168,10 +178,10 @@ model Subject {
   nameAr String
   code   String @unique
 
-  teacherAssignments TeacherAssignment[]
-  timetables         Timetable[]
-  curriculumContents CurriculumContent[]
-  questionBankItems  QuestionBankItem[]
+  teacherAssignments   TeacherAssignment[]
+  timetables           Timetable[]
+  curriculumContents   CurriculumContent[]
+  questionBankItems    QuestionBankItem[]
   knowledgeMemoryItems KnowledgeMemoryItem[]
 }
 
@@ -188,27 +198,34 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  teacherAssignments TeacherAssignment[]
-  timetableSlots     Timetable[]         @relation("TimetableTeacher")
-  lessonPlans        LessonPlan[]
-  aiGenerationLogs   AIGenerationLog[]
-  auditLogs          AuditLog[]
-  printedVersions    LessonPlanVersion[]
-  ownedInitiatives   Initiative[]
-  initiativeEvidence InitiativeEvidence[]
-  ledTeams           Team[]               @relation("TeamLeader")
-  teamMemberships    TeamMember[]
-  meetingsCreated    Meeting[]
-  actionItems        ActionItem[]
-  createdQuestions   QuestionBankItem[]
-  assessments        Assessment[]
-  requestedInsights  Insight[]
-  notifications      Notification[]
-  passwordResetTokens PasswordResetToken[]
-  aiFeedback           AIFeedback[]
-  knowledgeMemoryItems KnowledgeMemoryItem[]
-  sentMessages         Message[]             @relation("MessageSender")
-  receivedMessages     Message[]             @relation("MessageRecipient")
+  teacherAssignments         TeacherAssignment[]
+  timetableSlots             Timetable[]           @relation("TimetableTeacher")
+  lessonPlans                LessonPlan[]
+  aiGenerationLogs           AIGenerationLog[]
+  auditLogs                  AuditLog[]
+  printedVersions            LessonPlanVersion[]
+  ownedInitiatives           Initiative[]          @relation("InitiativeOwner")
+  assignedInitiatives        Initiative[]          @relation("InitiativeAssignee")
+  initiativeComments         InitiativeComment[]
+  initiativeEvidence         InitiativeEvidence[]
+  ledTeams                   Team[]                @relation("TeamLeader")
+  teamMemberships            TeamMember[]
+  meetingsCreated            Meeting[]
+  actionItems                ActionItem[]
+  createdQuestions           QuestionBankItem[]
+  assessments                Assessment[]
+  requestedInsights          Insight[]
+  notifications              Notification[]
+  passwordResetTokens        PasswordResetToken[]
+  aiFeedback                 AIFeedback[]
+  knowledgeMemoryItems       KnowledgeMemoryItem[]
+  sentMessages               Message[]             @relation("MessageSender")
+  receivedMessages           Message[]             @relation("MessageRecipient")
+  professionalGoals          ProfessionalGoal[]
+  worksheetsCreated          Worksheet[]
+  lessonPlanTemplatesCreated LessonPlanTemplate[]
+  inspectionVisitsRequested  InspectionVisit[]     @relation("InspectionVisitRequester")
+  inspectionVisitsReceived   InspectionVisit[]     @relation("InspectionVisitTeacher")
 }
 
 model TeacherAssignment {
@@ -242,25 +259,25 @@ model Timetable {
   startTime      String?
   endTime        String?
 
-  lessonPlans    LessonPlan[]
+  lessonPlans LessonPlan[]
 
   @@unique([classSectionId, dayOfWeek, periodNumber, academicYearId])
   @@unique([teacherId, dayOfWeek, periodNumber, academicYearId])
 }
 
 model CurriculumContent {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   schoolId    String
-  school      School   @relation(fields: [schoolId], references: [id])
+  school      School  @relation(fields: [schoolId], references: [id])
   subjectId   String
-  subject     Subject  @relation(fields: [subjectId], references: [id])
+  subject     Subject @relation(fields: [subjectId], references: [id])
   gradeId     String
-  grade       Grade    @relation(fields: [gradeId], references: [id])
+  grade       Grade   @relation(fields: [gradeId], references: [id])
   track       Track?
   unit        String
   unitTitle   String
   lessonTitle String
-  orderIndex  Int      @default(0)
+  orderIndex  Int     @default(0)
 
   learningOutcomes LearningOutcome[]
   lessonPlans      LessonPlan[]
@@ -306,6 +323,7 @@ model LessonPlan {
   versions         LessonPlanVersion[]
   aiGenerationLogs AIGenerationLog[]
   assessments      Assessment[]
+  worksheets       Worksheet[]
 }
 
 model LessonPlanVersion {
@@ -323,28 +341,32 @@ model LessonPlanVersion {
 }
 
 model AIGenerationLog {
-  id                String           @id @default(cuid())
-  lessonPlanId      String?
-  lessonPlan        LessonPlan?      @relation(fields: [lessonPlanId], references: [id])
-  initiativeId      String?
-  initiative        Initiative?      @relation(fields: [initiativeId], references: [id])
-  operationalPlanId String?
-  operationalPlan   OperationalPlan? @relation(fields: [operationalPlanId], references: [id])
-  assessmentId      String?
-  assessment        Assessment?      @relation(fields: [assessmentId], references: [id])
-  insightId         String?
-  insight           Insight?         @relation(fields: [insightId], references: [id])
-  userId            String
-  user              User             @relation(fields: [userId], references: [id])
-  section           String?
-  model             String
-  promptInput       Json
-  responseJson      Json?
-  status            String
-  errorMessage      String?
-  qualityScore      Int?
-  qualityIssues     Json?
-  createdAt         DateTime         @default(now())
+  id                 String            @id @default(cuid())
+  lessonPlanId       String?
+  lessonPlan         LessonPlan?       @relation(fields: [lessonPlanId], references: [id])
+  initiativeId       String?
+  initiative         Initiative?       @relation(fields: [initiativeId], references: [id])
+  operationalPlanId  String?
+  operationalPlan    OperationalPlan?  @relation(fields: [operationalPlanId], references: [id])
+  assessmentId       String?
+  assessment         Assessment?       @relation(fields: [assessmentId], references: [id])
+  insightId          String?
+  insight            Insight?          @relation(fields: [insightId], references: [id])
+  worksheetId        String?
+  worksheet          Worksheet?        @relation(fields: [worksheetId], references: [id])
+  professionalGoalId String?
+  professionalGoal   ProfessionalGoal? @relation(fields: [professionalGoalId], references: [id])
+  userId             String
+  user               User              @relation(fields: [userId], references: [id])
+  section            String?
+  model              String
+  promptInput        Json
+  responseJson       Json?
+  status             String
+  errorMessage       String?
+  qualityScore       Int?
+  qualityIssues      Json?
+  createdAt          DateTime          @default(now())
 
   feedback AIFeedback[]
 }
@@ -441,28 +463,33 @@ model Meeting {
 }
 
 model ActionItem {
-  id        String            @id @default(cuid())
+  id        String           @id @default(cuid())
   meetingId String
-  meeting   Meeting           @relation(fields: [meetingId], references: [id])
+  meeting   Meeting          @relation(fields: [meetingId], references: [id])
   task      String
   ownerId   String
-  owner     User              @relation(fields: [ownerId], references: [id])
+  owner     User             @relation(fields: [ownerId], references: [id])
   dueDate   DateTime?
-  status    ActionItemStatus  @default(OPEN)
-  createdAt DateTime          @default(now())
+  status    ActionItemStatus @default(OPEN)
+  createdAt DateTime         @default(now())
 }
 
 model OperationalPlan {
-  id        String               @id @default(cuid())
-  teamId    String?              @unique
-  team      Team?                @relation(fields: [teamId], references: [id])
-  schoolId  String?
-  school    School?              @relation(fields: [schoolId], references: [id])
-  level     OperationalPlanLevel
-  title     String
-  initialIdea String
-  createdAt DateTime             @default(now())
-  updatedAt DateTime             @updatedAt
+  id             String               @id @default(cuid())
+  teamId         String?              @unique
+  team           Team?                @relation(fields: [teamId], references: [id])
+  schoolId       String?
+  school         School?              @relation(fields: [schoolId], references: [id])
+  academicYearId String?
+  academicYear   AcademicYear?        @relation(fields: [academicYearId], references: [id])
+  previousPlanId String?              @unique
+  previousPlan   OperationalPlan?     @relation("OperationalPlanCarryForward", fields: [previousPlanId], references: [id])
+  nextPlan       OperationalPlan?     @relation("OperationalPlanCarryForward")
+  level          OperationalPlanLevel
+  title          String
+  initialIdea    String
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
 
   items            OperationalPlanItem[]
   aiGenerationLogs AIGenerationLog[]
@@ -484,24 +511,29 @@ model OperationalPlanItem {
 }
 
 model Initiative {
-  id           String              @id @default(cuid())
+  id           String             @id @default(cuid())
   ownerId      String
-  owner        User                @relation(fields: [ownerId], references: [id])
+  owner        User               @relation("InitiativeOwner", fields: [ownerId], references: [id])
+  assignedToId String?
+  assignedTo   User?              @relation("InitiativeAssignee", fields: [assignedToId], references: [id])
   schoolId     String
-  school       School              @relation(fields: [schoolId], references: [id])
+  school       School             @relation(fields: [schoolId], references: [id])
   title        String
   category     InitiativeCategory
   initialIdea  String
   goal         String?
   targetGroup  String?
   baseline     String?
-  status       InitiativeStatus    @default(DRAFT)
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
+  reflection   String?
+  reportJson   Json?
+  status       InitiativeStatus   @default(DRAFT)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
 
   phases           InitiativePhase[]
   indicators       InitiativeIndicator[]
   evidence         InitiativeEvidence[]
+  comments         InitiativeComment[]
   aiGenerationLogs AIGenerationLog[]
 }
 
@@ -514,17 +546,22 @@ model InitiativePhase {
   description  String
   timeline     String?
   responsible  String?
+
+  indicators InitiativeIndicator[]
 }
 
 model InitiativeIndicator {
-  id                String     @id @default(cuid())
+  id                String           @id @default(cuid())
   initiativeId      String
-  initiative        Initiative @relation(fields: [initiativeId], references: [id])
+  initiative        Initiative       @relation(fields: [initiativeId], references: [id])
+  phaseId           String?
+  phase             InitiativePhase? @relation(fields: [phaseId], references: [id])
   name              String
   measurementMethod String
   baselineValue     String?
   targetValue       String?
   actualValue       String?
+  aiAnalysis        Json?
 }
 
 model InitiativeEvidence {
@@ -555,13 +592,13 @@ model AuditLog {
 }
 
 model PasswordResetToken {
-  id         String    @id @default(cuid())
-  userId     String
-  user       User      @relation(fields: [userId], references: [id])
-  tokenHash  String    @unique
-  expiresAt  DateTime
-  usedAt     DateTime?
-  createdAt  DateTime  @default(now())
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
 
   @@index([userId])
 }
@@ -616,21 +653,21 @@ model Insight {
 }
 
 model QuestionBankItem {
-  id             String             @id @default(cuid())
-  subjectId      String
-  subject        Subject            @relation(fields: [subjectId], references: [id])
-  gradeId        String
-  grade          Grade              @relation(fields: [gradeId], references: [id])
-  skill          String
-  difficulty     QuestionDifficulty
-  type           QuestionType
-  questionText   String
-  choices        Json?
-  correctAnswer  String
-  explanation    String?
-  createdById    String
-  createdBy      User               @relation(fields: [createdById], references: [id])
-  createdAt      DateTime           @default(now())
+  id            String             @id @default(cuid())
+  subjectId     String
+  subject       Subject            @relation(fields: [subjectId], references: [id])
+  gradeId       String
+  grade         Grade              @relation(fields: [gradeId], references: [id])
+  skill         String
+  difficulty    QuestionDifficulty
+  type          QuestionType
+  questionText  String
+  choices       Json?
+  correctAnswer String
+  explanation   String?
+  createdById   String
+  createdBy     User               @relation(fields: [createdById], references: [id])
+  createdAt     DateTime           @default(now())
 
   assessmentQuestions AssessmentQuestion[]
 
@@ -638,25 +675,99 @@ model QuestionBankItem {
 }
 
 model Assessment {
-  id             String      @id @default(cuid())
-  teacherId      String
-  teacher        User        @relation(fields: [teacherId], references: [id])
-  lessonPlanId   String?
-  lessonPlan     LessonPlan? @relation(fields: [lessonPlanId], references: [id])
-  title          String
-  createdAt      DateTime    @default(now())
+  id           String      @id @default(cuid())
+  teacherId    String
+  teacher      User        @relation(fields: [teacherId], references: [id])
+  lessonPlanId String?
+  lessonPlan   LessonPlan? @relation(fields: [lessonPlanId], references: [id])
+  title        String
+  createdAt    DateTime    @default(now())
 
   questions        AssessmentQuestion[]
   aiGenerationLogs AIGenerationLog[]
 }
 
 model AssessmentQuestion {
-  id            String           @id @default(cuid())
-  assessmentId  String
-  assessment    Assessment       @relation(fields: [assessmentId], references: [id])
-  questionId    String
-  question      QuestionBankItem @relation(fields: [questionId], references: [id])
-  orderIndex    Int              @default(0)
+  id           String           @id @default(cuid())
+  assessmentId String
+  assessment   Assessment       @relation(fields: [assessmentId], references: [id])
+  questionId   String
+  question     QuestionBankItem @relation(fields: [questionId], references: [id])
+  orderIndex   Int              @default(0)
 
   @@unique([assessmentId, questionId])
+}
+
+model Worksheet {
+  id           String     @id @default(cuid())
+  lessonPlanId String
+  lessonPlan   LessonPlan @relation(fields: [lessonPlanId], references: [id])
+  contentJson  Json?
+  pdfPath      String?
+  createdById  String
+  createdBy    User       @relation(fields: [createdById], references: [id])
+  createdAt    DateTime   @default(now())
+
+  aiGenerationLogs AIGenerationLog[]
+}
+
+model ProfessionalGoal {
+  id             String        @id @default(cuid())
+  userId         String
+  user           User          @relation(fields: [userId], references: [id])
+  schoolId       String
+  school         School        @relation(fields: [schoolId], references: [id])
+  academicYearId String?
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
+  prompt         String
+  suggestions    Json
+  selectedGoal   String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  aiGenerationLogs AIGenerationLog[]
+}
+
+model LessonPlanTemplate {
+  id            String   @id @default(cuid())
+  schoolId      String
+  school        School   @relation(fields: [schoolId], references: [id])
+  title         String
+  fileUrl       String?
+  fileName      String?
+  structureJson Json?
+  isActive      Boolean  @default(true)
+  createdById   String
+  createdBy     User     @relation(fields: [createdById], references: [id])
+  createdAt     DateTime @default(now())
+}
+
+model InspectionVisit {
+  id             String                @id @default(cuid())
+  schoolId       String
+  school         School                @relation(fields: [schoolId], references: [id])
+  classSectionId String
+  classSection   ClassSection          @relation(fields: [classSectionId], references: [id])
+  teacherId      String
+  teacher        User                  @relation("InspectionVisitTeacher", fields: [teacherId], references: [id])
+  requestedById  String
+  requestedBy    User                  @relation("InspectionVisitRequester", fields: [requestedById], references: [id])
+  scheduledDate  DateTime
+  notes          String?
+  status         InspectionVisitStatus @default(SCHEDULED)
+  createdAt      DateTime              @default(now())
+
+  @@index([schoolId, scheduledDate])
+}
+
+model InitiativeComment {
+  id           String     @id @default(cuid())
+  initiativeId String
+  initiative   Initiative @relation(fields: [initiativeId], references: [id])
+  authorId     String
+  author       User       @relation(fields: [authorId], references: [id])
+  body         String
+  createdAt    DateTime   @default(now())
+
+  @@index([initiativeId])
 }

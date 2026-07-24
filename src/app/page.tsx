@@ -14,14 +14,8 @@ export default async function HomePage() {
   if (role === "TEACHER") {
     redirect("/schedule");
   }
-  if (role === "TEAM_LEADER") {
-    redirect("/teams");
-  }
   if (role === "INITIATIVE_OWNER") {
     redirect("/initiatives");
-  }
-  if (role === "EVALUATOR") {
-    redirect("/evaluator");
   }
 
   const managementRoles = await getRoleGroup("MANAGEMENT_ROLES");

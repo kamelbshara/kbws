@@ -6,7 +6,7 @@ import { updatePermissionGroupAction, type PermissionActionState } from "@/actio
 import { Button } from "@/components/ui/button";
 import type { Role } from "@/generated/prisma/enums";
 
-const ALL_ROLES: Role[] = ["SYSTEM_ADMIN", "PRINCIPAL", "VICE_PRINCIPAL", "TEAM_LEADER", "TEACHER", "INITIATIVE_OWNER"];
+const ALL_ROLES: Role[] = ["SYSTEM_ADMIN", "PRINCIPAL", "VICE_PRINCIPAL", "TEACHER", "INITIATIVE_OWNER"];
 
 export function PermissionGroupEditor({
   groupName,

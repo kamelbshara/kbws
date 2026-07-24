@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -10,6 +11,9 @@ import { AppShell } from "@/components/layout/AppShell";
 export default async function AdminTranslationsPage() {
   const session = await auth();
   const user = session!.user;
+  if (user.role !== "SYSTEM_ADMIN") {
+    redirect("/admin");
+  }
   const t = await getTranslations("translationsPage");
 
   const enFlat = flattenMessages(enMessages as MessageTree);

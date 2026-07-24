@@ -9,12 +9,7 @@ export async function Sidebar({ role, isManagement }: { role: Role; isManagement
 
   let links: ({ href: string; label: string } | false)[];
 
-  if (role === "EVALUATOR") {
-    links = [
-      { href: "/evaluator", label: nav("evaluatorDashboard") },
-      { href: "/messages", label: nav("messages") },
-    ];
-  } else if (isManagement) {
+  if (isManagement) {
     links = [
       { href: "/admin", label: nav("overview") },
       { href: "/dashboard", label: nav("dashboard") },
@@ -24,12 +19,13 @@ export async function Sidebar({ role, isManagement }: { role: Role; isManagement
       { href: "/admin/curriculum", label: t("curriculum") },
       { href: "/admin/timetable", label: t("timetable") },
       { href: "/admin/audit-log", label: t("auditLog") },
-      { href: "/admin/translations", label: t("translations") },
+      role === "SYSTEM_ADMIN" && { href: "/admin/translations", label: t("translations") },
       role === "SYSTEM_ADMIN" && { href: "/admin/schools", label: t("schools") },
       role === "SYSTEM_ADMIN" && { href: "/admin/permissions", label: t("permissions") },
       role === "SYSTEM_ADMIN" && { href: "/admin/master-data", label: t("masterData") },
       { href: "/insights", label: nav("insights") },
-      { href: "/knowledge-memory", label: nav("knowledgeMemory") },
+      role === "SYSTEM_ADMIN" && { href: "/knowledge-memory", label: nav("knowledgeMemory") },
+      { href: "/professional-goals", label: nav("professionalGoals") },
       { href: "/messages", label: nav("messages") },
       { href: "/impact-report", label: nav("impactReport") },
       { href: "/initiatives", label: nav("initiatives") },
@@ -42,7 +38,7 @@ export async function Sidebar({ role, isManagement }: { role: Role; isManagement
       role === "TEACHER" && { href: "/assessments", label: nav("assessments") },
       role === "TEACHER" && { href: "/question-bank", label: nav("questionBank") },
       role === "TEACHER" && { href: "/insights", label: nav("insights") },
-      { href: "/knowledge-memory", label: nav("knowledgeMemory") },
+      { href: "/professional-goals", label: nav("professionalGoals") },
       { href: "/messages", label: nav("messages") },
       { href: "/initiatives", label: nav("initiatives") },
       { href: "/teams", label: nav("teams") },

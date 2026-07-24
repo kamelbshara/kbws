@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/layout/AppShell";
 import { LessonPlanEditor } from "@/components/lesson-plan/LessonPlanEditor";
+import { WorksheetSection } from "@/components/lesson-plan/WorksheetSection";
 import { LessonPlanContentSchema } from "@/lib/ai/lessonPlanSchema";
 import { Button } from "@/components/ui/button";
 
@@ -21,6 +22,7 @@ export default async function LessonPlanPage({ params }: { params: Promise<{ id:
       curriculumContent: { include: { subject: true } },
       learningOutcome: true,
       assessments: true,
+      worksheets: { orderBy: { createdAt: "desc" } },
     },
   });
 
@@ -85,6 +87,12 @@ export default async function LessonPlanPage({ params }: { params: Promise<{ id:
             <p className="mt-2 text-sm text-slate-500">{t("noAssessmentsYet")}</p>
           )}
         </div>
+
+        <WorksheetSection
+          lessonPlanId={lessonPlan.id}
+          worksheets={lessonPlan.worksheets.map((w) => ({ id: w.id, createdAt: w.createdAt.toISOString().slice(0, 10) }))}
+          canGenerate={initialContent !== null}
+        />
       </main>
     </AppShell>
   );

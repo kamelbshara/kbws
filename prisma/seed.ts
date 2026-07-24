@@ -279,9 +279,8 @@ async function main() {
     { name: "ADMIN_ROLES", roles: ["SYSTEM_ADMIN"] },
     { name: "MANAGEMENT_ROLES", roles: ["SYSTEM_ADMIN", "PRINCIPAL", "VICE_PRINCIPAL"] },
     { name: "TEACHER_ROLES", roles: ["TEACHER"] },
-    { name: "INITIATIVE_CREATOR_ROLES", roles: ["TEACHER", "INITIATIVE_OWNER", "TEAM_LEADER"] },
-    { name: "TEAM_CREATOR_ROLES", roles: ["TEACHER", "TEAM_LEADER", "PRINCIPAL", "VICE_PRINCIPAL"] },
-    { name: "EVALUATOR_ROLES", roles: ["SYSTEM_ADMIN", "PRINCIPAL", "EVALUATOR"] },
+    { name: "INITIATIVE_CREATOR_ROLES", roles: ["TEACHER", "INITIATIVE_OWNER", "SYSTEM_ADMIN", "PRINCIPAL", "VICE_PRINCIPAL"] },
+    { name: "TEAM_CREATOR_ROLES", roles: ["SYSTEM_ADMIN", "PRINCIPAL", "VICE_PRINCIPAL"] },
   ];
   for (const group of defaultPermissionGroups) {
     await prisma.permissionGroup.upsert({

@@ -16,7 +16,7 @@ const updateSchema = z.object({
 
 export async function updateTranslationAction(locale: string, key: string, value: string): Promise<{ error?: string }> {
   const session = await auth();
-  await requireRoleGroup(session, "MANAGEMENT_ROLES");
+  await requireRoleGroup(session, "ADMIN_ROLES");
 
   const parsed = updateSchema.safeParse({ locale, key, value });
   if (!parsed.success) {
@@ -50,7 +50,7 @@ export async function updateTranslationAction(locale: string, key: string, value
 
 export async function resetTranslationAction(locale: string, key: string): Promise<{ error?: string }> {
   const session = await auth();
-  await requireRoleGroup(session, "MANAGEMENT_ROLES");
+  await requireRoleGroup(session, "ADMIN_ROLES");
 
   const parsed = z.object({ locale: z.enum(["ar", "en"]), key: z.string().min(1) }).safeParse({ locale, key });
   if (!parsed.success) {

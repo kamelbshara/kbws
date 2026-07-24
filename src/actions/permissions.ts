@@ -9,7 +9,7 @@ import { requireRole, ADMIN_ROLES, PERMISSION_GROUP_NAMES, invalidatePermissionC
 
 export type PermissionActionState = { error?: string; success?: boolean } | undefined;
 
-const ALL_ROLES = ["SYSTEM_ADMIN", "PRINCIPAL", "VICE_PRINCIPAL", "TEAM_LEADER", "TEACHER", "INITIATIVE_OWNER"] as const;
+const ALL_ROLES = ["SYSTEM_ADMIN", "PRINCIPAL", "VICE_PRINCIPAL", "TEACHER", "INITIATIVE_OWNER"] as const;
 
 const updateSchema = z.object({
   groupName: z.enum(PERMISSION_GROUP_NAMES),

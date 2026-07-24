@@ -12,10 +12,8 @@ const ROLE_VALUES = [
   "SYSTEM_ADMIN",
   "PRINCIPAL",
   "VICE_PRINCIPAL",
-  "TEAM_LEADER",
   "TEACHER",
   "INITIATIVE_OWNER",
-  "EVALUATOR",
 ] as const;
 
 export function CreateUserForm() {

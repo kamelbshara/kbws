@@ -13,7 +13,8 @@
     "print": "Print",
     "loading": "Loading...",
     "language": "Language",
-    "collapseExpand": "Collapse / expand sidebar"
+    "collapseExpand": "Collapse / expand sidebar",
+    "remove": "Remove"
   },
   "login": {
     "title": "Khaled Bin Al Waleed Smart Platform",
@@ -37,7 +38,7 @@
     "knowledgeMemory": "Knowledge Memory",
     "messages": "Messages",
     "impactReport": "Impact Report",
-    "evaluatorDashboard": "Evaluator Dashboard"
+    "professionalGoals": "Professional Goals"
   },
   "schedule": {
     "title": "My Weekly Schedule",
@@ -91,6 +92,10 @@
     "assessmentsTitle": "Assessments",
     "newAssessment": "New Assessment",
     "noAssessmentsYet": "No assessments yet for this lesson.",
+    "worksheetsTitle": "Worksheets",
+    "generateWorksheet": "Generate Worksheet",
+    "noWorksheetsYet": "No worksheets generated yet for this lesson.",
+    "worksheetDated": "Worksheet — {date}",
     "strategies_options": {
       "cooperativeLearning": "Cooperative Learning",
       "problemBasedLearning": "Problem-Based Learning",
@@ -121,6 +126,23 @@
     "differentiationSupport": "Differentiation — Support",
     "differentiationEnrichment": "Differentiation — Enrichment",
     "reflection": "Reflection"
+  },
+  "worksheet": {
+    "subtitle": "Practice worksheet generated from this lesson's content.",
+    "backToLessonPlan": "← Back to lesson plan",
+    "worksheetTitle": "Worksheet Title",
+    "instructions": "Instructions",
+    "questionLabel": "Question {n}",
+    "shortAnswer": "Short Answer",
+    "multipleChoice": "Multiple Choice",
+    "choicePlaceholder": "Choice {n}",
+    "addChoice": "Add Choice",
+    "addQuestion": "Add Question",
+    "save": "Save",
+    "saving": "Saving...",
+    "saved": "Saved.",
+    "preparingPdf": "Preparing PDF...",
+    "printFailed": "Failed to generate PDF."
   },
   "lessonPlanVersions": {
     "backToLessonPlan": "← Back to lesson plan",
@@ -363,32 +385,6 @@
     "target": "Target",
     "empty": "No initiatives with performance indicators yet."
   },
-  "evaluatorPage": {
-    "title": "Evaluator Dashboard",
-    "subtitle": "Read-only oversight of AI usage, evidence, reports, and the school's activity timeline.",
-    "timelineTitle": "Annual Timeline",
-    "timelineSubtitle": "A chronological view of notable activity across the school.",
-    "evidenceTitle": "Evidence",
-    "evidenceSubtitle": "Evidence attached to initiatives across the school.",
-    "evidenceEmpty": "No evidence has been added yet.",
-    "attachedFile": "Attached file",
-    "reportsTitle": "Reports",
-    "timeline": {
-      "empty": "No activity recorded yet.",
-      "types": {
-        "lessonPlanPrinted": "Lesson plan printed",
-        "initiativeCreated": "Initiative created",
-        "initiativeCompleted": "Initiative completed (final output)",
-        "meetingHeld": "Team meeting held",
-        "assessmentCreated": "Assessment created",
-        "insightGenerated": "Insight generated"
-      },
-      "scopes": {
-        "TEACHER": "Teacher-level insight",
-        "SCHOOL": "School-level insight"
-      }
-    }
-  },
   "messages": {
     "title": "Messages",
     "inbox": "Inbox",
@@ -554,10 +550,8 @@
       "SYSTEM_ADMIN": "System Administrator",
       "PRINCIPAL": "Principal",
       "VICE_PRINCIPAL": "Vice Principal",
-      "TEAM_LEADER": "Team Leader",
       "TEACHER": "Teacher",
-      "INITIATIVE_OWNER": "Initiative Owner",
-      "EVALUATOR": "Evaluator"
+      "INITIATIVE_OWNER": "Initiative Owner"
     }
   },
   "classesPage": {
