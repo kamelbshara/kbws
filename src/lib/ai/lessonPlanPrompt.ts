@@ -15,6 +15,7 @@ export type LessonPlanPromptInput = {
   locale: "ar" | "en";
   focusSection?: LessonPlanSection;
   knowledgeNotes?: string[];
+  templateGuidance?: string | null;
 };
 
 export function buildLessonPlanPrompt(input: LessonPlanPromptInput): { system: string; user: string } {
@@ -46,6 +47,7 @@ export function buildLessonPlanPrompt(input: LessonPlanPromptInput): { system: s
     input.tools.length > 0 ? `Available teaching tools: ${input.tools.join(", ")}` : null,
     `Teacher's focus for this lesson: ${input.teacherPrompt}`,
     focusInstruction,
+    input.templateGuidance ? `\n\nThe school requires this lesson plan to follow its house format/style:\n${input.templateGuidance}` : null,
     formatKnowledgeContext(input.knowledgeNotes ?? []),
   ]
     .filter(Boolean)

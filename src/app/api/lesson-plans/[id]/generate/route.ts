@@ -51,6 +51,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     gradeId: lessonPlan.classSection.gradeId,
   });
 
+  const activeTemplate = await prisma.lessonPlanTemplate.findFirst({
+    where: { schoolId: lessonPlan.classSection.schoolId, isActive: true },
+  });
+  const templateGuidance =
+    activeTemplate?.structureJson && typeof activeTemplate.structureJson === "object" && "notes" in activeTemplate.structureJson
+      ? String((activeTemplate.structureJson as { notes: unknown }).notes)
+      : null;
+
   const promptInput = {
     subjectName: lessonPlan.curriculumContent.subject.name,
     gradeName: lessonPlan.classSection.grade.name,
@@ -67,6 +75,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     locale,
     focusSection: parsedBody.data.section,
     knowledgeNotes,
+    templateGuidance,
   };
 
   try {

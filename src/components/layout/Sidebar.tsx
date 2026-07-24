@@ -18,6 +18,7 @@ export async function Sidebar({ role, isManagement }: { role: Role; isManagement
       { href: "/admin/classes", label: t("classes") },
       { href: "/admin/curriculum", label: t("curriculum") },
       { href: "/admin/timetable", label: t("timetable") },
+      { href: "/admin/lesson-plan-template", label: t("lessonPlanTemplate") },
       { href: "/admin/audit-log", label: t("auditLog") },
       role === "SYSTEM_ADMIN" && { href: "/admin/translations", label: t("translations") },
       role === "SYSTEM_ADMIN" && { href: "/admin/schools", label: t("schools") },

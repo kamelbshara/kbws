@@ -43,7 +43,10 @@
   "schedule": {
     "title": "My Weekly Schedule",
     "empty": "No scheduled periods.",
-    "createLessonPlan": "Create Lesson Plan"
+    "createLessonPlan": "Create Lesson Plan",
+    "dragDropHint": "Drag a lesson plan card onto another period to copy it there.",
+    "slotAlreadyHasPlan": "That period already has a lesson plan this week.",
+    "copying": "Copying lesson plan..."
   },
   "lessonPlan": {
     "newTitle": "New Lesson Plan",
@@ -492,7 +495,8 @@
     "auditLog": "Audit Log",
     "permissions": "Permissions",
     "translations": "Translations",
-    "masterData": "Master Data"
+    "masterData": "Master Data",
+    "lessonPlanTemplate": "Lesson Plan Template"
   },
   "adminOverview": {
     "users": "Users",
@@ -592,6 +596,19 @@
       "FRIDAY": "Friday",
       "SATURDAY": "Saturday"
     }
+  },
+  "lessonPlanTemplatePage": {
+    "title": "Lesson Plan Template",
+    "subtitle": "Upload an example lesson plan template to guide how AI-generated lesson plans are shaped for your school.",
+    "currentTemplate": "Current template",
+    "viewFile": "View file",
+    "titleLabel": "Template Title",
+    "structureNotesLabel": "Structure Notes",
+    "structureNotesPlaceholder": "Describe the sections/format the AI should follow, e.g. section order, required headings, tone.",
+    "fileLabel": "Example File (optional)",
+    "upload": "Upload Template",
+    "uploading": "Uploading...",
+    "uploaded": "Template uploaded."
   },
   "curriculumPage": {
     "subject": "Subject",

@@ -43,7 +43,10 @@
   "schedule": {
     "title": "جدولي الأسبوعي",
     "empty": "لا توجد حصص مجدولة.",
-    "createLessonPlan": "إنشاء خطة درس"
+    "createLessonPlan": "إنشاء خطة درس",
+    "dragDropHint": "اسحب بطاقة خطة الدرس إلى حصة أخرى لنسخها إليها.",
+    "slotAlreadyHasPlan": "توجد بالفعل خطة درس لهذه الحصة هذا الأسبوع.",
+    "copying": "جارٍ نسخ خطة الدرس..."
   },
   "lessonPlan": {
     "newTitle": "خطة درس جديدة",
@@ -492,7 +495,8 @@
     "auditLog": "سجل التدقيق",
     "permissions": "الصلاحيات",
     "translations": "الترجمات",
-    "masterData": "البيانات الأساسية"
+    "masterData": "البيانات الأساسية",
+    "lessonPlanTemplate": "نموذج خطة الدرس"
   },
   "adminOverview": {
     "users": "المستخدمون",
@@ -592,6 +596,19 @@
       "FRIDAY": "الجمعة",
       "SATURDAY": "السبت"
     }
+  },
+  "lessonPlanTemplatePage": {
+    "title": "نموذج خطة الدرس",
+    "subtitle": "ارفع نموذجًا لخطة درس ليسترشد به الذكاء الاصطناعي عند إنشاء خطط الدروس لمدرستك.",
+    "currentTemplate": "النموذج الحالي",
+    "viewFile": "عرض الملف",
+    "titleLabel": "عنوان النموذج",
+    "structureNotesLabel": "ملاحظات حول البنية",
+    "structureNotesPlaceholder": "صف الأقسام/التنسيق الذي يجب أن يتبعه الذكاء الاصطناعي، مثل ترتيب الأقسام والعناوين المطلوبة والأسلوب.",
+    "fileLabel": "ملف نموذجي (اختياري)",
+    "upload": "رفع النموذج",
+    "uploading": "جارٍ الرفع...",
+    "uploaded": "تم رفع النموذج."
   },
   "curriculumPage": {
     "subject": "المادة",

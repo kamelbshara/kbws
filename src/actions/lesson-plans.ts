@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -120,4 +121,61 @@ export async function saveLessonPlanContentAction(
   });
 
   return { updatedAt: updated.updatedAt.toISOString() };
+}
+
+export type CopyResult = { error?: string; lessonPlanId?: string };
+
+/**
+ * Drag-and-drop copy: clones a lesson plan's content onto another of the
+ * teacher's own timetable slots on a given date, as a new DRAFT plan.
+ * Never mutates or moves the source plan.
+ */
+export async function copyLessonPlanToSlotAction(
+  sourceLessonPlanId: string,
+  targetTimetableId: string,
+  targetDate: string,
+): Promise<CopyResult> {
+  const session = await auth();
+  await requireRoleGroup(session, "TEACHER_ROLES");
+  const teacherId = session!.user.id;
+
+  const source = await prisma.lessonPlan.findUnique({ where: { id: sourceLessonPlanId } });
+  if (!source || source.teacherId !== teacherId) {
+    return { error: "Lesson plan not found." };
+  }
+
+  const targetTimetable = await prisma.timetable.findUnique({ where: { id: targetTimetableId } });
+  if (!targetTimetable || targetTimetable.teacherId !== teacherId) {
+    return { error: "This schedule slot does not belong to you." };
+  }
+
+  const copy = await prisma.lessonPlan.create({
+    data: {
+      teacherId,
+      timetableId: targetTimetable.id,
+      classSectionId: targetTimetable.classSectionId,
+      curriculumContentId: source.curriculumContentId,
+      learningOutcomeId: source.learningOutcomeId,
+      outcomeOverrideText: source.outcomeOverrideText,
+      outcomeOverrideReason: source.outcomeOverrideReason,
+      lessonDate: new Date(targetDate),
+      durationMinutes: source.durationMinutes,
+      teacherPrompt: source.teacherPrompt,
+      strategies: source.strategies,
+      tools: source.tools,
+      contentJson: source.contentJson ?? undefined,
+      status: "DRAFT",
+    },
+  });
+
+  await logAudit({
+    userId: teacherId,
+    action: "CREATE",
+    module: "LessonPlanning",
+    entityId: copy.id,
+    after: { copiedFrom: source.id, timetableId: targetTimetable.id, lessonDate: targetDate },
+  });
+
+  revalidatePath("/schedule");
+  return { lessonPlanId: copy.id };
 }
