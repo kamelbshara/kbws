@@ -1,6 +1,7 @@
 import type { Role } from "@/generated/prisma/enums";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { PageAssistantWidget } from "@/components/layout/PageAssistantWidget";
 
 export async function AppShell({
   userName,
@@ -20,6 +21,7 @@ export async function AppShell({
         <Sidebar role={role} isManagement={isManagement} />
         <div className="min-w-0 flex-1">{children}</div>
       </div>
+      {isManagement && <PageAssistantWidget />}
     </div>
   );
 }

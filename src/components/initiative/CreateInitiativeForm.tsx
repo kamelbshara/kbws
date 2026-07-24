@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { INITIATIVE_CATEGORIES } from "@/lib/initiativeLabels";
 
-export function CreateInitiativeForm() {
+export function CreateInitiativeForm({ assignableUsers }: { assignableUsers?: { id: string; name: string }[] }) {
   const t = useTranslations("initiatives");
   const [state, action, pending] = useActionState<ActionState, FormData>(createInitiativeAction, undefined);
 
@@ -39,6 +39,24 @@ export function CreateInitiativeForm() {
         <Label htmlFor="initialIdea">{t("formIdeaLabel")}</Label>
         <Textarea id="initialIdea" name="initialIdea" rows={4} required placeholder={t("formIdeaPlaceholder")} />
       </div>
+      {assignableUsers && assignableUsers.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="assignedToId">{t("assignToLabel")}</Label>
+          <Select name="assignedToId" defaultValue="NONE">
+            <SelectTrigger id="assignedToId">
+              <SelectValue placeholder={t("assignToUnassigned")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="NONE">{t("assignToUnassigned")}</SelectItem>
+              {assignableUsers.map((u) => (
+                <SelectItem key={u.id} value={u.id}>
+                  {u.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
       {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
       <Button type="submit" disabled={pending} className="w-fit">
         {pending ? t("creating") : t("create")}

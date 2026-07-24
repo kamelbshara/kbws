@@ -18,7 +18,15 @@ type Evidence = {
   createdBy: { name: string };
 };
 
-export function EvidenceSection({ initiativeId, evidence }: { initiativeId: string; evidence: Evidence[] }) {
+export function EvidenceSection({
+  initiativeId,
+  evidence,
+  canEdit = true,
+}: {
+  initiativeId: string;
+  evidence: Evidence[];
+  canEdit?: boolean;
+}) {
   const t = useTranslations("initiatives");
   const [state, action, pending] = useActionState<ActionState, FormData>(addInitiativeEvidenceAction, undefined);
 
@@ -52,36 +60,38 @@ export function EvidenceSection({ initiativeId, evidence }: { initiativeId: stri
         ))}
         {evidence.length === 0 && <li className="text-sm text-slate-400">{t("noEvidenceYet")}</li>}
       </ul>
-      <form action={action} className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end">
-        <input type="hidden" name="initiativeId" value={initiativeId} />
-        <div className="flex flex-1 flex-col gap-1">
-          <Label htmlFor="description" className="text-xs text-slate-500">
-            {t("descriptionLabel")}
-          </Label>
-          <Input id="description" name="description" required placeholder={t("descriptionPlaceholder")} />
-        </div>
-        <div className="flex flex-1 flex-col gap-1">
-          <Label htmlFor="link" className="text-xs text-slate-500">
-            {t("linkLabel")}
-          </Label>
-          <Input id="link" name="link" type="url" placeholder="https://..." />
-        </div>
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="file" className="text-xs text-slate-500">
-            {t("fileLabel")}
-          </Label>
-          <input
-            id="file"
-            name="file"
-            type="file"
-            accept="image/*,.pdf,.doc,.docx"
-            className="w-48 rounded-md border border-slate-300 bg-white p-1.5 text-xs"
-          />
-        </div>
-        <Button type="submit" disabled={pending} variant="outline">
-          {pending ? t("adding") : t("addEvidence")}
-        </Button>
-      </form>
+      {canEdit && (
+        <form action={action} className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end">
+          <input type="hidden" name="initiativeId" value={initiativeId} />
+          <div className="flex flex-1 flex-col gap-1">
+            <Label htmlFor="description" className="text-xs text-slate-500">
+              {t("descriptionLabel")}
+            </Label>
+            <Input id="description" name="description" required placeholder={t("descriptionPlaceholder")} />
+          </div>
+          <div className="flex flex-1 flex-col gap-1">
+            <Label htmlFor="link" className="text-xs text-slate-500">
+              {t("linkLabel")}
+            </Label>
+            <Input id="link" name="link" type="url" placeholder="https://..." />
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="file" className="text-xs text-slate-500">
+              {t("fileLabel")}
+            </Label>
+            <input
+              id="file"
+              name="file"
+              type="file"
+              accept="image/*,.pdf,.doc,.docx"
+              className="w-48 rounded-md border border-slate-300 bg-white p-1.5 text-xs"
+            />
+          </div>
+          <Button type="submit" disabled={pending} variant="outline">
+            {pending ? t("adding") : t("addEvidence")}
+          </Button>
+        </form>
+      )}
       {state?.error && <p className="mt-2 text-sm text-red-600">{state.error}</p>}
     </div>
   );

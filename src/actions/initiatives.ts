@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import type { Session } from "next-auth";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
@@ -19,6 +20,7 @@ const createInitiativeSchema = z.object({
   title: z.string().min(3),
   category: z.enum(["EDUCATIONAL", "COMMUNITY", "NATIONAL", "INNOVATION", "HEALTH_SAFETY", "OTHER"]),
   initialIdea: z.string().min(10),
+  assignedToId: z.string().optional(),
 });
 
 export async function createInitiativeAction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
@@ -30,6 +32,7 @@ export async function createInitiativeAction(_prevState: ActionState, formData: 
     title: formData.get("title"),
     category: formData.get("category"),
     initialIdea: formData.get("initialIdea"),
+    assignedToId: formData.get("assignedToId") === "NONE" ? undefined : formData.get("assignedToId") || undefined,
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
@@ -40,9 +43,21 @@ export async function createInitiativeAction(_prevState: ActionState, formData: 
     return { error: "No school is associated with this account." };
   }
 
+  // Only management can assign an initiative to someone else -- a teacher's
+  // own submission always creates the initiative under themselves.
+  const isManagement = (await getRoleGroup("MANAGEMENT_ROLES")).includes(session!.user.role);
+  let assignedToId: string | undefined;
+  if (isManagement && parsed.data.assignedToId) {
+    const assignee = await prisma.user.findUnique({ where: { id: parsed.data.assignedToId } });
+    if (assignee && assignee.schoolId === schoolId) {
+      assignedToId = assignee.id;
+    }
+  }
+
   const initiative = await prisma.initiative.create({
     data: {
       ownerId,
+      assignedToId,
       schoolId,
       title: parsed.data.title,
       category: parsed.data.category as InitiativeCategory,
@@ -51,20 +66,47 @@ export async function createInitiativeAction(_prevState: ActionState, formData: 
     },
   });
 
+  if (assignedToId && assignedToId !== ownerId) {
+    await createNotifications([assignedToId], {
+      type: "INITIATIVE_ASSIGNED",
+      title: `You've been assigned an initiative: "${initiative.title}"`,
+      link: `/initiatives/${initiative.id}`,
+    });
+  }
+
   await logAudit({
     userId: ownerId,
     action: "CREATE",
     module: "Initiatives",
     entityId: initiative.id,
-    after: { title: initiative.title, category: initiative.category },
+    after: { title: initiative.title, category: initiative.category, assignedToId },
   });
 
   redirect(`/initiatives/${initiative.id}`);
 }
 
-async function requireOwnedInitiative(initiativeId: string, userId: string) {
+/** Owner, assignee, or management (same school) can view/comment -- read-only oversight is intentionally broader than edit. */
+async function requireInitiativeReadAccess(initiativeId: string, session: Session) {
   const initiative = await prisma.initiative.findUnique({ where: { id: initiativeId } });
-  if (!initiative || initiative.ownerId !== userId) {
+  if (!initiative) {
+    throw new ForbiddenError("Initiative not found.");
+  }
+  const isOwnerOrAssignee = initiative.ownerId === session.user.id || initiative.assignedToId === session.user.id;
+  if (isOwnerOrAssignee) {
+    return initiative;
+  }
+  const schoolId = await getActiveSchoolId(session);
+  const isManagement = (await getRoleGroup("MANAGEMENT_ROLES")).includes(session.user.role);
+  if (isManagement && initiative.schoolId === schoolId) {
+    return initiative;
+  }
+  throw new ForbiddenError("This initiative does not belong to you.");
+}
+
+/** Only the owner or the assignee can edit an initiative's content -- management's broader access is read/comment only. */
+async function requireInitiativeWriteAccess(initiativeId: string, session: Session) {
+  const initiative = await prisma.initiative.findUnique({ where: { id: initiativeId } });
+  if (!initiative || (initiative.ownerId !== session.user.id && initiative.assignedToId !== session.user.id)) {
     throw new ForbiddenError("This initiative does not belong to you.");
   }
   return initiative;
@@ -79,7 +121,7 @@ export async function saveInitiativePlanAction(
 ): Promise<SaveResult> {
   const session = await auth();
   await requireRoleGroup(session, "INITIATIVE_CREATOR_ROLES");
-  const initiative = await requireOwnedInitiative(initiativeId, session!.user.id);
+  const initiative = await requireInitiativeWriteAccess(initiativeId, session!);
 
   if (initiative.updatedAt.toISOString() !== expectedUpdatedAt) {
     return {
@@ -94,33 +136,42 @@ export async function saveInitiativePlanAction(
   }
   const parsed = result.data;
 
-  const [updated] = await prisma.$transaction([
-    prisma.initiative.update({
+  const updated = await prisma.$transaction(async (tx) => {
+    const result = await tx.initiative.update({
       where: { id: initiativeId },
       data: { goal: parsed.goal, targetGroup: parsed.targetGroup },
-    }),
-    prisma.initiativePhase.deleteMany({ where: { initiativeId } }),
-    prisma.initiativeIndicator.deleteMany({ where: { initiativeId } }),
-    prisma.initiativePhase.createMany({
-      data: parsed.phases.map((phase, index) => ({
-        initiativeId,
-        orderIndex: index,
-        name: phase.name,
-        description: phase.description,
-        timeline: phase.timeline,
-      })),
-    }),
-    prisma.initiativeIndicator.createMany({
-      data: parsed.indicators.map((indicator) => ({
-        initiativeId,
-        name: indicator.name,
-        measurementMethod: indicator.measurementMethod,
-        baselineValue: indicator.baselineValue,
-        targetValue: indicator.targetValue,
-        actualValue: indicator.actualValue,
-      })),
-    }),
-  ]);
+    });
+    await tx.initiativeIndicator.deleteMany({ where: { initiativeId } });
+    await tx.initiativePhase.deleteMany({ where: { initiativeId } });
+
+    const createdPhases = [];
+    for (const [index, phase] of parsed.phases.entries()) {
+      createdPhases.push(
+        await tx.initiativePhase.create({
+          data: { initiativeId, orderIndex: index, name: phase.name, description: phase.description, timeline: phase.timeline },
+        }),
+      );
+    }
+
+    for (const indicator of parsed.indicators) {
+      const phaseId =
+        indicator.phaseIndex !== undefined ? createdPhases[indicator.phaseIndex]?.id : undefined;
+      await tx.initiativeIndicator.create({
+        data: {
+          initiativeId,
+          phaseId,
+          name: indicator.name,
+          measurementMethod: indicator.measurementMethod,
+          baselineValue: indicator.baselineValue,
+          targetValue: indicator.targetValue,
+          actualValue: indicator.actualValue,
+          aiAnalysis: indicator.aiAnalysis ? { text: indicator.aiAnalysis } : undefined,
+        },
+      });
+    }
+
+    return result;
+  });
 
   await logAudit({
     userId: session!.user.id,
@@ -148,7 +199,7 @@ export async function addInitiativeEvidenceAction(_prevState: ActionState, formD
   if (typeof initiativeId !== "string") {
     return { error: "Missing initiative id" };
   }
-  await requireOwnedInitiative(initiativeId, session!.user.id);
+  await requireInitiativeWriteAccess(initiativeId, session!);
 
   const parsed = addEvidenceSchema.safeParse({
     description: formData.get("description"),
@@ -204,7 +255,7 @@ const STATUS_TRANSITIONS: Record<string, string[]> = {
 export async function updateInitiativeStatusAction(initiativeId: string, nextStatus: "ACTIVE" | "COMPLETED") {
   const session = await auth();
   await requireRoleGroup(session, "INITIATIVE_CREATOR_ROLES");
-  const initiative = await requireOwnedInitiative(initiativeId, session!.user.id);
+  const initiative = await requireInitiativeWriteAccess(initiativeId, session!);
 
   if (!STATUS_TRANSITIONS[initiative.status]?.includes(nextStatus)) {
     throw new Error(`Cannot transition from ${initiative.status} to ${nextStatus}`);
@@ -235,4 +286,55 @@ export async function updateInitiativeStatusAction(initiativeId: string, nextSta
   );
 
   revalidatePath(`/initiatives/${initiativeId}`);
+}
+
+const addCommentSchema = z.object({
+  body: z.string().min(1),
+});
+
+export type CommentActionState = { error?: string } | undefined;
+
+export async function addInitiativeCommentAction(
+  _prevState: CommentActionState,
+  formData: FormData,
+): Promise<CommentActionState> {
+  const session = await auth();
+  if (!session?.user) {
+    throw new ForbiddenError("Unauthorized");
+  }
+
+  const initiativeId = formData.get("initiativeId");
+  if (typeof initiativeId !== "string") {
+    return { error: "Missing initiative id" };
+  }
+  const initiative = await requireInitiativeReadAccess(initiativeId, session);
+
+  const parsed = addCommentSchema.safeParse({ body: formData.get("body") });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid comment." };
+  }
+
+  const comment = await prisma.initiativeComment.create({
+    data: { initiativeId, authorId: session.user.id, body: parsed.data.body },
+  });
+
+  const notifyIds = [initiative.ownerId, initiative.assignedToId].filter(
+    (uid): uid is string => Boolean(uid) && uid !== session.user.id,
+  );
+  await createNotifications(notifyIds, {
+    type: "INITIATIVE_COMMENT",
+    title: `New comment on "${initiative.title}"`,
+    link: `/initiatives/${initiativeId}`,
+  });
+
+  await logAudit({
+    userId: session.user.id,
+    action: "CREATE",
+    module: "InitiativeComments",
+    entityId: comment.id,
+    after: { initiativeId, body: parsed.data.body },
+  });
+
+  revalidatePath(`/initiatives/${initiativeId}`);
+  return undefined;
 }

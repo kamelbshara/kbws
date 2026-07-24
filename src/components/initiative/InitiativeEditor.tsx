@@ -12,16 +12,23 @@ import { AIQualityFeedback } from "@/components/ai/AIQualityFeedback";
 import type { InitiativeSave } from "@/lib/ai/initiativeSchema";
 import type { QualityIssue } from "@/lib/ai/evaluate";
 
+const EMPTY_PHASE = { name: "", description: "", timeline: "" };
+const EMPTY_INDICATOR = { name: "", measurementMethod: "", targetValue: "", baselineValue: "", actualValue: "", aiAnalysis: "" };
+
 export function InitiativeEditor({
   initiativeId,
   initialContent,
+  initialReflection,
   status,
   updatedAt,
+  canEdit,
 }: {
   initiativeId: string;
   initialContent: InitiativeSave | null;
+  initialReflection: string | null;
   status: "DRAFT" | "ACTIVE" | "COMPLETED";
   updatedAt: string;
+  canEdit: boolean;
 }) {
   const t = useTranslations("initiatives");
   const common = useTranslations("common");
@@ -37,7 +44,12 @@ export function InitiativeEditor({
   const [isPrinting, setIsPrinting] = useState(false);
   const [generationLogId, setGenerationLogId] = useState<string | null>(null);
   const [quality, setQuality] = useState<{ score: number; issues: QualityIssue[] } | null>(null);
-  const readOnly = status === "COMPLETED";
+  const [analyzing, setAnalyzing] = useState(false);
+  const [reflection, setReflection] = useState(initialReflection ?? "");
+  const [generatingReflection, setGeneratingReflection] = useState(false);
+  const [generatingReport, setGeneratingReport] = useState(false);
+  const [reportReady, setReportReady] = useState(false);
+  const readOnly = status === "COMPLETED" || !canEdit;
 
   async function print() {
     setIsPrinting(true);
@@ -72,6 +84,71 @@ export function InitiativeEditor({
       setError(t("networkError"));
     } finally {
       setGenerating(false);
+    }
+  }
+
+  async function analyzeResults() {
+    setAnalyzing(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/initiatives/${initiativeId}/analyze-results`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? t("analysisFailed"));
+        return;
+      }
+      if (content) {
+        const byName = new Map<string, string | null>(
+          data.indicators.map((i: { name: string; analysis: string | null }) => [i.name, i.analysis]),
+        );
+        setContent({
+          ...content,
+          indicators: content.indicators.map((ind) => ({
+            ...ind,
+            aiAnalysis: byName.get(ind.name) ?? ind.aiAnalysis,
+          })),
+        });
+      }
+    } catch {
+      setError(t("networkError"));
+    } finally {
+      setAnalyzing(false);
+    }
+  }
+
+  async function generateReflection() {
+    setGeneratingReflection(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/initiatives/${initiativeId}/reflection`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? t("generationFailed"));
+        return;
+      }
+      setReflection(data.reflection);
+    } catch {
+      setError(t("networkError"));
+    } finally {
+      setGeneratingReflection(false);
+    }
+  }
+
+  async function generateReport() {
+    setGeneratingReport(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/initiatives/${initiativeId}/report`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? t("reportFailed"));
+        return;
+      }
+      setReportReady(true);
+    } catch {
+      setError(t("networkError"));
+    } finally {
+      setGeneratingReport(false);
     }
   }
 
@@ -113,13 +190,39 @@ export function InitiativeEditor({
     });
   }
 
+  function addPhase() {
+    if (!content) return;
+    setContent({ ...content, phases: [...content.phases, { ...EMPTY_PHASE }] });
+  }
+
+  function removePhase(index: number) {
+    if (!content) return;
+    setContent({
+      ...content,
+      phases: content.phases.filter((_, i) => i !== index),
+      indicators: content.indicators.map((ind) => (ind.phaseIndex === index ? { ...ind, phaseIndex: undefined } : ind)),
+    });
+  }
+
+  function addIndicator() {
+    if (!content) return;
+    setContent({ ...content, indicators: [...content.indicators, { ...EMPTY_INDICATOR }] });
+  }
+
+  function removeIndicator(index: number) {
+    if (!content) return;
+    setContent({ ...content, indicators: content.indicators.filter((_, i) => i !== index) });
+  }
+
   if (!content) {
     return (
       <div className="rounded-md border border-dashed border-slate-300 p-6 text-center">
         <p className="text-sm text-slate-600">{t("noPlanYet")}</p>
-        <Button className="mt-4" onClick={generate} disabled={generating}>
-          {generating ? t("generating") : t("generatePlan")}
-        </Button>
+        {canEdit && (
+          <Button className="mt-4" onClick={generate} disabled={generating}>
+            {generating ? t("generating") : t("generatePlan")}
+          </Button>
+        )}
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       </div>
     );
@@ -132,9 +235,11 @@ export function InitiativeEditor({
       <div className="rounded-md border border-slate-200 p-4">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="font-medium">{t("goalTargetGroupTitle")}</h2>
-          <Button type="button" variant="ghost" size="sm" onClick={generate} disabled={generating}>
-            {generating ? t("regenerating") : t("regenerate")}
-          </Button>
+          {canEdit && (
+            <Button type="button" variant="ghost" size="sm" onClick={generate} disabled={generating}>
+              {generating ? t("regenerating") : t("regenerate")}
+            </Button>
+          )}
         </div>
         <div className="flex flex-col gap-3">
           <div>
@@ -162,7 +267,7 @@ export function InitiativeEditor({
         <h2 className="mb-2 font-medium">{t("implementationPhases")}</h2>
         <div className="flex flex-col gap-3">
           {content.phases.map((phase, index) => (
-            <div key={index} className="grid grid-cols-1 gap-2 rounded-md bg-slate-50 p-3 sm:grid-cols-3">
+            <div key={index} className="grid grid-cols-1 gap-2 rounded-md bg-slate-50 p-3 sm:grid-cols-4">
               <Input
                 value={phase.name}
                 placeholder={t("phaseName")}
@@ -184,79 +289,155 @@ export function InitiativeEditor({
                   setContent({ ...content, phases });
                 }}
               />
-              <Input
-                value={phase.timeline}
-                placeholder={t("phaseTimeline")}
-                disabled={readOnly}
-                onChange={(e) => {
-                  const phases = [...content.phases];
-                  phases[index] = { ...phase, timeline: e.target.value };
-                  setContent({ ...content, phases });
-                }}
-              />
+              <div className="flex items-center gap-2">
+                <Input
+                  value={phase.timeline}
+                  placeholder={t("phaseTimeline")}
+                  disabled={readOnly}
+                  onChange={(e) => {
+                    const phases = [...content.phases];
+                    phases[index] = { ...phase, timeline: e.target.value };
+                    setContent({ ...content, phases });
+                  }}
+                />
+                {!readOnly && (
+                  <Button type="button" variant="ghost" size="sm" onClick={() => removePhase(index)}>
+                    {t("removePhase")}
+                  </Button>
+                )}
+              </div>
             </div>
           ))}
         </div>
+        {!readOnly && (
+          <Button type="button" variant="outline" size="sm" className="mt-3" onClick={addPhase}>
+            {t("addPhase")}
+          </Button>
+        )}
       </div>
 
       <div className="rounded-md border border-slate-200 p-4">
-        <h2 className="mb-2 font-medium">{t("performanceIndicators")}</h2>
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="font-medium">{t("performanceIndicators")}</h2>
+          {canEdit && (
+            <Button type="button" variant="ghost" size="sm" onClick={analyzeResults} disabled={analyzing}>
+              {analyzing ? t("analyzing") : t("analyzeResults")}
+            </Button>
+          )}
+        </div>
         <div className="flex flex-col gap-3">
           {content.indicators.map((indicator, index) => (
-            <div key={index} className="grid grid-cols-1 gap-2 rounded-md bg-slate-50 p-3 sm:grid-cols-3">
-              <Input
-                value={indicator.name}
-                placeholder={t("indicatorName")}
-                disabled={readOnly}
-                onChange={(e) => {
-                  const indicators = [...content.indicators];
-                  indicators[index] = { ...indicator, name: e.target.value };
-                  setContent({ ...content, indicators });
-                }}
-              />
-              <Input
-                value={indicator.measurementMethod}
-                placeholder={t("measurementMethod")}
-                disabled={readOnly}
-                onChange={(e) => {
-                  const indicators = [...content.indicators];
-                  indicators[index] = { ...indicator, measurementMethod: e.target.value };
-                  setContent({ ...content, indicators });
-                }}
-              />
-              <Input
-                value={indicator.targetValue}
-                placeholder={t("targetValue")}
-                disabled={readOnly}
-                onChange={(e) => {
-                  const indicators = [...content.indicators];
-                  indicators[index] = { ...indicator, targetValue: e.target.value };
-                  setContent({ ...content, indicators });
-                }}
-              />
-              <Input
-                value={indicator.baselineValue ?? ""}
-                placeholder={t("baselineValue")}
-                disabled={readOnly}
-                onChange={(e) => {
-                  const indicators = [...content.indicators];
-                  indicators[index] = { ...indicator, baselineValue: e.target.value };
-                  setContent({ ...content, indicators });
-                }}
-              />
-              <Input
-                value={indicator.actualValue ?? ""}
-                placeholder={t("actualValue")}
-                disabled={readOnly}
-                onChange={(e) => {
-                  const indicators = [...content.indicators];
-                  indicators[index] = { ...indicator, actualValue: e.target.value };
-                  setContent({ ...content, indicators });
-                }}
-              />
+            <div key={index} className="rounded-md bg-slate-50 p-3">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <Input
+                  value={indicator.name}
+                  placeholder={t("indicatorName")}
+                  disabled={readOnly}
+                  onChange={(e) => {
+                    const indicators = [...content.indicators];
+                    indicators[index] = { ...indicator, name: e.target.value };
+                    setContent({ ...content, indicators });
+                  }}
+                />
+                <Input
+                  value={indicator.measurementMethod}
+                  placeholder={t("measurementMethod")}
+                  disabled={readOnly}
+                  onChange={(e) => {
+                    const indicators = [...content.indicators];
+                    indicators[index] = { ...indicator, measurementMethod: e.target.value };
+                    setContent({ ...content, indicators });
+                  }}
+                />
+                <select
+                  className="h-9 rounded-md border border-slate-300 px-2 text-sm"
+                  value={indicator.phaseIndex ?? ""}
+                  disabled={readOnly}
+                  onChange={(e) => {
+                    const indicators = [...content.indicators];
+                    indicators[index] = {
+                      ...indicator,
+                      phaseIndex: e.target.value === "" ? undefined : Number(e.target.value),
+                    };
+                    setContent({ ...content, indicators });
+                  }}
+                >
+                  <option value="">{t("noPhase")}</option>
+                  {content.phases.map((phase, pIndex) => (
+                    <option key={pIndex} value={pIndex}>
+                      {phase.name || `${t("phaseLabel")} ${pIndex + 1}`}
+                    </option>
+                  ))}
+                </select>
+                <Input
+                  value={indicator.targetValue}
+                  placeholder={t("targetValue")}
+                  disabled={readOnly}
+                  onChange={(e) => {
+                    const indicators = [...content.indicators];
+                    indicators[index] = { ...indicator, targetValue: e.target.value };
+                    setContent({ ...content, indicators });
+                  }}
+                />
+                <Input
+                  value={indicator.baselineValue ?? ""}
+                  placeholder={t("baselineValue")}
+                  disabled={readOnly}
+                  onChange={(e) => {
+                    const indicators = [...content.indicators];
+                    indicators[index] = { ...indicator, baselineValue: e.target.value };
+                    setContent({ ...content, indicators });
+                  }}
+                />
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={indicator.actualValue ?? ""}
+                    placeholder={t("actualValue")}
+                    disabled={readOnly}
+                    onChange={(e) => {
+                      const indicators = [...content.indicators];
+                      indicators[index] = { ...indicator, actualValue: e.target.value };
+                      setContent({ ...content, indicators });
+                    }}
+                  />
+                  {!readOnly && (
+                    <Button type="button" variant="ghost" size="sm" onClick={() => removeIndicator(index)}>
+                      {t("removeIndicator")}
+                    </Button>
+                  )}
+                </div>
+              </div>
+              {indicator.aiAnalysis && (
+                <p className="mt-2 rounded-md bg-brand-cream/60 p-2 text-xs text-slate-700">
+                  <strong>{t("analysisLabel")}:</strong> {indicator.aiAnalysis}
+                </p>
+              )}
             </div>
           ))}
         </div>
+        {!readOnly && (
+          <Button type="button" variant="outline" size="sm" className="mt-3" onClick={addIndicator}>
+            {t("addIndicator")}
+          </Button>
+        )}
+      </div>
+
+      <div className="rounded-md border border-slate-200 p-4">
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="font-medium">{t("reflectionLabel")}</h2>
+          {canEdit && (
+            <Button type="button" variant="ghost" size="sm" onClick={generateReflection} disabled={generatingReflection}>
+              {generatingReflection ? t("generatingReflection") : t("generateReflection")}
+            </Button>
+          )}
+        </div>
+        <Textarea
+          rows={3}
+          value={reflection}
+          placeholder={t("reflectionPlaceholder")}
+          disabled={readOnly}
+          onChange={(e) => setReflection(e.target.value)}
+        />
       </div>
 
       <AIQualityFeedback generationLogId={generationLogId} quality={quality} fieldNamespace="initiatives" />
@@ -272,21 +453,25 @@ export function InitiativeEditor({
             {t("reload")}
           </Button>
         )}
-        {status === "DRAFT" && (
+        {canEdit && status === "DRAFT" && (
           <Button onClick={markActive} variant="outline" disabled={isTransitioning}>
             {t("markActive")}
           </Button>
         )}
-        {status === "ACTIVE" && (
+        {canEdit && status === "ACTIVE" && (
           <Button onClick={markCompleted} variant="outline" disabled={isTransitioning}>
             {t("markCompleted")}
           </Button>
         )}
+        <Button type="button" variant="outline" onClick={generateReport} disabled={generatingReport}>
+          {generatingReport ? t("generatingReport") : t("generateReport")}
+        </Button>
         <Button onClick={print} variant="outline" disabled={isPrinting}>
           {isPrinting ? t("preparingPdf") : common("print")}
         </Button>
         {saveMessage && <span className="text-sm text-green-700">{saveMessage}</span>}
-        {readOnly && <span className="text-sm text-slate-500">{t("completedReadOnly")}</span>}
+        {reportReady && <span className="text-sm text-green-700">{t("reportGeneratedNote")}</span>}
+        {readOnly && status === "COMPLETED" && <span className="text-sm text-slate-500">{t("completedReadOnly")}</span>}
       </div>
     </div>
   );

@@ -18,13 +18,13 @@ export default async function InitiativesListPage() {
     isManagement && !schoolId
       ? []
       : await prisma.initiative.findMany({
-          where: isManagement ? { schoolId: schoolId as string } : { ownerId: user.id },
-          include: { owner: true },
+          where: isManagement ? { schoolId: schoolId as string } : { OR: [{ ownerId: user.id }, { assignedToId: user.id }] },
+          include: { owner: true, assignedTo: true },
           orderBy: { createdAt: "desc" },
         });
 
   return (
-      <AppShell userName={user.name} role={user.role}>
+      <AppShell userName={user.name} role={user.role} isManagement={isManagement}>
       <main className="p-6">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold">{isManagement ? t("allInitiatives") : t("myInitiatives")}</h1>
@@ -40,6 +40,7 @@ export default async function InitiativesListPage() {
                 <th className="px-4 py-2 font-medium">{t("titleHeader")}</th>
                 <th className="px-4 py-2 font-medium">{t("categoryHeader")}</th>
                 {isManagement && <th className="px-4 py-2 font-medium">{t("ownerHeader")}</th>}
+                {isManagement && <th className="px-4 py-2 font-medium">{t("assignedToHeader")}</th>}
                 <th className="px-4 py-2 font-medium">{t("statusHeader")}</th>
               </tr>
             </thead>
@@ -53,12 +54,13 @@ export default async function InitiativesListPage() {
                   </td>
                   <td className="px-4 py-2 text-slate-600">{t(`categories.${i.category}`)}</td>
                   {isManagement && <td className="px-4 py-2 text-slate-600">{i.owner.name}</td>}
+                  {isManagement && <td className="px-4 py-2 text-slate-600">{i.assignedTo?.name ?? "—"}</td>}
                   <td className="px-4 py-2 text-slate-600">{t(`statuses.${i.status}`)}</td>
                 </tr>
               ))}
               {initiatives.length === 0 && (
                 <tr>
-                  <td colSpan={isManagement ? 4 : 3} className="px-4 py-6 text-center text-slate-400">
+                  <td colSpan={isManagement ? 5 : 3} className="px-4 py-6 text-center text-slate-400">
                     {t("empty")}
                   </td>
                 </tr>

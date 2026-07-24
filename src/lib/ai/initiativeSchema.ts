@@ -10,6 +10,7 @@ export const InitiativeIndicatorSchema = z.object({
   name: z.string().describe("Name of the performance indicator"),
   measurementMethod: z.string().describe("How this indicator will be measured"),
   targetValue: z.string().describe("The target value or outcome for this indicator"),
+  phaseIndex: z.number().int().optional().describe("Index into the initiative's phases array this indicator belongs to"),
 });
 
 /** Constrains AI output quality: a freshly generated plan should have a real, substantive shape. */
@@ -30,6 +31,7 @@ export type InitiativeGeneration = z.infer<typeof InitiativeGenerationSchema>;
 export const InitiativeIndicatorSaveSchema = InitiativeIndicatorSchema.extend({
   baselineValue: z.string().optional(),
   actualValue: z.string().optional(),
+  aiAnalysis: z.string().optional(),
 });
 
 /** Used when persisting user edits — a teacher may legitimately trim phases/indicators below the AI's minimum. */

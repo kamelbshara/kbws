@@ -6,6 +6,14 @@ import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateInitiativePdf } from "@/lib/pdf/generateInitiativePdf";
+import { canAccessInitiative } from "@/lib/initiativeAccess";
+
+function extractAnalysis(aiAnalysis: unknown): string | null {
+  if (aiAnalysis && typeof aiAnalysis === "object" && "text" in aiAnalysis) {
+    return String((aiAnalysis as { text: unknown }).text);
+  }
+  return null;
+}
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -21,10 +29,11 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
       school: true,
       phases: { orderBy: { orderIndex: "asc" } },
       indicators: true,
+      evidence: { include: { createdBy: true } },
     },
   });
 
-  if (!initiative || initiative.ownerId !== session.user.id) {
+  if (!initiative || !(await canAccessInitiative(initiative, session))) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   if (!initiative.goal) {
@@ -52,7 +61,15 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
         baselineValue: i.baselineValue ?? "",
         targetValue: i.targetValue ?? "",
         actualValue: i.actualValue ?? "",
+        analysis: extractAnalysis(i.aiAnalysis),
       })),
+      evidence: initiative.evidence.map((e) => ({
+        description: e.description,
+        addedBy: e.createdBy.name,
+        date: e.createdAt.toISOString().slice(0, 10),
+      })),
+      reflection: initiative.reflection,
+      reportDate: new Date().toISOString().slice(0, 10),
     });
   } catch (error) {
     console.error("PDF generation failed", error);

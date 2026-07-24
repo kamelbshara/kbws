@@ -21,6 +21,7 @@ export function buildInitiativePrompt(input: InitiativePromptInput): { system: s
     "The goal must be specific and measurable (a SMART goal), not vague.",
     "Phases must be realistic and sequential, moving from planning to implementation to evaluation.",
     "Indicators must be genuinely measurable — avoid indicators that can't be quantified or observed — and should mix indicators of implementation, results, and impact where appropriate.",
+    "Every indicator's phaseIndex must reference the 0-based index of the phase in the phases array that it belongs to.",
   ].join(" ");
 
   const user = [

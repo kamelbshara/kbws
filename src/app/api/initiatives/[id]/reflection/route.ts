@@ -5,9 +5,7 @@ import { getLocale } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { OPENAI_MODEL } from "@/lib/ai/client";
-import { generateInitiativePlan } from "@/lib/ai/generateInitiative";
-import { evaluateInitiative } from "@/lib/ai/evaluate";
-import { getRelevantKnowledge } from "@/lib/knowledgeMemory";
+import { generateInitiativeReflection } from "@/lib/ai/generateInitiativeAnalysis";
 import { findWritableInitiative } from "@/lib/initiativeAccess";
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -18,51 +16,56 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
 
   const { id } = await params;
   const initiative = await findWritableInitiative(id, session);
-
-  if (!initiative) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!initiative || !initiative.goal) {
+    return NextResponse.json({ error: "Generate and save the plan before requesting a reflection." }, { status: 400 });
   }
 
+  const [phases, indicators, evidence] = await Promise.all([
+    prisma.initiativePhase.findMany({ where: { initiativeId: id }, orderBy: { orderIndex: "asc" } }),
+    prisma.initiativeIndicator.findMany({ where: { initiativeId: id } }),
+    prisma.initiativeEvidence.findMany({ where: { initiativeId: id } }),
+  ]);
+
   const locale = (await getLocale()) as "ar" | "en";
-  const knowledgeNotes = await getRelevantKnowledge(initiative.schoolId, "INITIATIVE", {});
   const promptInput = {
     title: initiative.title,
-    category: initiative.category,
-    initialIdea: initiative.initialIdea,
+    goal: initiative.goal,
+    phases: phases.map((p) => ({ name: p.name, description: p.description })),
+    indicators: indicators.map((i) => ({ name: i.name, targetValue: i.targetValue ?? "", actualValue: i.actualValue ?? "" })),
+    evidenceDescriptions: evidence.map((e) => e.description),
     locale,
-    knowledgeNotes,
   };
 
   try {
-    const result = await generateInitiativePlan(promptInput);
-    const evaluation = evaluateInitiative(result.content);
+    const result = await generateInitiativeReflection(promptInput);
 
-    const log = await prisma.aIGenerationLog.create({
+    await prisma.initiative.update({ where: { id }, data: { reflection: result.content.reflection } });
+
+    await prisma.aIGenerationLog.create({
       data: {
-        initiativeId: initiative.id,
+        initiativeId: id,
         userId: session.user.id,
+        section: "reflection",
         model: OPENAI_MODEL,
         promptInput,
         responseJson: result.content,
         status: "SUCCESS",
-        qualityScore: evaluation.score,
-        qualityIssues: evaluation.issues,
       },
     });
 
-    return NextResponse.json({ content: result.content, generationLogId: log.id, quality: evaluation });
+    return NextResponse.json({ reflection: result.content.reflection });
   } catch (error) {
     await prisma.aIGenerationLog.create({
       data: {
-        initiativeId: initiative.id,
+        initiativeId: id,
         userId: session.user.id,
+        section: "reflection",
         model: OPENAI_MODEL,
         promptInput,
         status: "ERROR",
         errorMessage: error instanceof Error ? error.message : "Unknown error",
       },
     });
-
     return NextResponse.json({ error: "Generation failed. Please try again." }, { status: 502 });
   }
 }
