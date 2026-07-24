@@ -6,6 +6,7 @@ import {
   type IndicatorAnalysis,
   type InitiativeReflectionGeneration,
 } from "@/lib/ai/initiativeAnalysisSchema";
+import { formatKnowledgeContext } from "@/lib/ai/knowledgeContext";
 
 function languageInstruction(locale: "ar" | "en") {
   return locale === "ar"
@@ -17,6 +18,7 @@ export async function generateIndicatorAnalysis(input: {
   goal: string;
   indicators: { name: string; measurementMethod: string; baselineValue: string; targetValue: string; actualValue: string }[];
   locale: "ar" | "en";
+  knowledgeNotes?: string[];
 }): Promise<{ content: IndicatorAnalysis }> {
   const system = [
     "You are an expert in monitoring and evaluation for school improvement initiatives.",
@@ -31,7 +33,10 @@ export async function generateIndicatorAnalysis(input: {
     ...input.indicators.map(
       (i) => `- ${i.name} | method: ${i.measurementMethod} | baseline: ${i.baselineValue || "n/a"} | target: ${i.targetValue} | actual: ${i.actualValue}`,
     ),
-  ].join("\n");
+    formatKnowledgeContext(input.knowledgeNotes ?? []),
+  ]
+    .filter((line): line is string => Boolean(line))
+    .join("\n");
 
   const completion = await getOpenAIClient().chat.completions.parse({
     model: OPENAI_MODEL,
@@ -56,6 +61,7 @@ export async function generateInitiativeReflection(input: {
   indicators: { name: string; targetValue: string; actualValue: string }[];
   evidenceDescriptions: string[];
   locale: "ar" | "en";
+  knowledgeNotes?: string[];
 }): Promise<{ content: InitiativeReflectionGeneration }> {
   const system = [
     "You are an expert school-improvement facilitator helping a staff member reflect on a completed or in-progress initiative.",
@@ -70,7 +76,10 @@ export async function generateInitiativeReflection(input: {
     `Phases: ${input.phases.map((p) => `${p.name} (${p.description})`).join("; ")}`,
     `Indicator results: ${input.indicators.map((i) => `${i.name}: target ${i.targetValue}, actual ${i.actualValue || "not yet recorded"}`).join("; ")}`,
     input.evidenceDescriptions.length > 0 ? `Evidence collected: ${input.evidenceDescriptions.join("; ")}` : "No evidence collected yet.",
-  ].join("\n");
+    formatKnowledgeContext(input.knowledgeNotes ?? []),
+  ]
+    .filter((line): line is string => Boolean(line))
+    .join("\n");
 
   const completion = await getOpenAIClient().chat.completions.parse({
     model: OPENAI_MODEL,

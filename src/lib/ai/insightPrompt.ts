@@ -1,7 +1,10 @@
+import { formatKnowledgeContext } from "@/lib/ai/knowledgeContext";
+
 export type InsightPromptInput = {
   scope: "TEACHER" | "SCHOOL";
   contextText: string;
   locale: "ar" | "en";
+  knowledgeNotes?: string[];
 };
 
 export function buildInsightPrompt(input: InsightPromptInput): { system: string; user: string } {
@@ -28,7 +31,10 @@ export function buildInsightPrompt(input: InsightPromptInput): { system: string;
     "Here is the aggregated data to analyze:",
     "",
     input.contextText,
-  ].join("\n");
+    formatKnowledgeContext(input.knowledgeNotes ?? []),
+  ]
+    .filter((line): line is string => Boolean(line))
+    .join("\n");
 
   return { system, user };
 }

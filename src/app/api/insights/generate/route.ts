@@ -10,6 +10,7 @@ import { generateInsights } from "@/lib/ai/generateInsights";
 import { evaluateInsight } from "@/lib/ai/evaluate";
 import { getRoleGroup } from "@/lib/permissions";
 import { buildTeacherContext } from "@/lib/ai/teacherContext";
+import { getRelevantKnowledge } from "@/lib/knowledgeMemory";
 
 const bodySchema = z.object({
   scope: z.enum(["TEACHER", "SCHOOL"]),
@@ -64,7 +65,8 @@ export async function POST(request: Request) {
 
   const locale = (await getLocale()) as "ar" | "en";
   const contextText = scope === "TEACHER" ? await buildTeacherContext(dbUser.id) : await buildSchoolContext(dbUser.schoolId);
-  const promptInput = { scope, contextText, locale };
+  const knowledgeNotes = await getRelevantKnowledge(dbUser.schoolId, "INSIGHT", {});
+  const promptInput = { scope, contextText, locale, knowledgeNotes };
 
   try {
     const result = await generateInsights(promptInput);

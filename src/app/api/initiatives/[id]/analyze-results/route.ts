@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { OPENAI_MODEL } from "@/lib/ai/client";
 import { generateIndicatorAnalysis } from "@/lib/ai/generateInitiativeAnalysis";
 import { findWritableInitiative } from "@/lib/initiativeAccess";
+import { getRelevantKnowledge } from "@/lib/knowledgeMemory";
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -27,6 +28,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   }
 
   const locale = (await getLocale()) as "ar" | "en";
+  const knowledgeNotes = await getRelevantKnowledge(initiative.schoolId, "INITIATIVE", {});
   const promptInput = {
     goal: initiative.goal ?? "",
     indicators: withResults.map((i) => ({
@@ -37,6 +39,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
       actualValue: i.actualValue ?? "",
     })),
     locale,
+    knowledgeNotes,
   };
 
   try {
