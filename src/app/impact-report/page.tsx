@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getRoleGroup } from "@/lib/permissions";
 import { getActiveSchoolId } from "@/lib/activeSchool";
 import { AppShell } from "@/components/layout/AppShell";
 
@@ -12,7 +11,7 @@ export default async function ImpactReportPage() {
   const t = await getTranslations("impactReport");
   const tInit = await getTranslations("initiatives");
 
-  if (!(await getRoleGroup("MANAGEMENT_ROLES")).includes(user.role)) {
+  if (user.role !== "SYSTEM_ADMIN") {
     redirect("/");
   }
 

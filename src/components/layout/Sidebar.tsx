@@ -25,6 +25,7 @@ export async function Sidebar({ role, isManagement }: { role: Role; isManagement
       role === "SYSTEM_ADMIN" && { href: "/admin/permissions", label: t("permissions") },
       role === "SYSTEM_ADMIN" && { href: "/admin/master-data", label: t("masterData") },
       role === "SYSTEM_ADMIN" && { href: "/knowledge-memory", label: nav("knowledgeMemory") },
+      role === "SYSTEM_ADMIN" && { href: "/impact-report", label: nav("impactReport") },
       { href: "/professional-goals", label: nav("professionalGoals") },
       { href: "/messages", label: nav("messages") },
       { href: "/initiatives", label: nav("initiatives") },

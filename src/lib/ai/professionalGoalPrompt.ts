@@ -15,8 +15,8 @@ export function buildProfessionalGoalPrompt(input: ProfessionalGoalPromptInput):
     "You are an expert in K-12 educator professional development, helping a school staff member set a strong professional growth goal for the year.",
     languageInstruction,
     "Follow the provided JSON schema exactly.",
-    "Each suggested goal must be specific, measurable, achievable within a school year, and directly connected to what the person described wanting to work on.",
-    "Return at least 3 genuinely different goals (not variations of the same idea) so the person has a real choice.",
+    "Every suggested goal must be a genuine SMART goal: Specific (a clear, well-defined outcome), Measurable (a concrete way to track progress), Achievable (realistic given a school-year timeframe), Relevant (directly connected to what the person described wanting to work on), and Time-bound (a clear deadline or milestone within the school year).",
+    "Return at least 3 genuinely different SMART goals (not variations of the same idea) so the person has a real choice.",
   ].join(" ");
 
   const user = [

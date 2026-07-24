@@ -38,7 +38,7 @@
     "knowledgeMemory": "Knowledge Memory",
     "messages": "Messages",
     "impactReport": "Impact Report",
-    "professionalGoals": "Professional Goals"
+    "professionalGoals": "SMART Goals"
   },
   "schedule": {
     "title": "My Weekly Schedule",
@@ -662,8 +662,8 @@
     "noLessonPlans": "No lesson plans yet."
   },
   "professionalGoalsPage": {
-    "title": "Professional Goals",
-    "subtitle": "Describe what you'd like to grow in, and let AI suggest goals to choose from.",
+    "title": "SMART Goals",
+    "subtitle": "Describe what you'd like to grow in, and let AI suggest SMART goals (Specific, Measurable, Achievable, Relevant, Time-bound) to choose from.",
     "promptPlaceholder": "e.g. I want to get better at differentiating instruction for struggling students",
     "promptTooShort": "Please describe what you'd like to focus on in a bit more detail.",
     "generate": "Generate Goal Suggestions",
